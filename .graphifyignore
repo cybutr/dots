@@ -1,0 +1,4 @@
+scripts/quickshell/claude/voice/wake_train/
+scripts/quickshell/claude/voice/venv/
+scripts/quickshell/claude/voice/venv_wake_train/
+scripts/quickshell/claude/__pycache__/

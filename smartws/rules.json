@@ -1,0 +1,155 @@
+{
+  "classes": {
+    "vivaldi-stable": "web",
+    "firefox": "web",
+    "chromium": "web",
+    "google-chrome": "web",
+    "brave-browser": "web",
+    "zen": "web",
+    "librewolf": "web",
+    "code": "code",
+    "code-oss": "code",
+    "cursor": "code",
+    "jetbrains-idea": "code",
+    "jetbrains-pycharm": "code",
+    "nvim-qt": "code",
+    "zed": "code",
+    "dev.zed.zed": "code",
+    "kitty": "term",
+    "alacritty": "term",
+    "foot": "term",
+    "wezterm": "term",
+    "org.wezfurlong.wezterm": "term",
+    "ghostty": "term",
+    "vesktop": "chat",
+    "discord": "chat",
+    "org.telegram.desktop": "chat",
+    "telegramdesktop": "chat",
+    "signal": "chat",
+    "element": "chat",
+    "slack": "chat",
+    "spotify": "music",
+    "com.spotify.client": "music",
+    "rhythmbox": "music",
+    "strawberry": "music",
+    "steam": "play",
+    "lutris": "play",
+    "heroic": "play",
+    "prismlauncher": "play",
+    "obsidian": "notes",
+    "logseq": "notes",
+    "joplin": "notes",
+    "org.pwmt.zathura": "read",
+    "okular": "read",
+    "evince": "read",
+    "org.gnome.evince": "read",
+    "calibre": "read",
+    "mpv": "media",
+    "vlc": "media",
+    "org.jellyfin.jellyfinmediaplayer": "media",
+    "obs": "media",
+    "com.obsproject.studio": "media",
+    "kdenlive": "media",
+    "gimp": "art",
+    "krita": "art",
+    "inkscape": "art",
+    "blender": "art",
+    "thunar": "files",
+    "nautilus": "files",
+    "dolphin": "files",
+    "org.gnome.nautilus": "files",
+    "libreoffice-writer": "docs",
+    "libreoffice-calc": "docs",
+    "onlyoffice": "docs",
+    "com.github.xournalpp.xournalpp": "notes"
+  },
+  "patterns": [
+    [
+      "^steam_app_",
+      "play"
+    ],
+    [
+      "^jetbrains-",
+      "code"
+    ],
+    [
+      "^libreoffice",
+      "docs"
+    ],
+    [
+      "^org\\.telegram",
+      "chat"
+    ],
+    [
+      "^(minecraft|net\\.minecraft)",
+      "play"
+    ]
+  ],
+  "categories": {
+    "web": {
+      "name": "Web",
+      "glyph": "󰖟",
+      "color": "#89b4fa"
+    },
+    "code": {
+      "name": "Code",
+      "glyph": "󰅩",
+      "color": "#a6e3a1"
+    },
+    "term": {
+      "name": "Terminal",
+      "glyph": "󰆍",
+      "color": "#f9e2af"
+    },
+    "chat": {
+      "name": "Chat",
+      "glyph": "󰭹",
+      "color": "#cba6f7"
+    },
+    "music": {
+      "name": "Music",
+      "glyph": "󰎆",
+      "color": "#a6e3a1"
+    },
+    "play": {
+      "name": "Play",
+      "glyph": "󰊴",
+      "color": "#f38ba8"
+    },
+    "notes": {
+      "name": "Notes",
+      "glyph": "󰠮",
+      "color": "#fab387"
+    },
+    "read": {
+      "name": "Read",
+      "glyph": "󰂺",
+      "color": "#94e2d5"
+    },
+    "media": {
+      "name": "Media",
+      "glyph": "󰎁",
+      "color": "#f5c2e7"
+    },
+    "art": {
+      "name": "Create",
+      "glyph": "󰏘",
+      "color": "#f5c2e7"
+    },
+    "files": {
+      "name": "Files",
+      "glyph": "󰉋",
+      "color": "#f9e2af"
+    },
+    "docs": {
+      "name": "Docs",
+      "glyph": "󰈙",
+      "color": "#89dceb"
+    },
+    "misc": {
+      "name": "Mixed",
+      "glyph": "󰘔",
+      "color": "#bac2de"
+    }
+  }
+}

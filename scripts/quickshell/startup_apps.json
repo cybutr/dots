@@ -1,0 +1,37 @@
+[
+  {
+    "name": "Vivaldi",
+    "cmd": "vivaldi --remote-debugging-port=9222",
+    "class": "vivaldi-stable",
+    "workspace": "1",
+    "silent": true
+  },
+  {
+    "name": "Firefox",
+    "cmd": "firefox",
+    "class": "firefox",
+    "workspace": "2",
+    "silent": true
+  },
+  {
+    "name": "Spotify",
+    "cmd": "flatpak run com.spotify.Client",
+    "class": "spotify",
+    "workspace": "4",
+    "silent": true
+  },
+  {
+    "name": "Kitty",
+    "cmd": "kitty",
+    "class": "kitty",
+    "workspace": "special:magic",
+    "silent": true
+  },
+  {
+    "name": "Vesktop",
+    "cmd": "flatpak run dev.vencord.Vesktop",
+    "class": "vesktop",
+    "workspace": "3",
+    "silent": true
+  }
+]

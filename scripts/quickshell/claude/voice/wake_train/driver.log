@@ -1,0 +1,1436 @@
+Traceback (most recent call last):
+  File "/home/czeddaru/.config/hypr/scripts/quickshell/claude/voice/wake_train/openwakeword_repo/openwakeword/train.py", line 673, in <module>
+    from generate_samples import generate_samples
+  File "/home/czeddaru/.config/hypr/scripts/quickshell/claude/voice/wake_train/piper-sample-generator/generate_samples.py", line 14, in <module>
+    import webrtcvad
+ModuleNotFoundError: No module named 'webrtcvad'
+INFO:root:##################################################
+Generating positive clips for training
+##################################################
+DEBUG:generate_samples:Loading /home/czeddaru/.config/hypr/scripts/quickshell/claude/voice/wake_train/piper-sample-generator/models/en-us-libritts-high.pt
+INFO:generate_samples:Successfully loaded the model
+/home/czeddaru/.config/hypr/scripts/quickshell/claude/voice/wake_train/piper-sample-generator/generate_samples.py:144: UserWarning: "kaiser_window" resampling method name is being deprecated and replaced by "sinc_interp_kaiser" in the next release. The default behavior remains unchanged.
+  resampler = torchaudio.transforms.Resample(
+DEBUG:generate_samples:Batch 1/120 complete
+DEBUG:generate_samples:Batch 2/120 complete
+DEBUG:generate_samples:Batch 3/120 complete
+DEBUG:generate_samples:Batch 4/120 complete
+DEBUG:generate_samples:Batch 5/120 complete
+DEBUG:generate_samples:Batch 6/120 complete
+DEBUG:generate_samples:Batch 7/120 complete
+DEBUG:generate_samples:Batch 8/120 complete
+DEBUG:generate_samples:Batch 9/120 complete
+DEBUG:generate_samples:Batch 10/120 complete
+DEBUG:generate_samples:Batch 11/120 complete
+DEBUG:generate_samples:Batch 12/120 complete
+DEBUG:generate_samples:Batch 13/120 complete
+DEBUG:generate_samples:Batch 14/120 complete
+DEBUG:generate_samples:Batch 15/120 complete
+DEBUG:generate_samples:Batch 16/120 complete
+DEBUG:generate_samples:Batch 17/120 complete
+DEBUG:generate_samples:Batch 18/120 complete
+DEBUG:generate_samples:Batch 19/120 complete
+DEBUG:generate_samples:Batch 20/120 complete
+DEBUG:generate_samples:Batch 21/120 complete
+DEBUG:generate_samples:Batch 22/120 complete
+DEBUG:generate_samples:Batch 23/120 complete
+DEBUG:generate_samples:Batch 24/120 complete
+DEBUG:generate_samples:Batch 25/120 complete
+DEBUG:generate_samples:Batch 26/120 complete
+DEBUG:generate_samples:Batch 27/120 complete
+DEBUG:generate_samples:Batch 28/120 complete
+DEBUG:generate_samples:Batch 29/120 complete
+DEBUG:generate_samples:Batch 30/120 complete
+DEBUG:generate_samples:Batch 31/120 complete
+DEBUG:generate_samples:Batch 32/120 complete
+DEBUG:generate_samples:Batch 33/120 complete
+DEBUG:generate_samples:Batch 34/120 complete
+DEBUG:generate_samples:Batch 35/120 complete
+DEBUG:generate_samples:Batch 36/120 complete
+DEBUG:generate_samples:Batch 37/120 complete
+DEBUG:generate_samples:Batch 38/120 complete
+DEBUG:generate_samples:Batch 39/120 complete
+DEBUG:generate_samples:Batch 40/120 complete
+DEBUG:generate_samples:Batch 41/120 complete
+DEBUG:generate_samples:Batch 42/120 complete
+DEBUG:generate_samples:Batch 43/120 complete
+DEBUG:generate_samples:Batch 44/120 complete
+DEBUG:generate_samples:Batch 45/120 complete
+DEBUG:generate_samples:Batch 46/120 complete
+DEBUG:generate_samples:Batch 47/120 complete
+DEBUG:generate_samples:Batch 48/120 complete
+DEBUG:generate_samples:Batch 49/120 complete
+DEBUG:generate_samples:Batch 50/120 complete
+DEBUG:generate_samples:Batch 51/120 complete
+DEBUG:generate_samples:Batch 52/120 complete
+DEBUG:generate_samples:Batch 53/120 complete
+DEBUG:generate_samples:Batch 54/120 complete
+DEBUG:generate_samples:Batch 55/120 complete
+DEBUG:generate_samples:Batch 56/120 complete
+DEBUG:generate_samples:Batch 57/120 complete
+DEBUG:generate_samples:Batch 58/120 complete
+DEBUG:generate_samples:Batch 59/120 complete
+DEBUG:generate_samples:Batch 60/120 complete
+DEBUG:generate_samples:Batch 61/120 complete
+DEBUG:generate_samples:Batch 62/120 complete
+DEBUG:generate_samples:Batch 63/120 complete
+DEBUG:generate_samples:Batch 64/120 complete
+DEBUG:generate_samples:Batch 65/120 complete
+DEBUG:generate_samples:Batch 66/120 complete
+DEBUG:generate_samples:Batch 67/120 complete
+DEBUG:generate_samples:Batch 68/120 complete
+DEBUG:generate_samples:Batch 69/120 complete
+DEBUG:generate_samples:Batch 70/120 complete
+DEBUG:generate_samples:Batch 71/120 complete
+DEBUG:generate_samples:Batch 72/120 complete
+DEBUG:generate_samples:Batch 73/120 complete
+DEBUG:generate_samples:Batch 74/120 complete
+DEBUG:generate_samples:Batch 75/120 complete
+DEBUG:generate_samples:Batch 76/120 complete
+DEBUG:generate_samples:Batch 77/120 complete
+DEBUG:generate_samples:Batch 78/120 complete
+DEBUG:generate_samples:Batch 79/120 complete
+DEBUG:generate_samples:Batch 80/120 complete
+DEBUG:generate_samples:Batch 81/120 complete
+DEBUG:generate_samples:Batch 82/120 complete
+DEBUG:generate_samples:Batch 83/120 complete
+DEBUG:generate_samples:Batch 84/120 complete
+DEBUG:generate_samples:Batch 85/120 complete
+DEBUG:generate_samples:Batch 86/120 complete
+DEBUG:generate_samples:Batch 87/120 complete
+DEBUG:generate_samples:Batch 88/120 complete
+DEBUG:generate_samples:Batch 89/120 complete
+DEBUG:generate_samples:Batch 90/120 complete
+DEBUG:generate_samples:Batch 91/120 complete
+DEBUG:generate_samples:Batch 92/120 complete
+DEBUG:generate_samples:Batch 93/120 complete
+DEBUG:generate_samples:Batch 94/120 complete
+DEBUG:generate_samples:Batch 95/120 complete
+DEBUG:generate_samples:Batch 96/120 complete
+DEBUG:generate_samples:Batch 97/120 complete
+DEBUG:generate_samples:Batch 98/120 complete
+DEBUG:generate_samples:Batch 99/120 complete
+DEBUG:generate_samples:Batch 100/120 complete
+DEBUG:generate_samples:Batch 101/120 complete
+DEBUG:generate_samples:Batch 102/120 complete
+DEBUG:generate_samples:Batch 103/120 complete
+DEBUG:generate_samples:Batch 104/120 complete
+DEBUG:generate_samples:Batch 105/120 complete
+DEBUG:generate_samples:Batch 106/120 complete
+DEBUG:generate_samples:Batch 107/120 complete
+DEBUG:generate_samples:Batch 108/120 complete
+DEBUG:generate_samples:Batch 109/120 complete
+DEBUG:generate_samples:Batch 110/120 complete
+DEBUG:generate_samples:Batch 111/120 complete
+DEBUG:generate_samples:Batch 112/120 complete
+DEBUG:generate_samples:Batch 113/120 complete
+DEBUG:generate_samples:Batch 114/120 complete
+DEBUG:generate_samples:Batch 115/120 complete
+DEBUG:generate_samples:Batch 116/120 complete
+DEBUG:generate_samples:Batch 117/120 complete
+DEBUG:generate_samples:Batch 118/120 complete
+DEBUG:generate_samples:Batch 119/120 complete
+DEBUG:generate_samples:Batch 120/120 complete
+INFO:generate_samples:Done
+INFO:root:##################################################
+Generating positive clips for testing
+##################################################
+DEBUG:generate_samples:Loading /home/czeddaru/.config/hypr/scripts/quickshell/claude/voice/wake_train/piper-sample-generator/models/en-us-libritts-high.pt
+INFO:generate_samples:Successfully loaded the model
+DEBUG:generate_samples:Batch 1/20 complete
+DEBUG:generate_samples:Batch 2/20 complete
+DEBUG:generate_samples:Batch 3/20 complete
+DEBUG:generate_samples:Batch 4/20 complete
+DEBUG:generate_samples:Batch 5/20 complete
+DEBUG:generate_samples:Batch 6/20 complete
+DEBUG:generate_samples:Batch 7/20 complete
+DEBUG:generate_samples:Batch 8/20 complete
+DEBUG:generate_samples:Batch 9/20 complete
+DEBUG:generate_samples:Batch 10/20 complete
+DEBUG:generate_samples:Batch 11/20 complete
+DEBUG:generate_samples:Batch 12/20 complete
+DEBUG:generate_samples:Batch 13/20 complete
+DEBUG:generate_samples:Batch 14/20 complete
+DEBUG:generate_samples:Batch 15/20 complete
+DEBUG:generate_samples:Batch 16/20 complete
+DEBUG:generate_samples:Batch 17/20 complete
+DEBUG:generate_samples:Batch 18/20 complete
+DEBUG:generate_samples:Batch 19/20 complete
+DEBUG:generate_samples:Batch 20/20 complete
+INFO:generate_samples:Done
+INFO:root:##################################################
+Generating negative clips for training
+##################################################
+/home/czeddaru/.config/hypr/scripts/quickshell/claude/voice/venv_wake_train/lib/python3.11/site-packages/dp/model/model.py:69: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.self_attn.batch_first was not True(use batch_first for better inference performance)
+  self.encoder = TransformerEncoder(encoder_layer=encoder_layer,
+DEBUG:dp.phonemizer:Initializing phonemizer with model step 1120000
+WARNING:root:The word 'kandor' was not found in the pronunciation dictionary! Using the DeepPhonemizer library to predict the phonemes.
+WARNING:root:Phones for 'kandor': [K][AE][N][D][ER]
+DEBUG:generate_samples:Loading /home/czeddaru/.config/hypr/scripts/quickshell/claude/voice/wake_train/piper-sample-generator/models/en-us-libritts-high.pt
+INFO:generate_samples:Successfully loaded the model
+/home/czeddaru/.config/hypr/scripts/quickshell/claude/voice/wake_train/piper-sample-generator/generate_samples.py:144: UserWarning: "kaiser_window" resampling method name is being deprecated and replaced by "sinc_interp_kaiser" in the next release. The default behavior remains unchanged.
+  resampler = torchaudio.transforms.Resample(
+DEBUG:generate_samples:Batch 1/1000 complete
+DEBUG:generate_samples:Batch 2/1000 complete
+DEBUG:generate_samples:Batch 3/1000 complete
+DEBUG:generate_samples:Batch 4/1000 complete
+DEBUG:generate_samples:Batch 5/1000 complete
+DEBUG:generate_samples:Batch 6/1000 complete
+DEBUG:generate_samples:Batch 7/1000 complete
+DEBUG:generate_samples:Batch 8/1000 complete
+DEBUG:generate_samples:Batch 9/1000 complete
+DEBUG:generate_samples:Batch 10/1000 complete
+DEBUG:generate_samples:Batch 11/1000 complete
+DEBUG:generate_samples:Batch 12/1000 complete
+DEBUG:generate_samples:Batch 13/1000 complete
+DEBUG:generate_samples:Batch 14/1000 complete
+DEBUG:generate_samples:Batch 15/1000 complete
+DEBUG:generate_samples:Batch 16/1000 complete
+DEBUG:generate_samples:Batch 17/1000 complete
+DEBUG:generate_samples:Batch 18/1000 complete
+DEBUG:generate_samples:Batch 19/1000 complete
+DEBUG:generate_samples:Batch 20/1000 complete
+DEBUG:generate_samples:Batch 21/1000 complete
+DEBUG:generate_samples:Batch 22/1000 complete
+DEBUG:generate_samples:Batch 23/1000 complete
+DEBUG:generate_samples:Batch 24/1000 complete
+DEBUG:generate_samples:Batch 25/1000 complete
+DEBUG:generate_samples:Batch 26/1000 complete
+DEBUG:generate_samples:Batch 27/1000 complete
+DEBUG:generate_samples:Batch 28/1000 complete
+DEBUG:generate_samples:Batch 29/1000 complete
+DEBUG:generate_samples:Batch 30/1000 complete
+DEBUG:generate_samples:Batch 31/1000 complete
+DEBUG:generate_samples:Batch 32/1000 complete
+DEBUG:generate_samples:Batch 33/1000 complete
+DEBUG:generate_samples:Batch 34/1000 complete
+DEBUG:generate_samples:Batch 35/1000 complete
+DEBUG:generate_samples:Batch 36/1000 complete
+DEBUG:generate_samples:Batch 37/1000 complete
+DEBUG:generate_samples:Batch 38/1000 complete
+DEBUG:generate_samples:Batch 39/1000 complete
+DEBUG:generate_samples:Batch 40/1000 complete
+DEBUG:generate_samples:Batch 41/1000 complete
+DEBUG:generate_samples:Batch 42/1000 complete
+DEBUG:generate_samples:Batch 43/1000 complete
+DEBUG:generate_samples:Batch 44/1000 complete
+DEBUG:generate_samples:Batch 45/1000 complete
+DEBUG:generate_samples:Batch 46/1000 complete
+DEBUG:generate_samples:Batch 47/1000 complete
+DEBUG:generate_samples:Batch 48/1000 complete
+DEBUG:generate_samples:Batch 49/1000 complete
+DEBUG:generate_samples:Batch 50/1000 complete
+DEBUG:generate_samples:Batch 51/1000 complete
+DEBUG:generate_samples:Batch 52/1000 complete
+DEBUG:generate_samples:Batch 53/1000 complete
+DEBUG:generate_samples:Batch 54/1000 complete
+DEBUG:generate_samples:Batch 55/1000 complete
+DEBUG:generate_samples:Batch 56/1000 complete
+DEBUG:generate_samples:Batch 57/1000 complete
+DEBUG:generate_samples:Batch 58/1000 complete
+DEBUG:generate_samples:Batch 59/1000 complete
+DEBUG:generate_samples:Batch 60/1000 complete
+DEBUG:generate_samples:Batch 61/1000 complete
+DEBUG:generate_samples:Batch 62/1000 complete
+DEBUG:generate_samples:Batch 63/1000 complete
+DEBUG:generate_samples:Batch 64/1000 complete
+DEBUG:generate_samples:Batch 65/1000 complete
+DEBUG:generate_samples:Batch 66/1000 complete
+DEBUG:generate_samples:Batch 67/1000 complete
+DEBUG:generate_samples:Batch 68/1000 complete
+DEBUG:generate_samples:Batch 69/1000 complete
+DEBUG:generate_samples:Batch 70/1000 complete
+DEBUG:generate_samples:Batch 71/1000 complete
+DEBUG:generate_samples:Batch 72/1000 complete
+DEBUG:generate_samples:Batch 73/1000 complete
+DEBUG:generate_samples:Batch 74/1000 complete
+DEBUG:generate_samples:Batch 75/1000 complete
+DEBUG:generate_samples:Batch 76/1000 complete
+DEBUG:generate_samples:Batch 77/1000 complete
+DEBUG:generate_samples:Batch 78/1000 complete
+DEBUG:generate_samples:Batch 79/1000 complete
+DEBUG:generate_samples:Batch 80/1000 complete
+DEBUG:generate_samples:Batch 81/1000 complete
+DEBUG:generate_samples:Batch 82/1000 complete
+DEBUG:generate_samples:Batch 83/1000 complete
+DEBUG:generate_samples:Batch 84/1000 complete
+DEBUG:generate_samples:Batch 85/1000 complete
+DEBUG:generate_samples:Batch 86/1000 complete
+DEBUG:generate_samples:Batch 87/1000 complete
+DEBUG:generate_samples:Batch 88/1000 complete
+DEBUG:generate_samples:Batch 89/1000 complete
+DEBUG:generate_samples:Batch 90/1000 complete
+DEBUG:generate_samples:Batch 91/1000 complete
+DEBUG:generate_samples:Batch 92/1000 complete
+DEBUG:generate_samples:Batch 93/1000 complete
+DEBUG:generate_samples:Batch 94/1000 complete
+DEBUG:generate_samples:Batch 95/1000 complete
+DEBUG:generate_samples:Batch 96/1000 complete
+DEBUG:generate_samples:Batch 97/1000 complete
+DEBUG:generate_samples:Batch 98/1000 complete
+DEBUG:generate_samples:Batch 99/1000 complete
+DEBUG:generate_samples:Batch 100/1000 complete
+DEBUG:generate_samples:Batch 101/1000 complete
+DEBUG:generate_samples:Batch 102/1000 complete
+DEBUG:generate_samples:Batch 103/1000 complete
+DEBUG:generate_samples:Batch 104/1000 complete
+DEBUG:generate_samples:Batch 105/1000 complete
+DEBUG:generate_samples:Batch 106/1000 complete
+DEBUG:generate_samples:Batch 107/1000 complete
+DEBUG:generate_samples:Batch 108/1000 complete
+DEBUG:generate_samples:Batch 109/1000 complete
+DEBUG:generate_samples:Batch 110/1000 complete
+DEBUG:generate_samples:Batch 111/1000 complete
+DEBUG:generate_samples:Batch 112/1000 complete
+DEBUG:generate_samples:Batch 113/1000 complete
+DEBUG:generate_samples:Batch 114/1000 complete
+DEBUG:generate_samples:Batch 115/1000 complete
+DEBUG:generate_samples:Batch 116/1000 complete
+DEBUG:generate_samples:Batch 117/1000 complete
+DEBUG:generate_samples:Batch 118/1000 complete
+DEBUG:generate_samples:Batch 119/1000 complete
+DEBUG:generate_samples:Batch 120/1000 complete
+DEBUG:generate_samples:Batch 121/1000 complete
+DEBUG:generate_samples:Batch 122/1000 complete
+DEBUG:generate_samples:Batch 123/1000 complete
+DEBUG:generate_samples:Batch 124/1000 complete
+DEBUG:generate_samples:Batch 125/1000 complete
+DEBUG:generate_samples:Batch 126/1000 complete
+DEBUG:generate_samples:Batch 127/1000 complete
+DEBUG:generate_samples:Batch 128/1000 complete
+DEBUG:generate_samples:Batch 129/1000 complete
+DEBUG:generate_samples:Batch 130/1000 complete
+DEBUG:generate_samples:Batch 131/1000 complete
+DEBUG:generate_samples:Batch 132/1000 complete
+DEBUG:generate_samples:Batch 133/1000 complete
+DEBUG:generate_samples:Batch 134/1000 complete
+DEBUG:generate_samples:Batch 135/1000 complete
+DEBUG:generate_samples:Batch 136/1000 complete
+DEBUG:generate_samples:Batch 137/1000 complete
+DEBUG:generate_samples:Batch 138/1000 complete
+DEBUG:generate_samples:Batch 139/1000 complete
+DEBUG:generate_samples:Batch 140/1000 complete
+DEBUG:generate_samples:Batch 141/1000 complete
+DEBUG:generate_samples:Batch 142/1000 complete
+DEBUG:generate_samples:Batch 143/1000 complete
+DEBUG:generate_samples:Batch 144/1000 complete
+DEBUG:generate_samples:Batch 145/1000 complete
+DEBUG:generate_samples:Batch 146/1000 complete
+DEBUG:generate_samples:Batch 147/1000 complete
+DEBUG:generate_samples:Batch 148/1000 complete
+DEBUG:generate_samples:Batch 149/1000 complete
+DEBUG:generate_samples:Batch 150/1000 complete
+DEBUG:generate_samples:Batch 151/1000 complete
+DEBUG:generate_samples:Batch 152/1000 complete
+DEBUG:generate_samples:Batch 153/1000 complete
+DEBUG:generate_samples:Batch 154/1000 complete
+DEBUG:generate_samples:Batch 155/1000 complete
+DEBUG:generate_samples:Batch 156/1000 complete
+DEBUG:generate_samples:Batch 157/1000 complete
+DEBUG:generate_samples:Batch 158/1000 complete
+DEBUG:generate_samples:Batch 159/1000 complete
+DEBUG:generate_samples:Batch 160/1000 complete
+DEBUG:generate_samples:Batch 161/1000 complete
+DEBUG:generate_samples:Batch 162/1000 complete
+DEBUG:generate_samples:Batch 163/1000 complete
+DEBUG:generate_samples:Batch 164/1000 complete
+DEBUG:generate_samples:Batch 165/1000 complete
+DEBUG:generate_samples:Batch 166/1000 complete
+DEBUG:generate_samples:Batch 167/1000 complete
+DEBUG:generate_samples:Batch 168/1000 complete
+DEBUG:generate_samples:Batch 169/1000 complete
+DEBUG:generate_samples:Batch 170/1000 complete
+DEBUG:generate_samples:Batch 171/1000 complete
+DEBUG:generate_samples:Batch 172/1000 complete
+DEBUG:generate_samples:Batch 173/1000 complete
+DEBUG:generate_samples:Batch 174/1000 complete
+DEBUG:generate_samples:Batch 175/1000 complete
+DEBUG:generate_samples:Batch 176/1000 complete
+DEBUG:generate_samples:Batch 177/1000 complete
+DEBUG:generate_samples:Batch 178/1000 complete
+DEBUG:generate_samples:Batch 179/1000 complete
+DEBUG:generate_samples:Batch 180/1000 complete
+DEBUG:generate_samples:Batch 181/1000 complete
+DEBUG:generate_samples:Batch 182/1000 complete
+DEBUG:generate_samples:Batch 183/1000 complete
+DEBUG:generate_samples:Batch 184/1000 complete
+DEBUG:generate_samples:Batch 185/1000 complete
+DEBUG:generate_samples:Batch 186/1000 complete
+DEBUG:generate_samples:Batch 187/1000 complete
+DEBUG:generate_samples:Batch 188/1000 complete
+DEBUG:generate_samples:Batch 189/1000 complete
+DEBUG:generate_samples:Batch 190/1000 complete
+DEBUG:generate_samples:Batch 191/1000 complete
+DEBUG:generate_samples:Batch 192/1000 complete
+DEBUG:generate_samples:Batch 193/1000 complete
+DEBUG:generate_samples:Batch 194/1000 complete
+DEBUG:generate_samples:Batch 195/1000 complete
+DEBUG:generate_samples:Batch 196/1000 complete
+DEBUG:generate_samples:Batch 197/1000 complete
+DEBUG:generate_samples:Batch 198/1000 complete
+DEBUG:generate_samples:Batch 199/1000 complete
+DEBUG:generate_samples:Batch 200/1000 complete
+DEBUG:generate_samples:Batch 201/1000 complete
+DEBUG:generate_samples:Batch 202/1000 complete
+DEBUG:generate_samples:Batch 203/1000 complete
+DEBUG:generate_samples:Batch 204/1000 complete
+DEBUG:generate_samples:Batch 205/1000 complete
+DEBUG:generate_samples:Batch 206/1000 complete
+DEBUG:generate_samples:Batch 207/1000 complete
+DEBUG:generate_samples:Batch 208/1000 complete
+DEBUG:generate_samples:Batch 209/1000 complete
+DEBUG:generate_samples:Batch 210/1000 complete
+DEBUG:generate_samples:Batch 211/1000 complete
+DEBUG:generate_samples:Batch 212/1000 complete
+DEBUG:generate_samples:Batch 213/1000 complete
+DEBUG:generate_samples:Batch 214/1000 complete
+DEBUG:generate_samples:Batch 215/1000 complete
+DEBUG:generate_samples:Batch 216/1000 complete
+DEBUG:generate_samples:Batch 217/1000 complete
+DEBUG:generate_samples:Batch 218/1000 complete
+DEBUG:generate_samples:Batch 219/1000 complete
+DEBUG:generate_samples:Batch 220/1000 complete
+DEBUG:generate_samples:Batch 221/1000 complete
+DEBUG:generate_samples:Batch 222/1000 complete
+DEBUG:generate_samples:Batch 223/1000 complete
+DEBUG:generate_samples:Batch 224/1000 complete
+DEBUG:generate_samples:Batch 225/1000 complete
+DEBUG:generate_samples:Batch 226/1000 complete
+DEBUG:generate_samples:Batch 227/1000 complete
+DEBUG:generate_samples:Batch 228/1000 complete
+DEBUG:generate_samples:Batch 229/1000 complete
+DEBUG:generate_samples:Batch 230/1000 complete
+DEBUG:generate_samples:Batch 231/1000 complete
+DEBUG:generate_samples:Batch 232/1000 complete
+DEBUG:generate_samples:Batch 233/1000 complete
+DEBUG:generate_samples:Batch 234/1000 complete
+DEBUG:generate_samples:Batch 235/1000 complete
+DEBUG:generate_samples:Batch 236/1000 complete
+DEBUG:generate_samples:Batch 237/1000 complete
+DEBUG:generate_samples:Batch 238/1000 complete
+DEBUG:generate_samples:Batch 239/1000 complete
+DEBUG:generate_samples:Batch 240/1000 complete
+DEBUG:generate_samples:Batch 241/1000 complete
+DEBUG:generate_samples:Batch 242/1000 complete
+DEBUG:generate_samples:Batch 243/1000 complete
+DEBUG:generate_samples:Batch 244/1000 complete
+DEBUG:generate_samples:Batch 245/1000 complete
+DEBUG:generate_samples:Batch 246/1000 complete
+DEBUG:generate_samples:Batch 247/1000 complete
+DEBUG:generate_samples:Batch 248/1000 complete
+DEBUG:generate_samples:Batch 249/1000 complete
+DEBUG:generate_samples:Batch 250/1000 complete
+DEBUG:generate_samples:Batch 251/1000 complete
+DEBUG:generate_samples:Batch 252/1000 complete
+DEBUG:generate_samples:Batch 253/1000 complete
+DEBUG:generate_samples:Batch 254/1000 complete
+DEBUG:generate_samples:Batch 255/1000 complete
+DEBUG:generate_samples:Batch 256/1000 complete
+DEBUG:generate_samples:Batch 257/1000 complete
+DEBUG:generate_samples:Batch 258/1000 complete
+DEBUG:generate_samples:Batch 259/1000 complete
+DEBUG:generate_samples:Batch 260/1000 complete
+DEBUG:generate_samples:Batch 261/1000 complete
+DEBUG:generate_samples:Batch 262/1000 complete
+DEBUG:generate_samples:Batch 263/1000 complete
+DEBUG:generate_samples:Batch 264/1000 complete
+DEBUG:generate_samples:Batch 265/1000 complete
+DEBUG:generate_samples:Batch 266/1000 complete
+DEBUG:generate_samples:Batch 267/1000 complete
+DEBUG:generate_samples:Batch 268/1000 complete
+DEBUG:generate_samples:Batch 269/1000 complete
+DEBUG:generate_samples:Batch 270/1000 complete
+DEBUG:generate_samples:Batch 271/1000 complete
+DEBUG:generate_samples:Batch 272/1000 complete
+DEBUG:generate_samples:Batch 273/1000 complete
+DEBUG:generate_samples:Batch 274/1000 complete
+DEBUG:generate_samples:Batch 275/1000 complete
+DEBUG:generate_samples:Batch 276/1000 complete
+DEBUG:generate_samples:Batch 277/1000 complete
+DEBUG:generate_samples:Batch 278/1000 complete
+DEBUG:generate_samples:Batch 279/1000 complete
+DEBUG:generate_samples:Batch 280/1000 complete
+DEBUG:generate_samples:Batch 281/1000 complete
+DEBUG:generate_samples:Batch 282/1000 complete
+DEBUG:generate_samples:Batch 283/1000 complete
+DEBUG:generate_samples:Batch 284/1000 complete
+DEBUG:generate_samples:Batch 285/1000 complete
+DEBUG:generate_samples:Batch 286/1000 complete
+DEBUG:generate_samples:Batch 287/1000 complete
+DEBUG:generate_samples:Batch 288/1000 complete
+DEBUG:generate_samples:Batch 289/1000 complete
+DEBUG:generate_samples:Batch 290/1000 complete
+DEBUG:generate_samples:Batch 291/1000 complete
+DEBUG:generate_samples:Batch 292/1000 complete
+DEBUG:generate_samples:Batch 293/1000 complete
+DEBUG:generate_samples:Batch 294/1000 complete
+DEBUG:generate_samples:Batch 295/1000 complete
+DEBUG:generate_samples:Batch 296/1000 complete
+DEBUG:generate_samples:Batch 297/1000 complete
+DEBUG:generate_samples:Batch 298/1000 complete
+DEBUG:generate_samples:Batch 299/1000 complete
+DEBUG:generate_samples:Batch 300/1000 complete
+DEBUG:generate_samples:Batch 301/1000 complete
+DEBUG:generate_samples:Batch 302/1000 complete
+DEBUG:generate_samples:Batch 303/1000 complete
+DEBUG:generate_samples:Batch 304/1000 complete
+DEBUG:generate_samples:Batch 305/1000 complete
+DEBUG:generate_samples:Batch 306/1000 complete
+DEBUG:generate_samples:Batch 307/1000 complete
+DEBUG:generate_samples:Batch 308/1000 complete
+DEBUG:generate_samples:Batch 309/1000 complete
+DEBUG:generate_samples:Batch 310/1000 complete
+DEBUG:generate_samples:Batch 311/1000 complete
+DEBUG:generate_samples:Batch 312/1000 complete
+DEBUG:generate_samples:Batch 313/1000 complete
+DEBUG:generate_samples:Batch 314/1000 complete
+DEBUG:generate_samples:Batch 315/1000 complete
+DEBUG:generate_samples:Batch 316/1000 complete
+DEBUG:generate_samples:Batch 317/1000 complete
+DEBUG:generate_samples:Batch 318/1000 complete
+DEBUG:generate_samples:Batch 319/1000 complete
+DEBUG:generate_samples:Batch 320/1000 complete
+DEBUG:generate_samples:Batch 321/1000 complete
+DEBUG:generate_samples:Batch 322/1000 complete
+DEBUG:generate_samples:Batch 323/1000 complete
+DEBUG:generate_samples:Batch 324/1000 complete
+DEBUG:generate_samples:Batch 325/1000 complete
+DEBUG:generate_samples:Batch 326/1000 complete
+DEBUG:generate_samples:Batch 327/1000 complete
+DEBUG:generate_samples:Batch 328/1000 complete
+DEBUG:generate_samples:Batch 329/1000 complete
+DEBUG:generate_samples:Batch 330/1000 complete
+DEBUG:generate_samples:Batch 331/1000 complete
+DEBUG:generate_samples:Batch 332/1000 complete
+DEBUG:generate_samples:Batch 333/1000 complete
+DEBUG:generate_samples:Batch 334/1000 complete
+DEBUG:generate_samples:Batch 335/1000 complete
+DEBUG:generate_samples:Batch 336/1000 complete
+DEBUG:generate_samples:Batch 337/1000 complete
+DEBUG:generate_samples:Batch 338/1000 complete
+DEBUG:generate_samples:Batch 339/1000 complete
+DEBUG:generate_samples:Batch 340/1000 complete
+DEBUG:generate_samples:Batch 341/1000 complete
+DEBUG:generate_samples:Batch 342/1000 complete
+DEBUG:generate_samples:Batch 343/1000 complete
+DEBUG:generate_samples:Batch 344/1000 complete
+DEBUG:generate_samples:Batch 345/1000 complete
+DEBUG:generate_samples:Batch 346/1000 complete
+DEBUG:generate_samples:Batch 347/1000 complete
+DEBUG:generate_samples:Batch 348/1000 complete
+DEBUG:generate_samples:Batch 349/1000 complete
+DEBUG:generate_samples:Batch 350/1000 complete
+DEBUG:generate_samples:Batch 351/1000 complete
+DEBUG:generate_samples:Batch 352/1000 complete
+DEBUG:generate_samples:Batch 353/1000 complete
+DEBUG:generate_samples:Batch 354/1000 complete
+DEBUG:generate_samples:Batch 355/1000 complete
+DEBUG:generate_samples:Batch 356/1000 complete
+DEBUG:generate_samples:Batch 357/1000 complete
+DEBUG:generate_samples:Batch 358/1000 complete
+DEBUG:generate_samples:Batch 359/1000 complete
+DEBUG:generate_samples:Batch 360/1000 complete
+DEBUG:generate_samples:Batch 361/1000 complete
+DEBUG:generate_samples:Batch 362/1000 complete
+DEBUG:generate_samples:Batch 363/1000 complete
+DEBUG:generate_samples:Batch 364/1000 complete
+DEBUG:generate_samples:Batch 365/1000 complete
+DEBUG:generate_samples:Batch 366/1000 complete
+DEBUG:generate_samples:Batch 367/1000 complete
+DEBUG:generate_samples:Batch 368/1000 complete
+DEBUG:generate_samples:Batch 369/1000 complete
+DEBUG:generate_samples:Batch 370/1000 complete
+DEBUG:generate_samples:Batch 371/1000 complete
+DEBUG:generate_samples:Batch 372/1000 complete
+DEBUG:generate_samples:Batch 373/1000 complete
+DEBUG:generate_samples:Batch 374/1000 complete
+DEBUG:generate_samples:Batch 375/1000 complete
+DEBUG:generate_samples:Batch 376/1000 complete
+DEBUG:generate_samples:Batch 377/1000 complete
+DEBUG:generate_samples:Batch 378/1000 complete
+DEBUG:generate_samples:Batch 379/1000 complete
+DEBUG:generate_samples:Batch 380/1000 complete
+DEBUG:generate_samples:Batch 381/1000 complete
+DEBUG:generate_samples:Batch 382/1000 complete
+DEBUG:generate_samples:Batch 383/1000 complete
+DEBUG:generate_samples:Batch 384/1000 complete
+DEBUG:generate_samples:Batch 385/1000 complete
+DEBUG:generate_samples:Batch 386/1000 complete
+DEBUG:generate_samples:Batch 387/1000 complete
+DEBUG:generate_samples:Batch 388/1000 complete
+DEBUG:generate_samples:Batch 389/1000 complete
+DEBUG:generate_samples:Batch 390/1000 complete
+DEBUG:generate_samples:Batch 391/1000 complete
+DEBUG:generate_samples:Batch 392/1000 complete
+DEBUG:generate_samples:Batch 393/1000 complete
+DEBUG:generate_samples:Batch 394/1000 complete
+DEBUG:generate_samples:Batch 395/1000 complete
+DEBUG:generate_samples:Batch 396/1000 complete
+DEBUG:generate_samples:Batch 397/1000 complete
+DEBUG:generate_samples:Batch 398/1000 complete
+DEBUG:generate_samples:Batch 399/1000 complete
+DEBUG:generate_samples:Batch 400/1000 complete
+DEBUG:generate_samples:Batch 401/1000 complete
+DEBUG:generate_samples:Batch 402/1000 complete
+DEBUG:generate_samples:Batch 403/1000 complete
+DEBUG:generate_samples:Batch 404/1000 complete
+DEBUG:generate_samples:Batch 405/1000 complete
+DEBUG:generate_samples:Batch 406/1000 complete
+DEBUG:generate_samples:Batch 407/1000 complete
+DEBUG:generate_samples:Batch 408/1000 complete
+DEBUG:generate_samples:Batch 409/1000 complete
+DEBUG:generate_samples:Batch 410/1000 complete
+DEBUG:generate_samples:Batch 411/1000 complete
+DEBUG:generate_samples:Batch 412/1000 complete
+DEBUG:generate_samples:Batch 413/1000 complete
+DEBUG:generate_samples:Batch 414/1000 complete
+DEBUG:generate_samples:Batch 415/1000 complete
+DEBUG:generate_samples:Batch 416/1000 complete
+DEBUG:generate_samples:Batch 417/1000 complete
+DEBUG:generate_samples:Batch 418/1000 complete
+DEBUG:generate_samples:Batch 419/1000 complete
+DEBUG:generate_samples:Batch 420/1000 complete
+DEBUG:generate_samples:Batch 421/1000 complete
+DEBUG:generate_samples:Batch 422/1000 complete
+DEBUG:generate_samples:Batch 423/1000 complete
+DEBUG:generate_samples:Batch 424/1000 complete
+DEBUG:generate_samples:Batch 425/1000 complete
+DEBUG:generate_samples:Batch 426/1000 complete
+DEBUG:generate_samples:Batch 427/1000 complete
+DEBUG:generate_samples:Batch 428/1000 complete
+DEBUG:generate_samples:Batch 429/1000 complete
+DEBUG:generate_samples:Batch 430/1000 complete
+DEBUG:generate_samples:Batch 431/1000 complete
+DEBUG:generate_samples:Batch 432/1000 complete
+DEBUG:generate_samples:Batch 433/1000 complete
+DEBUG:generate_samples:Batch 434/1000 complete
+DEBUG:generate_samples:Batch 435/1000 complete
+DEBUG:generate_samples:Batch 436/1000 complete
+DEBUG:generate_samples:Batch 437/1000 complete
+DEBUG:generate_samples:Batch 438/1000 complete
+DEBUG:generate_samples:Batch 439/1000 complete
+DEBUG:generate_samples:Batch 440/1000 complete
+DEBUG:generate_samples:Batch 441/1000 complete
+DEBUG:generate_samples:Batch 442/1000 complete
+DEBUG:generate_samples:Batch 443/1000 complete
+DEBUG:generate_samples:Batch 444/1000 complete
+DEBUG:generate_samples:Batch 445/1000 complete
+DEBUG:generate_samples:Batch 446/1000 complete
+DEBUG:generate_samples:Batch 447/1000 complete
+DEBUG:generate_samples:Batch 448/1000 complete
+DEBUG:generate_samples:Batch 449/1000 complete
+DEBUG:generate_samples:Batch 450/1000 complete
+DEBUG:generate_samples:Batch 451/1000 complete
+DEBUG:generate_samples:Batch 452/1000 complete
+DEBUG:generate_samples:Batch 453/1000 complete
+DEBUG:generate_samples:Batch 454/1000 complete
+DEBUG:generate_samples:Batch 455/1000 complete
+DEBUG:generate_samples:Batch 456/1000 complete
+DEBUG:generate_samples:Batch 457/1000 complete
+DEBUG:generate_samples:Batch 458/1000 complete
+DEBUG:generate_samples:Batch 459/1000 complete
+DEBUG:generate_samples:Batch 460/1000 complete
+DEBUG:generate_samples:Batch 461/1000 complete
+DEBUG:generate_samples:Batch 462/1000 complete
+DEBUG:generate_samples:Batch 463/1000 complete
+DEBUG:generate_samples:Batch 464/1000 complete
+DEBUG:generate_samples:Batch 465/1000 complete
+DEBUG:generate_samples:Batch 466/1000 complete
+DEBUG:generate_samples:Batch 467/1000 complete
+DEBUG:generate_samples:Batch 468/1000 complete
+DEBUG:generate_samples:Batch 469/1000 complete
+DEBUG:generate_samples:Batch 470/1000 complete
+DEBUG:generate_samples:Batch 471/1000 complete
+DEBUG:generate_samples:Batch 472/1000 complete
+DEBUG:generate_samples:Batch 473/1000 complete
+DEBUG:generate_samples:Batch 474/1000 complete
+DEBUG:generate_samples:Batch 475/1000 complete
+DEBUG:generate_samples:Batch 476/1000 complete
+DEBUG:generate_samples:Batch 477/1000 complete
+DEBUG:generate_samples:Batch 478/1000 complete
+DEBUG:generate_samples:Batch 479/1000 complete
+DEBUG:generate_samples:Batch 480/1000 complete
+DEBUG:generate_samples:Batch 481/1000 complete
+DEBUG:generate_samples:Batch 482/1000 complete
+DEBUG:generate_samples:Batch 483/1000 complete
+DEBUG:generate_samples:Batch 484/1000 complete
+DEBUG:generate_samples:Batch 485/1000 complete
+DEBUG:generate_samples:Batch 486/1000 complete
+DEBUG:generate_samples:Batch 487/1000 complete
+DEBUG:generate_samples:Batch 488/1000 complete
+DEBUG:generate_samples:Batch 489/1000 complete
+DEBUG:generate_samples:Batch 490/1000 complete
+DEBUG:generate_samples:Batch 491/1000 complete
+DEBUG:generate_samples:Batch 492/1000 complete
+DEBUG:generate_samples:Batch 493/1000 complete
+DEBUG:generate_samples:Batch 494/1000 complete
+DEBUG:generate_samples:Batch 495/1000 complete
+DEBUG:generate_samples:Batch 496/1000 complete
+DEBUG:generate_samples:Batch 497/1000 complete
+DEBUG:generate_samples:Batch 498/1000 complete
+DEBUG:generate_samples:Batch 499/1000 complete
+DEBUG:generate_samples:Batch 500/1000 complete
+DEBUG:generate_samples:Batch 501/1000 complete
+DEBUG:generate_samples:Batch 502/1000 complete
+DEBUG:generate_samples:Batch 503/1000 complete
+DEBUG:generate_samples:Batch 504/1000 complete
+DEBUG:generate_samples:Batch 505/1000 complete
+DEBUG:generate_samples:Batch 506/1000 complete
+DEBUG:generate_samples:Batch 507/1000 complete
+DEBUG:generate_samples:Batch 508/1000 complete
+DEBUG:generate_samples:Batch 509/1000 complete
+DEBUG:generate_samples:Batch 510/1000 complete
+DEBUG:generate_samples:Batch 511/1000 complete
+DEBUG:generate_samples:Batch 512/1000 complete
+DEBUG:generate_samples:Batch 513/1000 complete
+DEBUG:generate_samples:Batch 514/1000 complete
+DEBUG:generate_samples:Batch 515/1000 complete
+DEBUG:generate_samples:Batch 516/1000 complete
+DEBUG:generate_samples:Batch 517/1000 complete
+DEBUG:generate_samples:Batch 518/1000 complete
+DEBUG:generate_samples:Batch 519/1000 complete
+DEBUG:generate_samples:Batch 520/1000 complete
+DEBUG:generate_samples:Batch 521/1000 complete
+DEBUG:generate_samples:Batch 522/1000 complete
+DEBUG:generate_samples:Batch 523/1000 complete
+DEBUG:generate_samples:Batch 524/1000 complete
+DEBUG:generate_samples:Batch 525/1000 complete
+DEBUG:generate_samples:Batch 526/1000 complete
+DEBUG:generate_samples:Batch 527/1000 complete
+DEBUG:generate_samples:Batch 528/1000 complete
+DEBUG:generate_samples:Batch 529/1000 complete
+DEBUG:generate_samples:Batch 530/1000 complete
+DEBUG:generate_samples:Batch 531/1000 complete
+DEBUG:generate_samples:Batch 532/1000 complete
+DEBUG:generate_samples:Batch 533/1000 complete
+DEBUG:generate_samples:Batch 534/1000 complete
+DEBUG:generate_samples:Batch 535/1000 complete
+DEBUG:generate_samples:Batch 536/1000 complete
+DEBUG:generate_samples:Batch 537/1000 complete
+DEBUG:generate_samples:Batch 538/1000 complete
+DEBUG:generate_samples:Batch 539/1000 complete
+DEBUG:generate_samples:Batch 540/1000 complete
+DEBUG:generate_samples:Batch 541/1000 complete
+DEBUG:generate_samples:Batch 542/1000 complete
+DEBUG:generate_samples:Batch 543/1000 complete
+DEBUG:generate_samples:Batch 544/1000 complete
+DEBUG:generate_samples:Batch 545/1000 complete
+DEBUG:generate_samples:Batch 546/1000 complete
+DEBUG:generate_samples:Batch 547/1000 complete
+DEBUG:generate_samples:Batch 548/1000 complete
+DEBUG:generate_samples:Batch 549/1000 complete
+DEBUG:generate_samples:Batch 550/1000 complete
+DEBUG:generate_samples:Batch 551/1000 complete
+DEBUG:generate_samples:Batch 552/1000 complete
+DEBUG:generate_samples:Batch 553/1000 complete
+DEBUG:generate_samples:Batch 554/1000 complete
+DEBUG:generate_samples:Batch 555/1000 complete
+DEBUG:generate_samples:Batch 556/1000 complete
+DEBUG:generate_samples:Batch 557/1000 complete
+DEBUG:generate_samples:Batch 558/1000 complete
+DEBUG:generate_samples:Batch 559/1000 complete
+DEBUG:generate_samples:Batch 560/1000 complete
+DEBUG:generate_samples:Batch 561/1000 complete
+DEBUG:generate_samples:Batch 562/1000 complete
+DEBUG:generate_samples:Batch 563/1000 complete
+DEBUG:generate_samples:Batch 564/1000 complete
+DEBUG:generate_samples:Batch 565/1000 complete
+DEBUG:generate_samples:Batch 566/1000 complete
+DEBUG:generate_samples:Batch 567/1000 complete
+DEBUG:generate_samples:Batch 568/1000 complete
+DEBUG:generate_samples:Batch 569/1000 complete
+DEBUG:generate_samples:Batch 570/1000 complete
+DEBUG:generate_samples:Batch 571/1000 complete
+DEBUG:generate_samples:Batch 572/1000 complete
+DEBUG:generate_samples:Batch 573/1000 complete
+DEBUG:generate_samples:Batch 574/1000 complete
+DEBUG:generate_samples:Batch 575/1000 complete
+DEBUG:generate_samples:Batch 576/1000 complete
+DEBUG:generate_samples:Batch 577/1000 complete
+DEBUG:generate_samples:Batch 578/1000 complete
+DEBUG:generate_samples:Batch 579/1000 complete
+DEBUG:generate_samples:Batch 580/1000 complete
+DEBUG:generate_samples:Batch 581/1000 complete
+DEBUG:generate_samples:Batch 582/1000 complete
+DEBUG:generate_samples:Batch 583/1000 complete
+DEBUG:generate_samples:Batch 584/1000 complete
+DEBUG:generate_samples:Batch 585/1000 complete
+DEBUG:generate_samples:Batch 586/1000 complete
+DEBUG:generate_samples:Batch 587/1000 complete
+DEBUG:generate_samples:Batch 588/1000 complete
+DEBUG:generate_samples:Batch 589/1000 complete
+DEBUG:generate_samples:Batch 590/1000 complete
+DEBUG:generate_samples:Batch 591/1000 complete
+DEBUG:generate_samples:Batch 592/1000 complete
+DEBUG:generate_samples:Batch 593/1000 complete
+DEBUG:generate_samples:Batch 594/1000 complete
+DEBUG:generate_samples:Batch 595/1000 complete
+DEBUG:generate_samples:Batch 596/1000 complete
+DEBUG:generate_samples:Batch 597/1000 complete
+DEBUG:generate_samples:Batch 598/1000 complete
+DEBUG:generate_samples:Batch 599/1000 complete
+DEBUG:generate_samples:Batch 600/1000 complete
+DEBUG:generate_samples:Batch 601/1000 complete
+DEBUG:generate_samples:Batch 602/1000 complete
+DEBUG:generate_samples:Batch 603/1000 complete
+DEBUG:generate_samples:Batch 604/1000 complete
+DEBUG:generate_samples:Batch 605/1000 complete
+DEBUG:generate_samples:Batch 606/1000 complete
+DEBUG:generate_samples:Batch 607/1000 complete
+DEBUG:generate_samples:Batch 608/1000 complete
+DEBUG:generate_samples:Batch 609/1000 complete
+DEBUG:generate_samples:Batch 610/1000 complete
+DEBUG:generate_samples:Batch 611/1000 complete
+DEBUG:generate_samples:Batch 612/1000 complete
+DEBUG:generate_samples:Batch 613/1000 complete
+DEBUG:generate_samples:Batch 614/1000 complete
+DEBUG:generate_samples:Batch 615/1000 complete
+DEBUG:generate_samples:Batch 616/1000 complete
+DEBUG:generate_samples:Batch 617/1000 complete
+DEBUG:generate_samples:Batch 618/1000 complete
+DEBUG:generate_samples:Batch 619/1000 complete
+DEBUG:generate_samples:Batch 620/1000 complete
+DEBUG:generate_samples:Batch 621/1000 complete
+DEBUG:generate_samples:Batch 622/1000 complete
+DEBUG:generate_samples:Batch 623/1000 complete
+DEBUG:generate_samples:Batch 624/1000 complete
+DEBUG:generate_samples:Batch 625/1000 complete
+DEBUG:generate_samples:Batch 626/1000 complete
+DEBUG:generate_samples:Batch 627/1000 complete
+DEBUG:generate_samples:Batch 628/1000 complete
+DEBUG:generate_samples:Batch 629/1000 complete
+DEBUG:generate_samples:Batch 630/1000 complete
+DEBUG:generate_samples:Batch 631/1000 complete
+DEBUG:generate_samples:Batch 632/1000 complete
+DEBUG:generate_samples:Batch 633/1000 complete
+DEBUG:generate_samples:Batch 634/1000 complete
+DEBUG:generate_samples:Batch 635/1000 complete
+DEBUG:generate_samples:Batch 636/1000 complete
+DEBUG:generate_samples:Batch 637/1000 complete
+DEBUG:generate_samples:Batch 638/1000 complete
+DEBUG:generate_samples:Batch 639/1000 complete
+DEBUG:generate_samples:Batch 640/1000 complete
+DEBUG:generate_samples:Batch 641/1000 complete
+DEBUG:generate_samples:Batch 642/1000 complete
+DEBUG:generate_samples:Batch 643/1000 complete
+DEBUG:generate_samples:Batch 644/1000 complete
+DEBUG:generate_samples:Batch 645/1000 complete
+DEBUG:generate_samples:Batch 646/1000 complete
+DEBUG:generate_samples:Batch 647/1000 complete
+DEBUG:generate_samples:Batch 648/1000 complete
+DEBUG:generate_samples:Batch 649/1000 complete
+DEBUG:generate_samples:Batch 650/1000 complete
+DEBUG:generate_samples:Batch 651/1000 complete
+DEBUG:generate_samples:Batch 652/1000 complete
+DEBUG:generate_samples:Batch 653/1000 complete
+DEBUG:generate_samples:Batch 654/1000 complete
+DEBUG:generate_samples:Batch 655/1000 complete
+DEBUG:generate_samples:Batch 656/1000 complete
+DEBUG:generate_samples:Batch 657/1000 complete
+DEBUG:generate_samples:Batch 658/1000 complete
+DEBUG:generate_samples:Batch 659/1000 complete
+DEBUG:generate_samples:Batch 660/1000 complete
+DEBUG:generate_samples:Batch 661/1000 complete
+DEBUG:generate_samples:Batch 662/1000 complete
+DEBUG:generate_samples:Batch 663/1000 complete
+DEBUG:generate_samples:Batch 664/1000 complete
+DEBUG:generate_samples:Batch 665/1000 complete
+DEBUG:generate_samples:Batch 666/1000 complete
+DEBUG:generate_samples:Batch 667/1000 complete
+DEBUG:generate_samples:Batch 668/1000 complete
+DEBUG:generate_samples:Batch 669/1000 complete
+DEBUG:generate_samples:Batch 670/1000 complete
+DEBUG:generate_samples:Batch 671/1000 complete
+DEBUG:generate_samples:Batch 672/1000 complete
+DEBUG:generate_samples:Batch 673/1000 complete
+DEBUG:generate_samples:Batch 674/1000 complete
+DEBUG:generate_samples:Batch 675/1000 complete
+DEBUG:generate_samples:Batch 676/1000 complete
+DEBUG:generate_samples:Batch 677/1000 complete
+DEBUG:generate_samples:Batch 678/1000 complete
+DEBUG:generate_samples:Batch 679/1000 complete
+DEBUG:generate_samples:Batch 680/1000 complete
+DEBUG:generate_samples:Batch 681/1000 complete
+DEBUG:generate_samples:Batch 682/1000 complete
+DEBUG:generate_samples:Batch 683/1000 complete
+DEBUG:generate_samples:Batch 684/1000 complete
+DEBUG:generate_samples:Batch 685/1000 complete
+DEBUG:generate_samples:Batch 686/1000 complete
+DEBUG:generate_samples:Batch 687/1000 complete
+DEBUG:generate_samples:Batch 688/1000 complete
+DEBUG:generate_samples:Batch 689/1000 complete
+DEBUG:generate_samples:Batch 690/1000 complete
+DEBUG:generate_samples:Batch 691/1000 complete
+DEBUG:generate_samples:Batch 692/1000 complete
+DEBUG:generate_samples:Batch 693/1000 complete
+DEBUG:generate_samples:Batch 694/1000 complete
+DEBUG:generate_samples:Batch 695/1000 complete
+DEBUG:generate_samples:Batch 696/1000 complete
+DEBUG:generate_samples:Batch 697/1000 complete
+DEBUG:generate_samples:Batch 698/1000 complete
+DEBUG:generate_samples:Batch 699/1000 complete
+DEBUG:generate_samples:Batch 700/1000 complete
+DEBUG:generate_samples:Batch 701/1000 complete
+DEBUG:generate_samples:Batch 702/1000 complete
+DEBUG:generate_samples:Batch 703/1000 complete
+DEBUG:generate_samples:Batch 704/1000 complete
+DEBUG:generate_samples:Batch 705/1000 complete
+DEBUG:generate_samples:Batch 706/1000 complete
+DEBUG:generate_samples:Batch 707/1000 complete
+DEBUG:generate_samples:Batch 708/1000 complete
+DEBUG:generate_samples:Batch 709/1000 complete
+DEBUG:generate_samples:Batch 710/1000 complete
+DEBUG:generate_samples:Batch 711/1000 complete
+DEBUG:generate_samples:Batch 712/1000 complete
+DEBUG:generate_samples:Batch 713/1000 complete
+DEBUG:generate_samples:Batch 714/1000 complete
+DEBUG:generate_samples:Batch 715/1000 complete
+DEBUG:generate_samples:Batch 716/1000 complete
+DEBUG:generate_samples:Batch 717/1000 complete
+DEBUG:generate_samples:Batch 718/1000 complete
+DEBUG:generate_samples:Batch 719/1000 complete
+DEBUG:generate_samples:Batch 720/1000 complete
+DEBUG:generate_samples:Batch 721/1000 complete
+DEBUG:generate_samples:Batch 722/1000 complete
+DEBUG:generate_samples:Batch 723/1000 complete
+DEBUG:generate_samples:Batch 724/1000 complete
+DEBUG:generate_samples:Batch 725/1000 complete
+DEBUG:generate_samples:Batch 726/1000 complete
+DEBUG:generate_samples:Batch 727/1000 complete
+DEBUG:generate_samples:Batch 728/1000 complete
+DEBUG:generate_samples:Batch 729/1000 complete
+DEBUG:generate_samples:Batch 730/1000 complete
+DEBUG:generate_samples:Batch 731/1000 complete
+DEBUG:generate_samples:Batch 732/1000 complete
+DEBUG:generate_samples:Batch 733/1000 complete
+DEBUG:generate_samples:Batch 734/1000 complete
+DEBUG:generate_samples:Batch 735/1000 complete
+DEBUG:generate_samples:Batch 736/1000 complete
+DEBUG:generate_samples:Batch 737/1000 complete
+DEBUG:generate_samples:Batch 738/1000 complete
+DEBUG:generate_samples:Batch 739/1000 complete
+DEBUG:generate_samples:Batch 740/1000 complete
+DEBUG:generate_samples:Batch 741/1000 complete
+DEBUG:generate_samples:Batch 742/1000 complete
+DEBUG:generate_samples:Batch 743/1000 complete
+DEBUG:generate_samples:Batch 744/1000 complete
+DEBUG:generate_samples:Batch 745/1000 complete
+DEBUG:generate_samples:Batch 746/1000 complete
+DEBUG:generate_samples:Batch 747/1000 complete
+DEBUG:generate_samples:Batch 748/1000 complete
+DEBUG:generate_samples:Batch 749/1000 complete
+DEBUG:generate_samples:Batch 750/1000 complete
+DEBUG:generate_samples:Batch 751/1000 complete
+DEBUG:generate_samples:Batch 752/1000 complete
+DEBUG:generate_samples:Batch 753/1000 complete
+DEBUG:generate_samples:Batch 754/1000 complete
+DEBUG:generate_samples:Batch 755/1000 complete
+DEBUG:generate_samples:Batch 756/1000 complete
+DEBUG:generate_samples:Batch 757/1000 complete
+DEBUG:generate_samples:Batch 758/1000 complete
+DEBUG:generate_samples:Batch 759/1000 complete
+DEBUG:generate_samples:Batch 760/1000 complete
+DEBUG:generate_samples:Batch 761/1000 complete
+DEBUG:generate_samples:Batch 762/1000 complete
+DEBUG:generate_samples:Batch 763/1000 complete
+DEBUG:generate_samples:Batch 764/1000 complete
+DEBUG:generate_samples:Batch 765/1000 complete
+DEBUG:generate_samples:Batch 766/1000 complete
+DEBUG:generate_samples:Batch 767/1000 complete
+DEBUG:generate_samples:Batch 768/1000 complete
+DEBUG:generate_samples:Batch 769/1000 complete
+DEBUG:generate_samples:Batch 770/1000 complete
+DEBUG:generate_samples:Batch 771/1000 complete
+DEBUG:generate_samples:Batch 772/1000 complete
+DEBUG:generate_samples:Batch 773/1000 complete
+DEBUG:generate_samples:Batch 774/1000 complete
+DEBUG:generate_samples:Batch 775/1000 complete
+DEBUG:generate_samples:Batch 776/1000 complete
+DEBUG:generate_samples:Batch 777/1000 complete
+DEBUG:generate_samples:Batch 778/1000 complete
+DEBUG:generate_samples:Batch 779/1000 complete
+DEBUG:generate_samples:Batch 780/1000 complete
+DEBUG:generate_samples:Batch 781/1000 complete
+DEBUG:generate_samples:Batch 782/1000 complete
+DEBUG:generate_samples:Batch 783/1000 complete
+DEBUG:generate_samples:Batch 784/1000 complete
+DEBUG:generate_samples:Batch 785/1000 complete
+DEBUG:generate_samples:Batch 786/1000 complete
+DEBUG:generate_samples:Batch 787/1000 complete
+DEBUG:generate_samples:Batch 788/1000 complete
+DEBUG:generate_samples:Batch 789/1000 complete
+DEBUG:generate_samples:Batch 790/1000 complete
+DEBUG:generate_samples:Batch 791/1000 complete
+DEBUG:generate_samples:Batch 792/1000 complete
+DEBUG:generate_samples:Batch 793/1000 complete
+DEBUG:generate_samples:Batch 794/1000 complete
+DEBUG:generate_samples:Batch 795/1000 complete
+DEBUG:generate_samples:Batch 796/1000 complete
+DEBUG:generate_samples:Batch 797/1000 complete
+DEBUG:generate_samples:Batch 798/1000 complete
+DEBUG:generate_samples:Batch 799/1000 complete
+DEBUG:generate_samples:Batch 800/1000 complete
+DEBUG:generate_samples:Batch 801/1000 complete
+DEBUG:generate_samples:Batch 802/1000 complete
+DEBUG:generate_samples:Batch 803/1000 complete
+DEBUG:generate_samples:Batch 804/1000 complete
+DEBUG:generate_samples:Batch 805/1000 complete
+DEBUG:generate_samples:Batch 806/1000 complete
+DEBUG:generate_samples:Batch 807/1000 complete
+DEBUG:generate_samples:Batch 808/1000 complete
+DEBUG:generate_samples:Batch 809/1000 complete
+DEBUG:generate_samples:Batch 810/1000 complete
+DEBUG:generate_samples:Batch 811/1000 complete
+DEBUG:generate_samples:Batch 812/1000 complete
+DEBUG:generate_samples:Batch 813/1000 complete
+DEBUG:generate_samples:Batch 814/1000 complete
+DEBUG:generate_samples:Batch 815/1000 complete
+DEBUG:generate_samples:Batch 816/1000 complete
+DEBUG:generate_samples:Batch 817/1000 complete
+DEBUG:generate_samples:Batch 818/1000 complete
+DEBUG:generate_samples:Batch 819/1000 complete
+DEBUG:generate_samples:Batch 820/1000 complete
+DEBUG:generate_samples:Batch 821/1000 complete
+DEBUG:generate_samples:Batch 822/1000 complete
+DEBUG:generate_samples:Batch 823/1000 complete
+DEBUG:generate_samples:Batch 824/1000 complete
+DEBUG:generate_samples:Batch 825/1000 complete
+DEBUG:generate_samples:Batch 826/1000 complete
+DEBUG:generate_samples:Batch 827/1000 complete
+DEBUG:generate_samples:Batch 828/1000 complete
+DEBUG:generate_samples:Batch 829/1000 complete
+DEBUG:generate_samples:Batch 830/1000 complete
+DEBUG:generate_samples:Batch 831/1000 complete
+DEBUG:generate_samples:Batch 832/1000 complete
+DEBUG:generate_samples:Batch 833/1000 complete
+DEBUG:generate_samples:Batch 834/1000 complete
+DEBUG:generate_samples:Batch 835/1000 complete
+DEBUG:generate_samples:Batch 836/1000 complete
+DEBUG:generate_samples:Batch 837/1000 complete
+DEBUG:generate_samples:Batch 838/1000 complete
+DEBUG:generate_samples:Batch 839/1000 complete
+DEBUG:generate_samples:Batch 840/1000 complete
+DEBUG:generate_samples:Batch 841/1000 complete
+DEBUG:generate_samples:Batch 842/1000 complete
+DEBUG:generate_samples:Batch 843/1000 complete
+DEBUG:generate_samples:Batch 844/1000 complete
+DEBUG:generate_samples:Batch 845/1000 complete
+DEBUG:generate_samples:Batch 846/1000 complete
+DEBUG:generate_samples:Batch 847/1000 complete
+DEBUG:generate_samples:Batch 848/1000 complete
+DEBUG:generate_samples:Batch 849/1000 complete
+DEBUG:generate_samples:Batch 850/1000 complete
+DEBUG:generate_samples:Batch 851/1000 complete
+DEBUG:generate_samples:Batch 852/1000 complete
+DEBUG:generate_samples:Batch 853/1000 complete
+DEBUG:generate_samples:Batch 854/1000 complete
+DEBUG:generate_samples:Batch 855/1000 complete
+DEBUG:generate_samples:Batch 856/1000 complete
+DEBUG:generate_samples:Batch 857/1000 complete
+DEBUG:generate_samples:Batch 858/1000 complete
+DEBUG:generate_samples:Batch 859/1000 complete
+DEBUG:generate_samples:Batch 860/1000 complete
+DEBUG:generate_samples:Batch 861/1000 complete
+DEBUG:generate_samples:Batch 862/1000 complete
+DEBUG:generate_samples:Batch 863/1000 complete
+DEBUG:generate_samples:Batch 864/1000 complete
+DEBUG:generate_samples:Batch 865/1000 complete
+DEBUG:generate_samples:Batch 866/1000 complete
+DEBUG:generate_samples:Batch 867/1000 complete
+DEBUG:generate_samples:Batch 868/1000 complete
+DEBUG:generate_samples:Batch 869/1000 complete
+DEBUG:generate_samples:Batch 870/1000 complete
+DEBUG:generate_samples:Batch 871/1000 complete
+DEBUG:generate_samples:Batch 872/1000 complete
+DEBUG:generate_samples:Batch 873/1000 complete
+DEBUG:generate_samples:Batch 874/1000 complete
+DEBUG:generate_samples:Batch 875/1000 complete
+DEBUG:generate_samples:Batch 876/1000 complete
+DEBUG:generate_samples:Batch 877/1000 complete
+DEBUG:generate_samples:Batch 878/1000 complete
+DEBUG:generate_samples:Batch 879/1000 complete
+DEBUG:generate_samples:Batch 880/1000 complete
+DEBUG:generate_samples:Batch 881/1000 complete
+DEBUG:generate_samples:Batch 882/1000 complete
+DEBUG:generate_samples:Batch 883/1000 complete
+DEBUG:generate_samples:Batch 884/1000 complete
+DEBUG:generate_samples:Batch 885/1000 complete
+DEBUG:generate_samples:Batch 886/1000 complete
+DEBUG:generate_samples:Batch 887/1000 complete
+DEBUG:generate_samples:Batch 888/1000 complete
+DEBUG:generate_samples:Batch 889/1000 complete
+DEBUG:generate_samples:Batch 890/1000 complete
+DEBUG:generate_samples:Batch 891/1000 complete
+DEBUG:generate_samples:Batch 892/1000 complete
+DEBUG:generate_samples:Batch 893/1000 complete
+DEBUG:generate_samples:Batch 894/1000 complete
+DEBUG:generate_samples:Batch 895/1000 complete
+DEBUG:generate_samples:Batch 896/1000 complete
+DEBUG:generate_samples:Batch 897/1000 complete
+DEBUG:generate_samples:Batch 898/1000 complete
+DEBUG:generate_samples:Batch 899/1000 complete
+DEBUG:generate_samples:Batch 900/1000 complete
+DEBUG:generate_samples:Batch 901/1000 complete
+DEBUG:generate_samples:Batch 902/1000 complete
+DEBUG:generate_samples:Batch 903/1000 complete
+DEBUG:generate_samples:Batch 904/1000 complete
+DEBUG:generate_samples:Batch 905/1000 complete
+DEBUG:generate_samples:Batch 906/1000 complete
+DEBUG:generate_samples:Batch 907/1000 complete
+DEBUG:generate_samples:Batch 908/1000 complete
+DEBUG:generate_samples:Batch 909/1000 complete
+DEBUG:generate_samples:Batch 910/1000 complete
+DEBUG:generate_samples:Batch 911/1000 complete
+DEBUG:generate_samples:Batch 912/1000 complete
+DEBUG:generate_samples:Batch 913/1000 complete
+DEBUG:generate_samples:Batch 914/1000 complete
+DEBUG:generate_samples:Batch 915/1000 complete
+DEBUG:generate_samples:Batch 916/1000 complete
+DEBUG:generate_samples:Batch 917/1000 complete
+DEBUG:generate_samples:Batch 918/1000 complete
+DEBUG:generate_samples:Batch 919/1000 complete
+DEBUG:generate_samples:Batch 920/1000 complete
+DEBUG:generate_samples:Batch 921/1000 complete
+DEBUG:generate_samples:Batch 922/1000 complete
+DEBUG:generate_samples:Batch 923/1000 complete
+DEBUG:generate_samples:Batch 924/1000 complete
+DEBUG:generate_samples:Batch 925/1000 complete
+DEBUG:generate_samples:Batch 926/1000 complete
+DEBUG:generate_samples:Batch 927/1000 complete
+DEBUG:generate_samples:Batch 928/1000 complete
+DEBUG:generate_samples:Batch 929/1000 complete
+DEBUG:generate_samples:Batch 930/1000 complete
+DEBUG:generate_samples:Batch 931/1000 complete
+DEBUG:generate_samples:Batch 932/1000 complete
+DEBUG:generate_samples:Batch 933/1000 complete
+DEBUG:generate_samples:Batch 934/1000 complete
+DEBUG:generate_samples:Batch 935/1000 complete
+DEBUG:generate_samples:Batch 936/1000 complete
+DEBUG:generate_samples:Batch 937/1000 complete
+DEBUG:generate_samples:Batch 938/1000 complete
+DEBUG:generate_samples:Batch 939/1000 complete
+DEBUG:generate_samples:Batch 940/1000 complete
+DEBUG:generate_samples:Batch 941/1000 complete
+DEBUG:generate_samples:Batch 942/1000 complete
+DEBUG:generate_samples:Batch 943/1000 complete
+DEBUG:generate_samples:Batch 944/1000 complete
+DEBUG:generate_samples:Batch 945/1000 complete
+DEBUG:generate_samples:Batch 946/1000 complete
+DEBUG:generate_samples:Batch 947/1000 complete
+DEBUG:generate_samples:Batch 948/1000 complete
+DEBUG:generate_samples:Batch 949/1000 complete
+DEBUG:generate_samples:Batch 950/1000 complete
+DEBUG:generate_samples:Batch 951/1000 complete
+DEBUG:generate_samples:Batch 952/1000 complete
+DEBUG:generate_samples:Batch 953/1000 complete
+DEBUG:generate_samples:Batch 954/1000 complete
+DEBUG:generate_samples:Batch 955/1000 complete
+DEBUG:generate_samples:Batch 956/1000 complete
+DEBUG:generate_samples:Batch 957/1000 complete
+DEBUG:generate_samples:Batch 958/1000 complete
+DEBUG:generate_samples:Batch 959/1000 complete
+DEBUG:generate_samples:Batch 960/1000 complete
+DEBUG:generate_samples:Batch 961/1000 complete
+DEBUG:generate_samples:Batch 962/1000 complete
+DEBUG:generate_samples:Batch 963/1000 complete
+DEBUG:generate_samples:Batch 964/1000 complete
+DEBUG:generate_samples:Batch 965/1000 complete
+DEBUG:generate_samples:Batch 966/1000 complete
+DEBUG:generate_samples:Batch 967/1000 complete
+DEBUG:generate_samples:Batch 968/1000 complete
+DEBUG:generate_samples:Batch 969/1000 complete
+DEBUG:generate_samples:Batch 970/1000 complete
+DEBUG:generate_samples:Batch 971/1000 complete
+DEBUG:generate_samples:Batch 972/1000 complete
+DEBUG:generate_samples:Batch 973/1000 complete
+DEBUG:generate_samples:Batch 974/1000 complete
+DEBUG:generate_samples:Batch 975/1000 complete
+DEBUG:generate_samples:Batch 976/1000 complete
+DEBUG:generate_samples:Batch 977/1000 complete
+DEBUG:generate_samples:Batch 978/1000 complete
+DEBUG:generate_samples:Batch 979/1000 complete
+DEBUG:generate_samples:Batch 980/1000 complete
+DEBUG:generate_samples:Batch 981/1000 complete
+DEBUG:generate_samples:Batch 982/1000 complete
+DEBUG:generate_samples:Batch 983/1000 complete
+DEBUG:generate_samples:Batch 984/1000 complete
+DEBUG:generate_samples:Batch 985/1000 complete
+DEBUG:generate_samples:Batch 986/1000 complete
+DEBUG:generate_samples:Batch 987/1000 complete
+DEBUG:generate_samples:Batch 988/1000 complete
+DEBUG:generate_samples:Batch 989/1000 complete
+DEBUG:generate_samples:Batch 990/1000 complete
+DEBUG:generate_samples:Batch 991/1000 complete
+DEBUG:generate_samples:Batch 992/1000 complete
+DEBUG:generate_samples:Batch 993/1000 complete
+DEBUG:generate_samples:Batch 994/1000 complete
+DEBUG:generate_samples:Batch 995/1000 complete
+DEBUG:generate_samples:Batch 996/1000 complete
+DEBUG:generate_samples:Batch 997/1000 complete
+DEBUG:generate_samples:Batch 998/1000 complete
+DEBUG:generate_samples:Batch 999/1000 complete
+DEBUG:generate_samples:Batch 1000/1000 complete
+INFO:generate_samples:Done
+INFO:root:##################################################
+Generating negative clips for testing
+##################################################
+/home/czeddaru/.config/hypr/scripts/quickshell/claude/voice/venv_wake_train/lib/python3.11/site-packages/dp/model/model.py:69: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.self_attn.batch_first was not True(use batch_first for better inference performance)
+  self.encoder = TransformerEncoder(encoder_layer=encoder_layer,
+DEBUG:dp.phonemizer:Initializing phonemizer with model step 1120000
+WARNING:root:The word 'kandor' was not found in the pronunciation dictionary! Using the DeepPhonemizer library to predict the phonemes.
+WARNING:root:Phones for 'kandor': [K][AE][N][D][ER]
+DEBUG:generate_samples:Loading /home/czeddaru/.config/hypr/scripts/quickshell/claude/voice/wake_train/piper-sample-generator/models/en-us-libritts-high.pt
+INFO:generate_samples:Successfully loaded the model
+DEBUG:generate_samples:Batch 1/166 complete
+DEBUG:generate_samples:Batch 2/166 complete
+DEBUG:generate_samples:Batch 3/166 complete
+DEBUG:generate_samples:Batch 4/166 complete
+DEBUG:generate_samples:Batch 5/166 complete
+DEBUG:generate_samples:Batch 6/166 complete
+DEBUG:generate_samples:Batch 7/166 complete
+DEBUG:generate_samples:Batch 8/166 complete
+DEBUG:generate_samples:Batch 9/166 complete
+DEBUG:generate_samples:Batch 10/166 complete
+DEBUG:generate_samples:Batch 11/166 complete
+DEBUG:generate_samples:Batch 12/166 complete
+DEBUG:generate_samples:Batch 13/166 complete
+DEBUG:generate_samples:Batch 14/166 complete
+DEBUG:generate_samples:Batch 15/166 complete
+DEBUG:generate_samples:Batch 16/166 complete
+DEBUG:generate_samples:Batch 17/166 complete
+DEBUG:generate_samples:Batch 18/166 complete
+DEBUG:generate_samples:Batch 19/166 complete
+DEBUG:generate_samples:Batch 20/166 complete
+DEBUG:generate_samples:Batch 21/166 complete
+DEBUG:generate_samples:Batch 22/166 complete
+DEBUG:generate_samples:Batch 23/166 complete
+DEBUG:generate_samples:Batch 24/166 complete
+DEBUG:generate_samples:Batch 25/166 complete
+DEBUG:generate_samples:Batch 26/166 complete
+DEBUG:generate_samples:Batch 27/166 complete
+DEBUG:generate_samples:Batch 28/166 complete
+DEBUG:generate_samples:Batch 29/166 complete
+DEBUG:generate_samples:Batch 30/166 complete
+DEBUG:generate_samples:Batch 31/166 complete
+DEBUG:generate_samples:Batch 32/166 complete
+DEBUG:generate_samples:Batch 33/166 complete
+DEBUG:generate_samples:Batch 34/166 complete
+DEBUG:generate_samples:Batch 35/166 complete
+DEBUG:generate_samples:Batch 36/166 complete
+DEBUG:generate_samples:Batch 37/166 complete
+DEBUG:generate_samples:Batch 38/166 complete
+DEBUG:generate_samples:Batch 39/166 complete
+DEBUG:generate_samples:Batch 40/166 complete
+DEBUG:generate_samples:Batch 41/166 complete
+DEBUG:generate_samples:Batch 42/166 complete
+DEBUG:generate_samples:Batch 43/166 complete
+DEBUG:generate_samples:Batch 44/166 complete
+DEBUG:generate_samples:Batch 45/166 complete
+DEBUG:generate_samples:Batch 46/166 complete
+DEBUG:generate_samples:Batch 47/166 complete
+DEBUG:generate_samples:Batch 48/166 complete
+DEBUG:generate_samples:Batch 49/166 complete
+DEBUG:generate_samples:Batch 50/166 complete
+DEBUG:generate_samples:Batch 51/166 complete
+DEBUG:generate_samples:Batch 52/166 complete
+DEBUG:generate_samples:Batch 53/166 complete
+DEBUG:generate_samples:Batch 54/166 complete
+DEBUG:generate_samples:Batch 55/166 complete
+DEBUG:generate_samples:Batch 56/166 complete
+DEBUG:generate_samples:Batch 57/166 complete
+DEBUG:generate_samples:Batch 58/166 complete
+DEBUG:generate_samples:Batch 59/166 complete
+DEBUG:generate_samples:Batch 60/166 complete
+DEBUG:generate_samples:Batch 61/166 complete
+DEBUG:generate_samples:Batch 62/166 complete
+DEBUG:generate_samples:Batch 63/166 complete
+DEBUG:generate_samples:Batch 64/166 complete
+DEBUG:generate_samples:Batch 65/166 complete
+DEBUG:generate_samples:Batch 66/166 complete
+DEBUG:generate_samples:Batch 67/166 complete
+DEBUG:generate_samples:Batch 68/166 complete
+DEBUG:generate_samples:Batch 69/166 complete
+DEBUG:generate_samples:Batch 70/166 complete
+DEBUG:generate_samples:Batch 71/166 complete
+DEBUG:generate_samples:Batch 72/166 complete
+DEBUG:generate_samples:Batch 73/166 complete
+DEBUG:generate_samples:Batch 74/166 complete
+DEBUG:generate_samples:Batch 75/166 complete
+DEBUG:generate_samples:Batch 76/166 complete
+DEBUG:generate_samples:Batch 77/166 complete
+DEBUG:generate_samples:Batch 78/166 complete
+DEBUG:generate_samples:Batch 79/166 complete
+DEBUG:generate_samples:Batch 80/166 complete
+DEBUG:generate_samples:Batch 81/166 complete
+DEBUG:generate_samples:Batch 82/166 complete
+DEBUG:generate_samples:Batch 83/166 complete
+DEBUG:generate_samples:Batch 84/166 complete
+DEBUG:generate_samples:Batch 85/166 complete
+DEBUG:generate_samples:Batch 86/166 complete
+DEBUG:generate_samples:Batch 87/166 complete
+DEBUG:generate_samples:Batch 88/166 complete
+DEBUG:generate_samples:Batch 89/166 complete
+DEBUG:generate_samples:Batch 90/166 complete
+DEBUG:generate_samples:Batch 91/166 complete
+DEBUG:generate_samples:Batch 92/166 complete
+DEBUG:generate_samples:Batch 93/166 complete
+DEBUG:generate_samples:Batch 94/166 complete
+DEBUG:generate_samples:Batch 95/166 complete
+DEBUG:generate_samples:Batch 96/166 complete
+DEBUG:generate_samples:Batch 97/166 complete
+DEBUG:generate_samples:Batch 98/166 complete
+DEBUG:generate_samples:Batch 99/166 complete
+DEBUG:generate_samples:Batch 100/166 complete
+DEBUG:generate_samples:Batch 101/166 complete
+DEBUG:generate_samples:Batch 102/166 complete
+DEBUG:generate_samples:Batch 103/166 complete
+DEBUG:generate_samples:Batch 104/166 complete
+DEBUG:generate_samples:Batch 105/166 complete
+DEBUG:generate_samples:Batch 106/166 complete
+DEBUG:generate_samples:Batch 107/166 complete
+DEBUG:generate_samples:Batch 108/166 complete
+DEBUG:generate_samples:Batch 109/166 complete
+DEBUG:generate_samples:Batch 110/166 complete
+DEBUG:generate_samples:Batch 111/166 complete
+DEBUG:generate_samples:Batch 112/166 complete
+DEBUG:generate_samples:Batch 113/166 complete
+DEBUG:generate_samples:Batch 114/166 complete
+DEBUG:generate_samples:Batch 115/166 complete
+DEBUG:generate_samples:Batch 116/166 complete
+DEBUG:generate_samples:Batch 117/166 complete
+DEBUG:generate_samples:Batch 118/166 complete
+DEBUG:generate_samples:Batch 119/166 complete
+DEBUG:generate_samples:Batch 120/166 complete
+DEBUG:generate_samples:Batch 121/166 complete
+DEBUG:generate_samples:Batch 122/166 complete
+DEBUG:generate_samples:Batch 123/166 complete
+DEBUG:generate_samples:Batch 124/166 complete
+DEBUG:generate_samples:Batch 125/166 complete
+DEBUG:generate_samples:Batch 126/166 complete
+DEBUG:generate_samples:Batch 127/166 complete
+DEBUG:generate_samples:Batch 128/166 complete
+DEBUG:generate_samples:Batch 129/166 complete
+DEBUG:generate_samples:Batch 130/166 complete
+DEBUG:generate_samples:Batch 131/166 complete
+DEBUG:generate_samples:Batch 132/166 complete
+DEBUG:generate_samples:Batch 133/166 complete
+DEBUG:generate_samples:Batch 134/166 complete
+DEBUG:generate_samples:Batch 135/166 complete
+DEBUG:generate_samples:Batch 136/166 complete
+DEBUG:generate_samples:Batch 137/166 complete
+DEBUG:generate_samples:Batch 138/166 complete
+DEBUG:generate_samples:Batch 139/166 complete
+DEBUG:generate_samples:Batch 140/166 complete
+DEBUG:generate_samples:Batch 141/166 complete
+DEBUG:generate_samples:Batch 142/166 complete
+DEBUG:generate_samples:Batch 143/166 complete
+DEBUG:generate_samples:Batch 144/166 complete
+DEBUG:generate_samples:Batch 145/166 complete
+DEBUG:generate_samples:Batch 146/166 complete
+DEBUG:generate_samples:Batch 147/166 complete
+DEBUG:generate_samples:Batch 148/166 complete
+DEBUG:generate_samples:Batch 149/166 complete
+DEBUG:generate_samples:Batch 150/166 complete
+DEBUG:generate_samples:Batch 151/166 complete
+DEBUG:generate_samples:Batch 152/166 complete
+DEBUG:generate_samples:Batch 153/166 complete
+DEBUG:generate_samples:Batch 154/166 complete
+DEBUG:generate_samples:Batch 155/166 complete
+DEBUG:generate_samples:Batch 156/166 complete
+DEBUG:generate_samples:Batch 157/166 complete
+DEBUG:generate_samples:Batch 158/166 complete
+DEBUG:generate_samples:Batch 159/166 complete
+DEBUG:generate_samples:Batch 160/166 complete
+DEBUG:generate_samples:Batch 161/166 complete
+DEBUG:generate_samples:Batch 162/166 complete
+DEBUG:generate_samples:Batch 163/166 complete
+DEBUG:generate_samples:Batch 164/166 complete
+DEBUG:generate_samples:Batch 165/166 complete
+DEBUG:generate_samples:Batch 166/166 complete
+DEBUG:generate_samples:Batch 167/166 complete
+INFO:generate_samples:Done
+INFO:root:##################################################
+Computing openwakeword features for generated samples
+##################################################
+/home/czeddaru/.config/hypr/scripts/quickshell/claude/voice/venv_wake_train/lib/python3.11/site-packages/torch_audiomentations/core/transforms_interface.py:76: FutureWarning: Transforms now expect an `output_type` argument that currently defaults to 'tensor', will default to 'dict' in v0.12, and will be removed in v0.13. Make sure to update your code to something like:
+  >>> augment = PitchShift(..., output_type='dict')
+  >>> augmented_samples = augment(samples).samples
+  warnings.warn(
+/home/czeddaru/.config/hypr/scripts/quickshell/claude/voice/venv_wake_train/lib/python3.11/site-packages/torch_audiomentations/core/transforms_interface.py:76: FutureWarning: Transforms now expect an `output_type` argument that currently defaults to 'tensor', will default to 'dict' in v0.12, and will be removed in v0.13. Make sure to update your code to something like:
+  >>> augment = BandStopFilter(..., output_type='dict')
+  >>> augmented_samples = augment(samples).samples
+  warnings.warn(
+/home/czeddaru/.config/hypr/scripts/quickshell/claude/voice/venv_wake_train/lib/python3.11/site-packages/torch_audiomentations/core/transforms_interface.py:76: FutureWarning: Transforms now expect an `output_type` argument that currently defaults to 'tensor', will default to 'dict' in v0.12, and will be removed in v0.13. Make sure to update your code to something like:
+  >>> augment = AddColoredNoise(..., output_type='dict')
+  >>> augmented_samples = augment(samples).samples
+  warnings.warn(
+/home/czeddaru/.config/hypr/scripts/quickshell/claude/voice/venv_wake_train/lib/python3.11/site-packages/torch_audiomentations/core/transforms_interface.py:76: FutureWarning: Transforms now expect an `output_type` argument that currently defaults to 'tensor', will default to 'dict' in v0.12, and will be removed in v0.13. Make sure to update your code to something like:
+  >>> augment = Gain(..., output_type='dict')
+  >>> augmented_samples = augment(samples).samples
+  warnings.warn(
+/home/czeddaru/.config/hypr/scripts/quickshell/claude/voice/venv_wake_train/lib/python3.11/site-packages/torch_audiomentations/core/composition.py:42: FutureWarning: Transforms now expect an `output_type` argument that currently defaults to 'tensor', will default to 'dict' in v0.12, and will be removed in v0.13. Make sure to update your code to something like:
+  >>> augment = Compose(..., output_type='dict')
+  >>> augmented_samples = augment(samples).samples
+  warnings.warn(
+/home/czeddaru/.config/hypr/scripts/quickshell/claude/voice/venv_wake_train/lib/python3.11/site-packages/audiomentations/core/transforms_interface.py:107: UserWarning: Warning: input samples dtype is np.float64. Converting to np.float32
+  warnings.warn(
+Computing features:   0%|          | 0/188 [00:00<?, ?it/s]Computing features:   1%|          | 1/188 [00:00<00:51,  3.62it/s]Computing features:   1%|          | 2/188 [00:00<00:51,  3.61it/s]Computing features:   2%|▏         | 3/188 [00:00<00:50,  3.68it/s]Computing features:   2%|▏         | 4/188 [00:01<00:50,  3.63it/s]Computing features:   3%|▎         | 5/188 [00:01<00:51,  3.54it/s]Computing features:   3%|▎         | 6/188 [00:01<00:52,  3.46it/s]Computing features:   4%|▎         | 7/188 [00:02<01:20,  2.25it/s]Computing features:   4%|▍         | 8/188 [00:02<01:10,  2.56it/s]Computing features:   5%|▍         | 9/188 [00:03<01:03,  2.83it/s]Computing features:   5%|▌         | 10/188 [00:03<00:59,  3.01it/s]Computing features:   6%|▌         | 11/188 [00:03<00:56,  3.15it/s]Computing features:   6%|▋         | 12/188 [00:03<00:54,  3.25it/s]Computing features:   7%|▋         | 13/188 [00:04<00:53,  3.27it/s]Computing features:   7%|▋         | 14/188 [00:04<00:49,  3.50it/s]Computing features:   8%|▊         | 15/188 [00:04<00:48,  3.55it/s]Computing features:   9%|▊         | 16/188 [00:04<00:49,  3.49it/s]Computing features:   9%|▉         | 17/188 [00:05<00:49,  3.43it/s]Computing features:  10%|▉         | 18/188 [00:06<01:14,  2.29it/s]Computing features:  10%|█         | 19/188 [00:06<01:05,  2.60it/s]Computing features:  11%|█         | 20/188 [00:06<00:59,  2.81it/s]Computing features:  11%|█         | 21/188 [00:06<00:55,  3.02it/s]Computing features:  12%|█▏        | 22/188 [00:07<00:53,  3.08it/s]Computing features:  12%|█▏        | 23/188 [00:07<01:16,  2.16it/s]Computing features:  13%|█▎        | 24/188 [00:08<01:06,  2.46it/s]Computing features:  13%|█▎        | 25/188 [00:08<01:01,  2.64it/s]Computing features:  14%|█▍        | 26/188 [00:08<00:57,  2.81it/s]Computing features:  14%|█▍        | 27/188 [00:09<01:20,  2.01it/s]Computing features:  15%|█▍        | 28/188 [00:09<01:09,  2.31it/s]Computing features:  15%|█▌        | 29/188 [00:10<01:01,  2.59it/s]Computing features:  16%|█▌        | 30/188 [00:10<00:57,  2.74it/s]Computing features:  16%|█▋        | 31/188 [00:10<00:55,  2.83it/s]Computing features:  17%|█▋        | 32/188 [00:11<01:15,  2.06it/s]Computing features:  18%|█▊        | 33/188 [00:11<01:04,  2.39it/s]Computing features:  18%|█▊        | 34/188 [00:12<00:57,  2.67it/s]Computing features:  19%|█▊        | 35/188 [00:12<01:13,  2.07it/s]Computing features:  19%|█▉        | 36/188 [00:13<01:05,  2.31it/s]Computing features:  20%|█▉        | 37/188 [00:14<01:18,  1.91it/s]Computing features:  20%|██        | 38/188 [00:14<01:07,  2.23it/s]Computing features:  21%|██        | 39/188 [00:14<01:18,  1.90it/s]Computing features:  21%|██▏       | 40/188 [00:15<01:29,  1.66it/s]Computing features:  22%|██▏       | 41/188 [00:16<01:15,  1.96it/s]Computing features:  22%|██▏       | 42/188 [00:16<01:04,  2.25it/s]Computing features:  23%|██▎       | 43/188 [00:16<00:57,  2.52it/s]Computing features:  23%|██▎       | 44/188 [00:16<00:52,  2.75it/s]Computing features:  24%|██▍       | 45/188 [00:17<00:49,  2.91it/s]Computing features:  24%|██▍       | 46/188 [00:17<01:06,  2.14it/s]Computing features:  25%|██▌       | 47/188 [00:18<00:57,  2.45it/s]Computing features:  26%|██▌       | 48/188 [00:18<00:51,  2.73it/s]Computing features:  26%|██▌       | 49/188 [00:18<00:46,  2.96it/s]Computing features:  27%|██▋       | 50/188 [00:19<00:44,  3.11it/s]Computing features:  27%|██▋       | 51/188 [00:19<00:44,  3.09it/s]Computing features:  28%|██▊       | 52/188 [00:19<00:41,  3.28it/s]Computing features:  28%|██▊       | 53/188 [00:20<00:58,  2.32it/s]Computing features:  29%|██▊       | 54/188 [00:20<00:51,  2.61it/s]Computing features:  29%|██▉       | 55/188 [00:20<00:46,  2.85it/s]Computing features:  30%|██▉       | 56/188 [00:21<00:43,  3.03it/s]Computing features:  30%|███       | 57/188 [00:21<00:58,  2.22it/s]Computing features:  31%|███       | 58/188 [00:22<00:51,  2.53it/s]Computing features:  31%|███▏      | 59/188 [00:22<00:45,  2.85it/s]Computing features:  32%|███▏      | 60/188 [00:22<00:42,  3.04it/s]Computing features:  32%|███▏      | 61/188 [00:23<00:39,  3.23it/s]Computing features:  33%|███▎      | 62/188 [00:23<00:37,  3.33it/s]Computing features:  34%|███▎      | 63/188 [00:23<00:52,  2.36it/s]Computing features:  34%|███▍      | 64/188 [00:24<00:47,  2.63it/s]Computing features:  35%|███▍      | 65/188 [00:24<00:42,  2.89it/s]Computing features:  35%|███▌      | 66/188 [00:24<00:38,  3.15it/s]Computing features:  36%|███▌      | 67/188 [00:25<00:36,  3.36it/s]Computing features:  36%|███▌      | 68/188 [00:25<00:35,  3.42it/s]Computing features:  37%|███▋      | 69/188 [00:25<00:34,  3.42it/s]Computing features:  37%|███▋      | 70/188 [00:26<00:48,  2.42it/s]Computing features:  38%|███▊      | 71/188 [00:26<00:42,  2.75it/s]Computing features:  38%|███▊      | 72/188 [00:26<00:38,  3.01it/s]Computing features:  39%|███▉      | 73/188 [00:27<00:35,  3.20it/s]Computing features:  39%|███▉      | 74/188 [00:27<00:35,  3.25it/s]Computing features:  40%|███▉      | 75/188 [00:27<00:33,  3.40it/s]Computing features:  40%|████      | 76/188 [00:27<00:31,  3.50it/s]Computing features:  41%|████      | 77/188 [00:28<00:31,  3.57it/s]Computing features:  41%|████▏     | 78/188 [00:28<00:30,  3.63it/s]Computing features:  42%|████▏     | 79/188 [00:28<00:29,  3.66it/s]Computing features:  43%|████▎     | 80/188 [00:28<00:29,  3.63it/s]Computing features:  43%|████▎     | 81/188 [00:29<00:29,  3.63it/s]Computing features:  44%|████▎     | 82/188 [00:29<00:43,  2.43it/s]Computing features:  44%|████▍     | 83/188 [00:30<00:38,  2.71it/s]Computing features:  45%|████▍     | 84/188 [00:31<00:50,  2.07it/s]Computing features:  45%|████▌     | 85/188 [00:31<00:43,  2.38it/s]Computing features:  46%|████▌     | 86/188 [00:31<00:38,  2.67it/s]Computing features:  46%|████▋     | 87/188 [00:32<00:47,  2.11it/s]Computing features:  47%|████▋     | 88/188 [00:32<00:54,  1.83it/s]Computing features:  47%|████▋     | 89/188 [00:33<00:47,  2.10it/s]Computing features:  48%|████▊     | 90/188 [00:33<00:40,  2.40it/s]Computing features:  48%|████▊     | 91/188 [00:34<00:49,  1.96it/s]Computing features:  49%|████▉     | 92/188 [00:35<00:54,  1.76it/s]Computing features:  49%|████▉     | 93/188 [00:35<00:45,  2.08it/s]Computing features:  50%|█████     | 94/188 [00:35<00:38,  2.43it/s]Computing features:  51%|█████     | 95/188 [00:35<00:34,  2.73it/s]Computing features:  51%|█████     | 96/188 [00:36<00:43,  2.11it/s]Computing features:  52%|█████▏    | 97/188 [00:36<00:38,  2.39it/s]Computing features:  52%|█████▏    | 98/188 [00:37<00:34,  2.61it/s]Computing features:  53%|█████▎    | 99/188 [00:37<00:31,  2.83it/s]Computing features:  53%|█████▎    | 100/188 [00:38<00:40,  2.17it/s]Computing features:  54%|█████▎    | 101/188 [00:38<00:35,  2.42it/s]Computing features:  54%|█████▍    | 102/188 [00:38<00:31,  2.69it/s]Computing features:  55%|█████▍    | 103/188 [00:39<00:40,  2.11it/s]Computing features:  55%|█████▌    | 104/188 [00:40<00:45,  1.85it/s]Computing features:  56%|█████▌    | 105/188 [00:40<00:39,  2.10it/s]Computing features:  56%|█████▋    | 106/188 [00:40<00:34,  2.36it/s]Computing features:  57%|█████▋    | 107/188 [00:40<00:30,  2.64it/s]Computing features:  57%|█████▋    | 108/188 [00:41<00:28,  2.82it/s]Computing features:  58%|█████▊    | 109/188 [00:41<00:25,  3.09it/s]Computing features:  59%|█████▊    | 110/188 [00:41<00:24,  3.21it/s]Computing features:  59%|█████▉    | 111/188 [00:42<00:23,  3.22it/s]Computing features:  60%|█████▉    | 112/188 [00:42<00:22,  3.38it/s]Computing features:  60%|██████    | 113/188 [00:42<00:21,  3.45it/s]Computing features:  61%|██████    | 114/188 [00:42<00:21,  3.43it/s]Computing features:  61%|██████    | 115/188 [00:43<00:21,  3.45it/s]Computing features:  62%|██████▏   | 116/188 [00:43<00:30,  2.39it/s]Computing features:  62%|██████▏   | 117/188 [00:44<00:26,  2.65it/s]Computing features:  63%|██████▎   | 118/188 [00:44<00:24,  2.86it/s]Computing features:  63%|██████▎   | 119/188 [00:44<00:22,  3.07it/s]Computing features:  64%|██████▍   | 120/188 [00:45<00:21,  3.15it/s]Computing features:  64%|██████▍   | 121/188 [00:45<00:21,  3.14it/s]Computing features:  65%|██████▍   | 122/188 [00:45<00:19,  3.31it/s]Computing features:  65%|██████▌   | 123/188 [00:45<00:18,  3.42it/s]Computing features:  66%|██████▌   | 124/188 [00:46<00:17,  3.56it/s]Computing features:  66%|██████▋   | 125/188 [00:46<00:17,  3.53it/s]Computing features:  67%|██████▋   | 126/188 [00:46<00:17,  3.56it/s]Computing features:  68%|██████▊   | 127/188 [00:47<00:16,  3.65it/s]Computing features:  68%|██████▊   | 128/188 [00:47<00:16,  3.59it/s]Computing features:  69%|██████▊   | 129/188 [00:47<00:16,  3.61it/s]Computing features:  69%|██████▉   | 130/188 [00:47<00:16,  3.56it/s]Computing features:  70%|██████▉   | 131/188 [00:48<00:15,  3.65it/s]Computing features:  70%|███████   | 132/188 [00:48<00:22,  2.52it/s]Computing features:  71%|███████   | 133/188 [00:49<00:27,  1.98it/s]Computing features:  71%|███████▏  | 134/188 [00:49<00:23,  2.30it/s]Computing features:  72%|███████▏  | 135/188 [00:50<00:27,  1.90it/s]Computing features:  72%|███████▏  | 136/188 [00:50<00:23,  2.24it/s]Computing features:  73%|███████▎  | 137/188 [00:51<00:20,  2.53it/s]Computing features:  73%|███████▎  | 138/188 [00:51<00:24,  2.01it/s]Computing features:  74%|███████▍  | 139/188 [00:52<00:21,  2.31it/s]Computing features:  74%|███████▍  | 140/188 [00:52<00:18,  2.57it/s]Computing features:  75%|███████▌  | 141/188 [00:52<00:16,  2.85it/s]Computing features:  76%|███████▌  | 142/188 [00:53<00:21,  2.10it/s]Computing features:  76%|███████▌  | 143/188 [00:53<00:18,  2.41it/s]Computing features:  77%|███████▋  | 144/188 [00:54<00:16,  2.68it/s]Computing features:  77%|███████▋  | 145/188 [00:54<00:20,  2.14it/s]Computing features:  78%|███████▊  | 146/188 [00:54<00:16,  2.49it/s]Computing features:  78%|███████▊  | 147/188 [00:55<00:14,  2.75it/s]Computing features:  79%|███████▊  | 148/188 [00:55<00:13,  2.95it/s]Computing features:  79%|███████▉  | 149/188 [00:56<00:18,  2.14it/s]Computing features:  80%|███████▉  | 150/188 [00:56<00:20,  1.89it/s]Computing features:  80%|████████  | 151/188 [00:57<00:16,  2.20it/s]Computing features:  81%|████████  | 152/188 [00:57<00:14,  2.47it/s]Computing features:  81%|████████▏ | 153/188 [00:57<00:12,  2.72it/s]Computing features:  82%|████████▏ | 154/188 [00:58<00:11,  2.96it/s]Computing features:  82%|████████▏ | 155/188 [00:58<00:14,  2.27it/s]Computing features:  83%|████████▎ | 156/188 [00:59<00:12,  2.54it/s]Computing features:  84%|████████▎ | 157/188 [00:59<00:11,  2.70it/s]Computing features:  84%|████████▍ | 158/188 [01:00<00:14,  2.12it/s]Computing features:  85%|████████▍ | 159/188 [01:00<00:12,  2.40it/s]Computing features:  85%|████████▌ | 160/188 [01:00<00:10,  2.73it/s]Computing features:  86%|████████▌ | 161/188 [01:00<00:09,  2.99it/s]Computing features:  86%|████████▌ | 162/188 [01:01<00:08,  3.17it/s]Computing features:  87%|████████▋ | 163/188 [01:01<00:08,  2.98it/s]Computing features:  87%|████████▋ | 164/188 [01:01<00:07,  3.22it/s]Computing features:  88%|████████▊ | 165/188 [01:02<00:06,  3.43it/s]Computing features:  88%|████████▊ | 166/188 [01:02<00:06,  3.57it/s]Computing features:  89%|████████▉ | 167/188 [01:02<00:08,  2.43it/s]Computing features:  89%|████████▉ | 168/188 [01:03<00:07,  2.67it/s]Computing features:  90%|████████▉ | 169/188 [01:03<00:06,  2.93it/s]Computing features:  90%|█████████ | 170/188 [01:03<00:05,  3.13it/s]Computing features:  91%|█████████ | 171/188 [01:04<00:05,  3.25it/s]Computing features:  91%|█████████▏| 172/188 [01:04<00:06,  2.33it/s]Computing features:  92%|█████████▏| 173/188 [01:05<00:05,  2.61it/s]Computing features:  93%|█████████▎| 174/188 [01:05<00:04,  2.87it/s]Computing features:  93%|█████████▎| 175/188 [01:06<00:05,  2.17it/s]Computing features:  94%|█████████▎| 176/188 [01:06<00:04,  2.50it/s]Computing features:  94%|█████████▍| 177/188 [01:06<00:03,  2.77it/s]Computing features:  95%|█████████▍| 178/188 [01:06<00:03,  3.02it/s]Computing features:  95%|█████████▌| 179/188 [01:07<00:02,  3.11it/s]Computing features:  96%|█████████▌| 180/188 [01:07<00:03,  2.14it/s]Computing features:  96%|█████████▋| 181/188 [01:08<00:03,  1.81it/s]Computing features:  97%|█████████▋| 182/188 [01:09<00:02,  2.08it/s]Computing features:  97%|█████████▋| 183/188 [01:09<00:02,  2.36it/s]Computing features:  98%|█████████▊| 184/188 [01:09<00:01,  2.58it/s]Computing features:  98%|█████████▊| 185/188 [01:09<00:01,  2.82it/s]Computing features:  99%|█████████▉| 186/188 [01:10<00:00,  2.91it/s]Computing features:  99%|█████████▉| 187/188 [01:10<00:00,  2.98it/s]Computing features: 100%|██████████| 188/188 [01:11<00:00,  2.34it/s]Computing features: 100%|██████████| 188/188 [01:11<00:00,  2.64it/s]
+Trimming empty rows:   0%|          | 0/2 [00:00<?, ?it/s]Trimming empty rows: 3it [00:00, 74.05it/s]               
+/home/czeddaru/.config/hypr/scripts/quickshell/claude/voice/venv_wake_train/lib/python3.11/site-packages/torch_audiomentations/core/transforms_interface.py:76: FutureWarning: Transforms now expect an `output_type` argument that currently defaults to 'tensor', will default to 'dict' in v0.12, and will be removed in v0.13. Make sure to update your code to something like:
+  >>> augment = PitchShift(..., output_type='dict')
+  >>> augmented_samples = augment(samples).samples
+  warnings.warn(
+/home/czeddaru/.config/hypr/scripts/quickshell/claude/voice/venv_wake_train/lib/python3.11/site-packages/torch_audiomentations/core/transforms_interface.py:76: FutureWarning: Transforms now expect an `output_type` argument that currently defaults to 'tensor', will default to 'dict' in v0.12, and will be removed in v0.13. Make sure to update your code to something like:
+  >>> augment = BandStopFilter(..., output_type='dict')
+  >>> augmented_samples = augment(samples).samples
+  warnings.warn(
+/home/czeddaru/.config/hypr/scripts/quickshell/claude/voice/venv_wake_train/lib/python3.11/site-packages/torch_audiomentations/core/transforms_interface.py:76: FutureWarning: Transforms now expect an `output_type` argument that currently defaults to 'tensor', will default to 'dict' in v0.12, and will be removed in v0.13. Make sure to update your code to something like:
+  >>> augment = AddColoredNoise(..., output_type='dict')
+  >>> augmented_samples = augment(samples).samples
+  warnings.warn(
+/home/czeddaru/.config/hypr/scripts/quickshell/claude/voice/venv_wake_train/lib/python3.11/site-packages/torch_audiomentations/core/transforms_interface.py:76: FutureWarning: Transforms now expect an `output_type` argument that currently defaults to 'tensor', will default to 'dict' in v0.12, and will be removed in v0.13. Make sure to update your code to something like:
+  >>> augment = Gain(..., output_type='dict')
+  >>> augmented_samples = augment(samples).samples
+  warnings.warn(
+/home/czeddaru/.config/hypr/scripts/quickshell/claude/voice/venv_wake_train/lib/python3.11/site-packages/torch_audiomentations/core/composition.py:42: FutureWarning: Transforms now expect an `output_type` argument that currently defaults to 'tensor', will default to 'dict' in v0.12, and will be removed in v0.13. Make sure to update your code to something like:
+  >>> augment = Compose(..., output_type='dict')
+  >>> augmented_samples = augment(samples).samples
+  warnings.warn(
+Computing features:   0%|          | 0/187 [00:00<?, ?it/s]Computing features:   1%|          | 1/187 [00:00<02:06,  1.47it/s]Computing features:   1%|          | 2/187 [00:00<01:19,  2.32it/s]Computing features:   2%|▏         | 3/187 [00:01<01:43,  1.78it/s]Computing features:   2%|▏         | 4/187 [00:01<01:20,  2.26it/s]Computing features:   3%|▎         | 5/187 [00:02<01:10,  2.57it/s]Computing features:   3%|▎         | 6/187 [00:02<01:01,  2.92it/s]Computing features:   4%|▎         | 7/187 [00:02<00:57,  3.14it/s]Computing features:   4%|▍         | 8/187 [00:02<00:53,  3.33it/s]Computing features:   5%|▍         | 9/187 [00:03<00:52,  3.39it/s]Computing features:   5%|▌         | 10/187 [00:03<00:52,  3.35it/s]Computing features:   6%|▌         | 11/187 [00:03<00:50,  3.48it/s]Computing features:   6%|▋         | 12/187 [00:04<00:49,  3.54it/s]Computing features:   7%|▋         | 13/187 [00:04<00:49,  3.50it/s]Computing features:   7%|▋         | 14/187 [00:04<00:48,  3.57it/s]Computing features:   8%|▊         | 15/187 [00:04<00:47,  3.62it/s]Computing features:   9%|▊         | 16/187 [00:05<01:11,  2.38it/s]Computing features:   9%|▉         | 17/187 [00:05<01:04,  2.65it/s]Computing features:  10%|▉         | 18/187 [00:06<00:59,  2.86it/s]Computing features:  10%|█         | 19/187 [00:06<00:54,  3.07it/s]Computing features:  11%|█         | 20/187 [00:06<00:50,  3.33it/s]Computing features:  11%|█         | 21/187 [00:07<00:48,  3.43it/s]Computing features:  12%|█▏        | 22/187 [00:07<00:48,  3.43it/s]Computing features:  12%|█▏        | 23/187 [00:07<00:47,  3.47it/s]Computing features:  13%|█▎        | 24/187 [00:07<00:45,  3.60it/s]Computing features:  13%|█▎        | 25/187 [00:08<00:43,  3.71it/s]Computing features:  14%|█▍        | 26/187 [00:08<00:43,  3.68it/s]Computing features:  14%|█▍        | 27/187 [00:08<00:43,  3.69it/s]Computing features:  15%|█▍        | 28/187 [00:08<00:42,  3.75it/s]Computing features:  16%|█▌        | 29/187 [00:09<00:43,  3.64it/s]Computing features:  16%|█▌        | 30/187 [00:09<00:43,  3.63it/s]Computing features:  17%|█▋        | 31/187 [00:09<00:42,  3.64it/s]Computing features:  17%|█▋        | 32/187 [00:10<00:41,  3.72it/s]Computing features:  18%|█▊        | 33/187 [00:10<00:41,  3.71it/s]Computing features:  18%|█▊        | 34/187 [00:10<00:41,  3.69it/s]Computing features:  19%|█▊        | 35/187 [00:10<00:40,  3.77it/s]Computing features:  19%|█▉        | 36/187 [00:11<00:39,  3.82it/s]Computing features:  20%|█▉        | 37/187 [00:11<00:40,  3.69it/s]Computing features:  20%|██        | 38/187 [00:12<00:59,  2.49it/s]Computing features:  21%|██        | 39/187 [00:12<01:15,  1.97it/s]Computing features:  21%|██▏       | 40/187 [00:13<01:05,  2.25it/s]Computing features:  22%|██▏       | 41/187 [00:13<00:57,  2.54it/s]Computing features:  22%|██▏       | 42/187 [00:13<00:52,  2.75it/s]Computing features:  23%|██▎       | 43/187 [00:13<00:48,  2.98it/s]Computing features:  24%|██▎       | 44/187 [00:14<01:06,  2.14it/s]Computing features:  24%|██▍       | 45/187 [00:14<00:57,  2.46it/s]Computing features:  25%|██▍       | 46/187 [00:15<00:52,  2.71it/s]Computing features:  25%|██▌       | 47/187 [00:15<01:04,  2.17it/s]Computing features:  26%|██▌       | 48/187 [00:16<00:55,  2.48it/s]Computing features:  26%|██▌       | 49/187 [00:16<00:50,  2.74it/s]Computing features:  27%|██▋       | 50/187 [00:17<01:04,  2.11it/s]Computing features:  27%|██▋       | 51/187 [00:17<00:56,  2.40it/s]Computing features:  28%|██▊       | 52/187 [00:17<00:50,  2.66it/s]Computing features:  28%|██▊       | 53/187 [00:18<00:46,  2.88it/s]Computing features:  29%|██▉       | 54/187 [00:18<01:00,  2.21it/s]Computing features:  29%|██▉       | 55/187 [00:19<00:52,  2.52it/s]Computing features:  30%|██▉       | 56/187 [00:19<00:46,  2.79it/s]Computing features:  30%|███       | 57/187 [00:19<00:43,  3.00it/s]Computing features:  31%|███       | 58/187 [00:19<00:40,  3.21it/s]Computing features:  32%|███▏      | 59/187 [00:20<00:38,  3.30it/s]Computing features:  32%|███▏      | 60/187 [00:20<00:37,  3.36it/s]Computing features:  33%|███▎      | 61/187 [00:20<00:36,  3.43it/s]Computing features:  33%|███▎      | 62/187 [00:20<00:35,  3.51it/s]Computing features:  34%|███▎      | 63/187 [00:21<00:52,  2.38it/s]Computing features:  34%|███▍      | 64/187 [00:21<00:46,  2.64it/s]Computing features:  35%|███▍      | 65/187 [00:22<00:42,  2.90it/s]Computing features:  35%|███▌      | 66/187 [00:22<00:39,  3.07it/s]Computing features:  36%|███▌      | 67/187 [00:22<00:36,  3.26it/s]Computing features:  36%|███▋      | 68/187 [00:23<00:51,  2.32it/s]Computing features:  37%|███▋      | 69/187 [00:23<00:44,  2.63it/s]Computing features:  37%|███▋      | 70/187 [00:24<00:40,  2.89it/s]Computing features:  38%|███▊      | 71/187 [00:24<00:37,  3.11it/s]Computing features:  39%|███▊      | 72/187 [00:24<00:35,  3.23it/s]Computing features:  39%|███▉      | 73/187 [00:25<00:50,  2.27it/s]Computing features:  40%|███▉      | 74/187 [00:25<00:44,  2.56it/s]Computing features:  40%|████      | 75/187 [00:25<00:40,  2.78it/s]Computing features:  41%|████      | 76/187 [00:26<00:37,  2.94it/s]Computing features:  41%|████      | 77/187 [00:26<00:35,  3.13it/s]Computing features:  42%|████▏     | 78/187 [00:26<00:33,  3.27it/s]Computing features:  42%|████▏     | 79/187 [00:27<00:32,  3.33it/s]Computing features:  43%|████▎     | 80/187 [00:27<00:31,  3.38it/s]Computing features:  43%|████▎     | 81/187 [00:27<00:30,  3.48it/s]Computing features:  44%|████▍     | 82/187 [00:27<00:29,  3.55it/s]Computing features:  44%|████▍     | 83/187 [00:28<00:29,  3.57it/s]Computing features:  45%|████▍     | 84/187 [00:28<00:28,  3.63it/s]Computing features:  45%|████▌     | 85/187 [00:28<00:28,  3.64it/s]Computing features:  46%|████▌     | 86/187 [00:28<00:27,  3.65it/s]Computing features:  47%|████▋     | 87/187 [00:29<00:27,  3.67it/s]Computing features:  47%|████▋     | 88/187 [00:29<00:26,  3.72it/s]Computing features:  48%|████▊     | 89/187 [00:29<00:27,  3.58it/s]Computing features:  48%|████▊     | 90/187 [00:30<00:26,  3.60it/s]Computing features:  49%|████▊     | 91/187 [00:30<00:25,  3.71it/s]Computing features:  49%|████▉     | 92/187 [00:31<00:38,  2.46it/s]Computing features:  50%|████▉     | 93/187 [00:31<00:35,  2.68it/s]Computing features:  50%|█████     | 94/187 [00:31<00:31,  2.93it/s]Computing features:  51%|█████     | 95/187 [00:31<00:29,  3.15it/s]Computing features:  51%|█████▏    | 96/187 [00:32<00:27,  3.28it/s]Computing features:  52%|█████▏    | 97/187 [00:32<00:26,  3.34it/s]Computing features:  52%|█████▏    | 98/187 [00:32<00:26,  3.41it/s]Computing features:  53%|█████▎    | 99/187 [00:33<00:38,  2.31it/s]Computing features:  53%|█████▎    | 100/187 [00:33<00:33,  2.61it/s]Computing features:  54%|█████▍    | 101/187 [00:33<00:30,  2.87it/s]Computing features:  55%|█████▍    | 102/187 [00:34<00:27,  3.10it/s]Computing features:  55%|█████▌    | 103/187 [00:34<00:25,  3.27it/s]Computing features:  56%|█████▌    | 104/187 [00:34<00:24,  3.34it/s]Computing features:  56%|█████▌    | 105/187 [00:35<00:23,  3.50it/s]Computing features:  57%|█████▋    | 106/187 [00:35<00:23,  3.48it/s]Computing features:  57%|█████▋    | 107/187 [00:36<00:33,  2.39it/s]Computing features:  58%|█████▊    | 108/187 [00:36<00:29,  2.72it/s]Computing features:  58%|█████▊    | 109/187 [00:36<00:26,  2.90it/s]Computing features:  59%|█████▉    | 110/187 [00:37<00:36,  2.13it/s]Computing features:  59%|█████▉    | 111/187 [00:38<00:40,  1.88it/s]Computing features:  60%|█████▉    | 112/187 [00:38<00:44,  1.69it/s]Computing features:  60%|██████    | 113/187 [00:39<00:36,  2.03it/s]Computing features:  61%|██████    | 114/187 [00:39<00:31,  2.31it/s]Computing features:  61%|██████▏   | 115/187 [00:39<00:36,  1.96it/s]Computing features:  62%|██████▏   | 116/187 [00:40<00:40,  1.77it/s]Computing features:  63%|██████▎   | 117/187 [00:41<00:42,  1.66it/s]Computing features:  63%|██████▎   | 118/187 [00:41<00:35,  1.97it/s]Computing features:  64%|██████▎   | 119/187 [00:41<00:29,  2.31it/s]Computing features:  64%|██████▍   | 120/187 [00:42<00:25,  2.61it/s]Computing features:  65%|██████▍   | 121/187 [00:42<00:23,  2.81it/s]Computing features:  65%|██████▌   | 122/187 [00:43<00:30,  2.14it/s]Computing features:  66%|██████▌   | 123/187 [00:43<00:26,  2.45it/s]Computing features:  66%|██████▋   | 124/187 [00:43<00:23,  2.72it/s]Computing features:  67%|██████▋   | 125/187 [00:44<00:29,  2.11it/s]Computing features:  67%|██████▋   | 126/187 [00:45<00:32,  1.85it/s]Computing features:  68%|██████▊   | 127/187 [00:45<00:27,  2.15it/s]Computing features:  68%|██████▊   | 128/187 [00:46<00:32,  1.83it/s]Computing features:  69%|██████▉   | 129/187 [00:46<00:26,  2.16it/s]Computing features:  70%|██████▉   | 130/187 [00:46<00:23,  2.41it/s]Computing features:  70%|███████   | 131/187 [00:47<00:28,  1.94it/s]Computing features:  71%|███████   | 132/187 [00:47<00:24,  2.28it/s]Computing features:  71%|███████   | 133/187 [00:48<00:21,  2.53it/s]Computing features:  72%|███████▏  | 134/187 [00:48<00:18,  2.85it/s]Computing features:  72%|███████▏  | 135/187 [00:48<00:17,  3.01it/s]Computing features:  73%|███████▎  | 136/187 [00:48<00:16,  3.13it/s]Computing features:  73%|███████▎  | 137/187 [00:49<00:15,  3.28it/s]Computing features:  74%|███████▍  | 138/187 [00:49<00:14,  3.36it/s]Computing features:  74%|███████▍  | 139/187 [00:49<00:13,  3.45it/s]Computing features:  75%|███████▍  | 140/187 [00:50<00:19,  2.43it/s]Computing features:  75%|███████▌  | 141/187 [00:50<00:16,  2.72it/s]Computing features:  76%|███████▌  | 142/187 [00:50<00:15,  2.87it/s]Computing features:  76%|███████▋  | 143/187 [00:51<00:14,  3.08it/s]Computing features:  77%|███████▋  | 144/187 [00:51<00:13,  3.23it/s]Computing features:  78%|███████▊  | 145/187 [00:51<00:12,  3.34it/s]Computing features:  78%|███████▊  | 146/187 [00:52<00:17,  2.38it/s]Computing features:  79%|███████▊  | 147/187 [00:52<00:15,  2.65it/s]Computing features:  79%|███████▉  | 148/187 [00:53<00:13,  2.93it/s]Computing features:  80%|███████▉  | 149/187 [00:53<00:12,  3.08it/s]Computing features:  80%|████████  | 150/187 [00:54<00:16,  2.21it/s]Computing features:  81%|████████  | 151/187 [00:54<00:14,  2.49it/s]Computing features:  81%|████████▏ | 152/187 [00:55<00:17,  1.97it/s]Computing features:  82%|████████▏ | 153/187 [00:55<00:14,  2.28it/s]Computing features:  82%|████████▏ | 154/187 [00:55<00:12,  2.59it/s]Computing features:  83%|████████▎ | 155/187 [00:55<00:11,  2.83it/s]Computing features:  83%|████████▎ | 156/187 [00:56<00:10,  3.03it/s]Computing features:  84%|████████▍ | 157/187 [00:56<00:09,  3.06it/s]Computing features:  84%|████████▍ | 158/187 [00:57<00:13,  2.18it/s]Computing features:  85%|████████▌ | 159/187 [00:57<00:11,  2.44it/s]Computing features:  86%|████████▌ | 160/187 [00:57<00:10,  2.66it/s]Computing features:  86%|████████▌ | 161/187 [00:58<00:09,  2.85it/s]Computing features:  87%|████████▋ | 162/187 [00:58<00:08,  2.98it/s]Computing features:  87%|████████▋ | 163/187 [00:58<00:07,  3.04it/s]Computing features:  88%|████████▊ | 164/187 [00:59<00:07,  3.12it/s]Computing features:  88%|████████▊ | 165/187 [00:59<00:09,  2.22it/s]Computing features:  89%|████████▉ | 166/187 [01:00<00:08,  2.41it/s]Computing features:  89%|████████▉ | 167/187 [01:00<00:10,  1.91it/s]Computing features:  90%|████████▉ | 168/187 [01:01<00:08,  2.18it/s]Computing features:  90%|█████████ | 169/187 [01:01<00:07,  2.51it/s]Computing features:  91%|█████████ | 170/187 [01:01<00:06,  2.78it/s]Computing features:  91%|█████████▏| 171/187 [01:02<00:05,  2.98it/s]Computing features:  92%|█████████▏| 172/187 [01:02<00:04,  3.19it/s]Computing features:  93%|█████████▎| 173/187 [01:03<00:06,  2.28it/s]Computing features:  93%|█████████▎| 174/187 [01:03<00:05,  2.56it/s]Computing features:  94%|█████████▎| 175/187 [01:04<00:05,  2.03it/s]Computing features:  94%|█████████▍| 176/187 [01:04<00:04,  2.39it/s]Computing features:  95%|█████████▍| 177/187 [01:04<00:03,  2.70it/s]Computing features:  95%|█████████▌| 178/187 [01:04<00:03,  2.88it/s]Computing features:  96%|█████████▌| 179/187 [01:05<00:02,  3.05it/s]Computing features:  96%|█████████▋| 180/187 [01:05<00:03,  2.22it/s]Computing features:  97%|█████████▋| 181/187 [01:06<00:02,  2.48it/s]Computing features:  97%|█████████▋| 182/187 [01:06<00:02,  2.03it/s]Computing features:  98%|█████████▊| 183/187 [01:07<00:01,  2.26it/s]Computing features:  98%|█████████▊| 184/187 [01:07<00:01,  2.51it/s]Computing features:  99%|█████████▉| 185/187 [01:07<00:00,  2.78it/s]Computing features:  99%|█████████▉| 186/187 [01:08<00:00,  2.09it/s]Computing features: 100%|██████████| 187/187 [01:08<00:00,  2.24it/s]Computing features: 100%|██████████| 187/187 [01:08<00:00,  2.71it/s]
+Trimming empty rows:   0%|          | 0/2 [00:00<?, ?it/s]Trimming empty rows: 3it [00:00, 80.94it/s]               
+Computing features:   0%|          | 0/31 [00:00<?, ?it/s]Computing features:   3%|▎         | 1/31 [00:00<00:08,  3.60it/s]Computing features:   6%|▋         | 2/31 [00:00<00:07,  3.71it/s]Computing features:  10%|▉         | 3/31 [00:01<00:13,  2.05it/s]Computing features:  13%|█▎        | 4/31 [00:01<00:10,  2.50it/s]Computing features:  16%|█▌        | 5/31 [00:01<00:09,  2.85it/s]Computing features:  19%|█▉        | 6/31 [00:02<00:08,  3.07it/s]Computing features:  23%|██▎       | 7/31 [00:02<00:07,  3.24it/s]Computing features:  26%|██▌       | 8/31 [00:02<00:06,  3.36it/s]Computing features:  29%|██▉       | 9/31 [00:02<00:06,  3.41it/s]Computing features:  32%|███▏      | 10/31 [00:03<00:06,  3.49it/s]Computing features:  35%|███▌      | 11/31 [00:03<00:05,  3.52it/s]Computing features:  39%|███▊      | 12/31 [00:03<00:05,  3.59it/s]Computing features:  42%|████▏     | 13/31 [00:04<00:04,  3.61it/s]Computing features:  45%|████▌     | 14/31 [00:04<00:06,  2.46it/s]Computing features:  48%|████▊     | 15/31 [00:05<00:05,  2.69it/s]Computing features:  52%|█████▏    | 16/31 [00:05<00:05,  2.87it/s]Computing features:  55%|█████▍    | 17/31 [00:05<00:04,  3.06it/s]Computing features:  58%|█████▊    | 18/31 [00:05<00:04,  3.11it/s]Computing features:  61%|██████▏   | 19/31 [00:06<00:05,  2.24it/s]Computing features:  65%|██████▍   | 20/31 [00:06<00:04,  2.48it/s]Computing features:  68%|██████▊   | 21/31 [00:07<00:03,  2.69it/s]Computing features:  71%|███████   | 22/31 [00:07<00:03,  2.87it/s]Computing features:  74%|███████▍  | 23/31 [00:07<00:02,  2.98it/s]Computing features:  77%|███████▋  | 24/31 [00:08<00:03,  2.22it/s]Computing features:  81%|████████  | 25/31 [00:08<00:02,  2.49it/s]Computing features:  84%|████████▍ | 26/31 [00:09<00:02,  2.02it/s]Computing features:  87%|████████▋ | 27/31 [00:09<00:01,  2.30it/s]Computing features:  90%|█████████ | 28/31 [00:10<00:01,  1.93it/s]Computing features:  94%|█████████▎| 29/31 [00:10<00:00,  2.25it/s]Computing features:  97%|█████████▋| 30/31 [00:11<00:00,  2.55it/s]Computing features: 100%|██████████| 31/31 [00:11<00:00,  3.08it/s]Computing features: 100%|██████████| 31/31 [00:11<00:00,  2.75it/s]
+Trimming empty rows: 0it [00:00, ?it/s]Trimming empty rows: 1it [00:00, 131.21it/s]
+Computing features:   0%|          | 0/31 [00:00<?, ?it/s]Computing features:   3%|▎         | 1/31 [00:00<00:07,  3.76it/s]Computing features:   6%|▋         | 2/31 [00:00<00:08,  3.54it/s]Computing features:  10%|▉         | 3/31 [00:00<00:07,  3.59it/s]Computing features:  13%|█▎        | 4/31 [00:01<00:07,  3.39it/s]Computing features:  16%|█▌        | 5/31 [00:01<00:11,  2.20it/s]Computing features:  19%|█▉        | 6/31 [00:02<00:09,  2.54it/s]Computing features:  23%|██▎       | 7/31 [00:02<00:08,  2.76it/s]Computing features:  26%|██▌       | 8/31 [00:02<00:07,  2.95it/s]Computing features:  29%|██▉       | 9/31 [00:03<00:07,  3.10it/s]Computing features:  32%|███▏      | 10/31 [00:03<00:09,  2.25it/s]Computing features:  35%|███▌      | 11/31 [00:04<00:08,  2.49it/s]Computing features:  39%|███▊      | 12/31 [00:04<00:06,  2.73it/s]Computing features:  42%|████▏     | 13/31 [00:04<00:06,  2.89it/s]Computing features:  45%|████▌     | 14/31 [00:04<00:05,  3.03it/s]Computing features:  48%|████▊     | 15/31 [00:05<00:05,  3.16it/s]Computing features:  52%|█████▏    | 16/31 [00:05<00:04,  3.28it/s]Computing features:  55%|█████▍    | 17/31 [00:05<00:04,  3.29it/s]Computing features:  58%|█████▊    | 18/31 [00:06<00:05,  2.27it/s]Computing features:  61%|██████▏   | 19/31 [00:06<00:04,  2.57it/s]Computing features:  65%|██████▍   | 20/31 [00:07<00:05,  2.07it/s]Computing features:  68%|██████▊   | 21/31 [00:08<00:05,  1.80it/s]Computing features:  71%|███████   | 22/31 [00:09<00:05,  1.63it/s]Computing features:  74%|███████▍  | 23/31 [00:09<00:04,  1.96it/s]Computing features:  77%|███████▋  | 24/31 [00:09<00:03,  2.28it/s]Computing features:  81%|████████  | 25/31 [00:10<00:03,  1.91it/s]Computing features:  84%|████████▍ | 26/31 [00:10<00:02,  2.21it/s]Computing features:  87%|████████▋ | 27/31 [00:11<00:02,  1.89it/s]Computing features:  90%|█████████ | 28/31 [00:11<00:01,  2.20it/s]Computing features:  94%|█████████▎| 29/31 [00:11<00:00,  2.48it/s]Computing features:  97%|█████████▋| 30/31 [00:12<00:00,  2.70it/s]Computing features: 100%|██████████| 31/31 [00:12<00:00,  2.54it/s]
+Trimming empty rows: 0it [00:00, ?it/s]Trimming empty rows: 1it [00:00, 130.02it/s]
+INFO:root:##################################################
+Starting training sequence 1...
+##################################################
+Training:   0%|          | 0/8000 [00:00<?, ?it/s]Training:   0%|          | 6/8000 [00:00<02:14, 59.31it/s]Training:   0%|          | 15/8000 [00:00<01:49, 72.69it/s]Training:   0%|          | 24/8000 [00:00<01:40, 79.25it/s]Training:   0%|          | 33/8000 [00:00<01:37, 81.51it/s]Training:   1%|          | 42/8000 [00:00<01:35, 83.13it/s]Training:   1%|          | 51/8000 [00:00<01:34, 84.05it/s]Training:   1%|          | 60/8000 [00:00<01:34, 83.83it/s]Training:   1%|          | 69/8000 [00:00<01:35, 83.39it/s]Training:   1%|          | 78/8000 [00:00<01:38, 80.50it/s]Training:   1%|          | 87/8000 [00:01<01:38, 80.39it/s]Training:   1%|          | 96/8000 [00:01<01:36, 82.05it/s]Training:   1%|▏         | 105/8000 [00:01<01:34, 83.32it/s]Training:   1%|▏         | 114/8000 [00:01<01:33, 84.55it/s]Training:   2%|▏         | 123/8000 [00:01<01:33, 84.23it/s]Training:   2%|▏         | 132/8000 [00:01<01:33, 83.95it/s]Training:   2%|▏         | 142/8000 [00:01<01:31, 85.53it/s]Training:   2%|▏         | 151/8000 [00:01<01:31, 85.41it/s]Training:   2%|▏         | 160/8000 [00:01<01:31, 85.97it/s]Training:   2%|▏         | 169/8000 [00:02<01:30, 86.52it/s]Training:   2%|▏         | 178/8000 [00:02<01:30, 86.57it/s]Training:   2%|▏         | 187/8000 [00:02<01:32, 84.62it/s]Training:   2%|▏         | 196/8000 [00:02<01:30, 85.90it/s]Training:   3%|▎         | 205/8000 [00:02<01:31, 85.43it/s]Training:   3%|▎         | 214/8000 [00:02<01:31, 85.08it/s]Training:   3%|▎         | 223/8000 [00:02<01:31, 85.35it/s]Training:   3%|▎         | 232/8000 [00:02<01:31, 85.08it/s]Training:   3%|▎         | 241/8000 [00:02<01:32, 83.72it/s]Training:   3%|▎         | 250/8000 [00:02<01:33, 82.79it/s]Training:   3%|▎         | 259/8000 [00:03<01:33, 82.99it/s]Training:   3%|▎         | 268/8000 [00:03<01:31, 84.36it/s]Training:   3%|▎         | 277/8000 [00:03<01:30, 84.91it/s]Training:   4%|▎         | 286/8000 [00:03<01:29, 85.80it/s]Training:   4%|▎         | 295/8000 [00:03<01:29, 86.11it/s]Training:   4%|▍         | 304/8000 [00:03<01:28, 86.47it/s]Training:   4%|▍         | 313/8000 [00:03<01:29, 85.98it/s]Training:   4%|▍         | 322/8000 [00:03<01:31, 84.24it/s]Training:   4%|▍         | 331/8000 [00:03<01:32, 83.20it/s]Training:   4%|▍         | 340/8000 [00:04<01:31, 83.28it/s]Training:   4%|▍         | 349/8000 [00:04<01:31, 83.46it/s]Training:   4%|▍         | 358/8000 [00:04<01:31, 83.50it/s]Training:   5%|▍         | 367/8000 [00:04<01:30, 84.64it/s]Training:   5%|▍         | 376/8000 [00:04<01:32, 82.82it/s]Training:   5%|▍         | 385/8000 [00:04<01:31, 82.84it/s]Training:   5%|▍         | 394/8000 [00:04<01:31, 83.03it/s]Training:   5%|▌         | 403/8000 [00:04<01:32, 82.04it/s]Training:   5%|▌         | 412/8000 [00:04<01:32, 81.70it/s]Training:   5%|▌         | 421/8000 [00:05<01:32, 81.50it/s]Training:   5%|▌         | 430/8000 [00:05<01:32, 81.72it/s]Training:   5%|▌         | 439/8000 [00:05<01:32, 82.12it/s]Training:   6%|▌         | 448/8000 [00:05<01:31, 82.73it/s]Training:   6%|▌         | 457/8000 [00:05<01:29, 83.83it/s]Training:   6%|▌         | 467/8000 [00:05<01:27, 85.79it/s]Training:   6%|▌         | 476/8000 [00:05<01:26, 86.74it/s]Training:   6%|▌         | 485/8000 [00:05<01:27, 86.25it/s]Training:   6%|▌         | 494/8000 [00:05<01:27, 85.73it/s]Training:   6%|▋         | 503/8000 [00:05<01:27, 85.24it/s]Training:   6%|▋         | 513/8000 [00:06<01:24, 88.39it/s]Training:   7%|▋         | 523/8000 [00:06<01:23, 89.64it/s]Training:   7%|▋         | 533/8000 [00:06<01:22, 90.60it/s]Training:   7%|▋         | 543/8000 [00:06<01:21, 91.68it/s]Training:   7%|▋         | 553/8000 [00:06<01:22, 90.14it/s]Training:   7%|▋         | 563/8000 [00:06<01:22, 89.83it/s]Training:   7%|▋         | 572/8000 [00:06<01:23, 88.77it/s]Training:   7%|▋         | 581/8000 [00:06<01:23, 88.62it/s]Training:   7%|▋         | 590/8000 [00:06<01:23, 88.53it/s]Training:   7%|▋         | 599/8000 [00:07<01:23, 88.21it/s]Training:   8%|▊         | 608/8000 [00:07<01:23, 88.61it/s]Training:   8%|▊         | 618/8000 [00:07<01:22, 89.35it/s]Training:   8%|▊         | 628/8000 [00:07<01:21, 90.29it/s]Training:   8%|▊         | 638/8000 [00:07<01:22, 89.75it/s]Training:   8%|▊         | 647/8000 [00:07<01:22, 89.35it/s]Training:   8%|▊         | 656/8000 [00:07<01:23, 87.98it/s]Training:   8%|▊         | 665/8000 [00:07<01:23, 87.99it/s]Training:   8%|▊         | 674/8000 [00:07<01:24, 86.79it/s]Training:   9%|▊         | 683/8000 [00:08<01:26, 84.88it/s]Training:   9%|▊         | 693/8000 [00:08<01:23, 87.16it/s]Training:   9%|▉         | 703/8000 [00:08<01:22, 88.86it/s]Training:   9%|▉         | 713/8000 [00:08<01:21, 89.87it/s]Training:   9%|▉         | 723/8000 [00:08<01:20, 90.17it/s]Training:   9%|▉         | 733/8000 [00:08<01:20, 90.32it/s]Training:   9%|▉         | 743/8000 [00:08<01:20, 89.70it/s]Training:   9%|▉         | 752/8000 [00:08<01:22, 88.00it/s]Training:  10%|▉         | 761/8000 [00:08<01:23, 86.86it/s]Training:  10%|▉         | 770/8000 [00:09<01:23, 86.91it/s]Training:  10%|▉         | 779/8000 [00:09<01:23, 86.80it/s]Training:  10%|▉         | 789/8000 [00:09<01:21, 88.36it/s]Training:  10%|▉         | 798/8000 [00:09<01:21, 88.42it/s]Training:  10%|█         | 807/8000 [00:09<01:25, 84.52it/s]Training:  10%|█         | 816/8000 [00:09<01:26, 82.65it/s]Training:  10%|█         | 826/8000 [00:09<01:24, 85.17it/s]Training:  10%|█         | 836/8000 [00:09<01:22, 87.31it/s]Training:  11%|█         | 846/8000 [00:09<01:20, 88.88it/s]Training:  11%|█         | 855/8000 [00:09<01:20, 88.62it/s]Training:  11%|█         | 864/8000 [00:10<01:21, 87.75it/s]Training:  11%|█         | 874/8000 [00:10<01:19, 89.30it/s]Training:  11%|█         | 884/8000 [00:10<01:18, 90.54it/s]Training:  11%|█         | 894/8000 [00:10<01:17, 91.40it/s]Training:  11%|█▏        | 904/8000 [00:10<01:18, 90.91it/s]Training:  11%|█▏        | 914/8000 [00:10<01:17, 91.29it/s]Training:  12%|█▏        | 924/8000 [00:10<01:20, 88.33it/s]Training:  12%|█▏        | 933/8000 [00:10<01:20, 87.70it/s]Training:  12%|█▏        | 942/8000 [00:10<01:21, 86.80it/s]Training:  12%|█▏        | 951/8000 [00:11<01:21, 86.78it/s]Training:  12%|█▏        | 961/8000 [00:11<01:20, 87.94it/s]Training:  12%|█▏        | 971/8000 [00:11<01:19, 88.55it/s]Training:  12%|█▏        | 980/8000 [00:11<01:22, 84.94it/s]Training:  12%|█▏        | 989/8000 [00:11<01:22, 85.44it/s]Training:  12%|█▏        | 998/8000 [00:11<01:21, 85.52it/s]Training:  13%|█▎        | 1008/8000 [00:11<01:19, 87.42it/s]Training:  13%|█▎        | 1018/8000 [00:11<01:18, 89.02it/s]Training:  13%|█▎        | 1028/8000 [00:11<01:18, 89.38it/s]Training:  13%|█▎        | 1038/8000 [00:12<01:16, 90.46it/s]Training:  13%|█▎        | 1048/8000 [00:12<01:18, 88.57it/s]Training:  13%|█▎        | 1058/8000 [00:12<01:16, 90.65it/s]Training:  13%|█▎        | 1068/8000 [00:12<01:15, 92.22it/s]Training:  13%|█▎        | 1078/8000 [00:12<01:15, 91.34it/s]Training:  14%|█▎        | 1088/8000 [00:12<01:15, 91.84it/s]Training:  14%|█▎        | 1098/8000 [00:12<01:15, 91.32it/s]Training:  14%|█▍        | 1108/8000 [00:12<01:18, 87.99it/s]Training:  14%|█▍        | 1117/8000 [00:12<01:19, 87.04it/s]Training:  14%|█▍        | 1126/8000 [00:13<01:20, 85.75it/s]Training:  14%|█▍        | 1136/8000 [00:13<01:18, 87.68it/s]Training:  14%|█▍        | 1146/8000 [00:13<01:17, 88.36it/s]Training:  14%|█▍        | 1156/8000 [00:13<01:16, 89.48it/s]Training:  15%|█▍        | 1165/8000 [00:13<01:16, 88.84it/s]Training:  15%|█▍        | 1174/8000 [00:13<01:16, 88.69it/s]Training:  15%|█▍        | 1183/8000 [00:13<01:17, 87.85it/s]Training:  15%|█▍        | 1192/8000 [00:13<01:17, 88.28it/s]Training:  15%|█▌        | 1201/8000 [00:13<01:17, 88.16it/s]Training:  15%|█▌        | 1210/8000 [00:13<01:17, 87.77it/s]Training:  15%|█▌        | 1219/8000 [00:14<01:17, 87.60it/s]Training:  15%|█▌        | 1228/8000 [00:14<01:17, 87.40it/s]Training:  15%|█▌        | 1237/8000 [00:14<01:16, 88.01it/s]Training:  16%|█▌        | 1246/8000 [00:14<01:16, 88.33it/s]Training:  16%|█▌        | 1255/8000 [00:14<01:16, 88.52it/s]Training:  16%|█▌        | 1265/8000 [00:14<01:15, 89.10it/s]Training:  16%|█▌        | 1274/8000 [00:14<01:15, 88.57it/s]Training:  16%|█▌        | 1283/8000 [00:14<01:16, 87.43it/s]Training:  16%|█▌        | 1292/8000 [00:14<01:17, 86.42it/s]Training:  16%|█▋        | 1301/8000 [00:15<01:18, 85.76it/s]Training:  16%|█▋        | 1310/8000 [00:15<01:16, 86.90it/s]Training:  16%|█▋        | 1319/8000 [00:15<01:16, 87.19it/s]Training:  17%|█▋        | 1328/8000 [00:15<01:16, 87.34it/s]Training:  17%|█▋        | 1338/8000 [00:15<01:15, 88.05it/s]Training:  17%|█▋        | 1347/8000 [00:15<01:17, 86.37it/s]Training:  17%|█▋        | 1356/8000 [00:15<01:16, 86.59it/s]Training:  17%|█▋        | 1365/8000 [00:15<01:16, 86.64it/s]Training:  17%|█▋        | 1375/8000 [00:15<01:15, 87.71it/s]Training:  17%|█▋        | 1384/8000 [00:15<01:15, 88.18it/s]Training:  17%|█▋        | 1393/8000 [00:16<01:14, 88.54it/s]Training:  18%|█▊        | 1403/8000 [00:16<01:14, 89.08it/s]Training:  18%|█▊        | 1412/8000 [00:16<01:15, 86.73it/s]Training:  18%|█▊        | 1421/8000 [00:16<01:15, 87.00it/s]Training:  18%|█▊        | 1430/8000 [00:16<01:16, 86.45it/s]Training:  18%|█▊        | 1439/8000 [00:16<01:15, 87.37it/s]Training:  18%|█▊        | 1448/8000 [00:16<01:15, 86.95it/s]Training:  18%|█▊        | 1457/8000 [00:16<01:15, 86.12it/s]Training:  18%|█▊        | 1466/8000 [00:16<01:17, 84.47it/s]Training:  18%|█▊        | 1475/8000 [00:17<01:19, 82.00it/s]Training:  19%|█▊        | 1485/8000 [00:17<01:17, 84.57it/s]Training:  19%|█▊        | 1495/8000 [00:17<01:15, 86.24it/s]Training:  19%|█▉        | 1504/8000 [00:17<01:14, 87.00it/s]Training:  19%|█▉        | 1513/8000 [00:17<01:13, 87.79it/s]Training:  19%|█▉        | 1523/8000 [00:17<01:12, 89.52it/s]Training:  19%|█▉        | 1532/8000 [00:17<01:13, 87.43it/s]Training:  19%|█▉        | 1541/8000 [00:17<01:13, 88.06it/s]Training:  19%|█▉        | 1551/8000 [00:17<01:12, 88.51it/s]Training:  20%|█▉        | 1561/8000 [00:18<01:12, 89.09it/s]Training:  20%|█▉        | 1571/8000 [00:18<01:12, 88.99it/s]Training:  20%|█▉        | 1580/8000 [00:18<01:13, 87.89it/s]Training:  20%|█▉        | 1589/8000 [00:18<01:13, 87.31it/s]Training:  20%|█▉        | 1599/8000 [00:18<01:11, 89.09it/s]Training:  20%|██        | 1608/8000 [00:18<01:12, 87.63it/s]Training:  20%|██        | 1617/8000 [00:18<01:12, 87.83it/s]Training:  20%|██        | 1626/8000 [00:18<01:13, 86.61it/s]Training:  20%|██        | 1635/8000 [00:18<01:15, 83.91it/s]Training:  21%|██        | 1644/8000 [00:18<01:16, 83.16it/s]Training:  21%|██        | 1653/8000 [00:19<01:17, 82.12it/s]Training:  21%|██        | 1663/8000 [00:19<01:14, 84.56it/s]Training:  21%|██        | 1672/8000 [00:19<01:13, 85.96it/s]Training:  21%|██        | 1681/8000 [00:19<01:12, 86.58it/s]Training:  21%|██        | 1690/8000 [00:19<01:13, 86.00it/s]Training:  21%|██        | 1699/8000 [00:19<01:13, 86.17it/s]Training:  21%|██▏       | 1708/8000 [00:19<01:13, 85.99it/s]Training:  21%|██▏       | 1717/8000 [00:19<01:14, 84.88it/s]Training:  22%|██▏       | 1726/8000 [00:19<01:14, 84.40it/s]Training:  22%|██▏       | 1735/8000 [00:20<01:13, 84.85it/s]Training:  22%|██▏       | 1744/8000 [00:20<01:13, 84.92it/s]Training:  22%|██▏       | 1753/8000 [00:20<01:13, 85.00it/s]Training:  22%|██▏       | 1763/8000 [00:20<01:11, 87.46it/s]Training:  22%|██▏       | 1772/8000 [00:20<01:12, 86.32it/s]Training:  22%|██▏       | 1781/8000 [00:20<01:12, 85.31it/s]Training:  22%|██▏       | 1790/8000 [00:20<01:11, 86.56it/s]Training:  22%|██▏       | 1799/8000 [00:20<01:12, 85.73it/s]Training:  23%|██▎       | 1808/8000 [00:20<01:12, 85.06it/s]Training:  23%|██▎       | 1817/8000 [00:20<01:13, 84.23it/s]Training:  23%|██▎       | 1826/8000 [00:21<01:13, 84.19it/s]Training:  23%|██▎       | 1835/8000 [00:21<01:13, 84.12it/s]Training:  23%|██▎       | 1844/8000 [00:21<01:12, 84.56it/s]Training:  23%|██▎       | 1853/8000 [00:21<01:12, 84.68it/s]Training:  23%|██▎       | 1862/8000 [00:21<01:12, 85.22it/s]Training:  23%|██▎       | 1871/8000 [00:21<01:11, 85.97it/s]Training:  24%|██▎       | 1880/8000 [00:21<01:12, 84.91it/s]Training:  24%|██▎       | 1890/8000 [00:21<01:10, 87.10it/s]Training:  24%|██▎       | 1899/8000 [00:21<01:09, 87.25it/s]Training:  24%|██▍       | 1908/8000 [00:22<01:10, 86.81it/s]Training:  24%|██▍       | 1917/8000 [00:22<01:09, 87.73it/s]Training:  24%|██▍       | 1926/8000 [00:22<01:09, 87.79it/s]Training:  24%|██▍       | 1935/8000 [00:22<01:10, 86.49it/s]Training:  24%|██▍       | 1944/8000 [00:22<01:09, 86.68it/s]Training:  24%|██▍       | 1953/8000 [00:22<01:10, 86.15it/s]Training:  25%|██▍       | 1962/8000 [00:22<01:11, 84.32it/s]Training:  25%|██▍       | 1971/8000 [00:22<01:12, 83.14it/s]Training:  25%|██▍       | 1980/8000 [00:22<01:12, 83.24it/s]Training:  25%|██▍       | 1989/8000 [00:23<01:10, 85.06it/s]Training:  25%|██▍       | 1999/8000 [00:23<01:09, 86.88it/s]Training:  25%|██▌       | 2009/8000 [00:23<01:07, 88.99it/s]Training:  25%|██▌       | 2018/8000 [00:23<01:07, 88.32it/s]Training:  25%|██▌       | 2028/8000 [00:23<01:06, 89.44it/s]Training:  25%|██▌       | 2037/8000 [00:23<01:06, 89.26it/s]Training:  26%|██▌       | 2047/8000 [00:23<01:06, 89.45it/s]Training:  26%|██▌       | 2057/8000 [00:23<01:06, 89.42it/s]Training:  26%|██▌       | 2067/8000 [00:23<01:05, 91.23it/s]Training:  26%|██▌       | 2077/8000 [00:23<01:05, 90.67it/s]Training:  26%|██▌       | 2087/8000 [00:24<01:05, 89.77it/s]Training:  26%|██▌       | 2097/8000 [00:24<01:05, 90.56it/s]Training:  26%|██▋       | 2107/8000 [00:24<01:04, 90.67it/s]Training:  26%|██▋       | 2117/8000 [00:24<01:05, 90.29it/s]Training:  27%|██▋       | 2127/8000 [00:24<01:05, 89.75it/s]Training:  27%|██▋       | 2136/8000 [00:24<01:05, 89.65it/s]Training:  27%|██▋       | 2145/8000 [00:24<01:06, 87.97it/s]Training:  27%|██▋       | 2154/8000 [00:24<01:06, 88.27it/s]Training:  27%|██▋       | 2163/8000 [00:24<01:06, 87.86it/s]Training:  27%|██▋       | 2172/8000 [00:25<01:07, 86.53it/s]Training:  27%|██▋       | 2181/8000 [00:25<01:06, 87.47it/s]Training:  27%|██▋       | 2191/8000 [00:25<01:05, 88.39it/s]Training:  28%|██▊       | 2200/8000 [00:25<01:05, 88.44it/s]Training:  28%|██▊       | 2209/8000 [00:25<01:05, 88.61it/s]Training:  28%|██▊       | 2218/8000 [00:25<01:05, 88.87it/s]Training:  28%|██▊       | 2227/8000 [00:25<01:04, 89.09it/s]Training:  28%|██▊       | 2236/8000 [00:25<01:04, 88.91it/s]Training:  28%|██▊       | 2246/8000 [00:25<01:04, 89.66it/s]Training:  28%|██▊       | 2256/8000 [00:25<01:03, 91.05it/s]Training:  28%|██▊       | 2266/8000 [00:26<01:03, 89.79it/s]Training:  28%|██▊       | 2276/8000 [00:26<01:03, 89.77it/s]Training:  29%|██▊       | 2286/8000 [00:26<01:03, 89.45it/s]Training:  29%|██▊       | 2296/8000 [00:26<01:03, 90.28it/s]Training:  29%|██▉       | 2306/8000 [00:26<01:02, 90.74it/s]Training:  29%|██▉       | 2316/8000 [00:26<01:03, 89.97it/s]Training:  29%|██▉       | 2326/8000 [00:26<01:06, 85.67it/s]Training:  29%|██▉       | 2335/8000 [00:26<01:06, 85.29it/s]Training:  29%|██▉       | 2344/8000 [00:27<01:06, 84.44it/s]Training:  29%|██▉       | 2353/8000 [00:27<01:07, 83.20it/s]Training:  30%|██▉       | 2362/8000 [00:27<01:06, 84.76it/s]Training:  30%|██▉       | 2371/8000 [00:27<01:05, 85.42it/s]Training:  30%|██▉       | 2380/8000 [00:27<01:05, 85.91it/s]Training:  30%|██▉       | 2389/8000 [00:27<01:04, 86.45it/s]Training:  30%|██▉       | 2398/8000 [00:27<01:04, 86.79it/s]Training:  30%|███       | 2407/8000 [00:27<01:03, 87.53it/s]Training:  30%|███       | 2416/8000 [00:27<01:03, 87.41it/s]Training:  30%|███       | 2425/8000 [00:27<01:03, 87.52it/s]Training:  30%|███       | 2434/8000 [00:28<01:03, 88.05it/s]Training:  31%|███       | 2443/8000 [00:28<01:03, 87.33it/s]Training:  31%|███       | 2453/8000 [00:28<01:02, 88.33it/s]Training:  31%|███       | 2462/8000 [00:28<01:02, 88.73it/s]Training:  31%|███       | 2471/8000 [00:28<01:02, 88.20it/s]Training:  31%|███       | 2480/8000 [00:28<01:02, 88.64it/s]Training:  31%|███       | 2489/8000 [00:28<01:03, 87.32it/s]Training:  31%|███       | 2498/8000 [00:28<01:03, 86.06it/s]Training:  31%|███▏      | 2507/8000 [00:28<01:04, 85.73it/s]Training:  31%|███▏      | 2516/8000 [00:28<01:04, 85.08it/s]Training:  32%|███▏      | 2525/8000 [00:29<01:03, 86.25it/s]Training:  32%|███▏      | 2534/8000 [00:29<01:03, 85.79it/s]Training:  32%|███▏      | 2543/8000 [00:29<01:03, 86.56it/s]Training:  32%|███▏      | 2552/8000 [00:29<01:02, 87.56it/s]Training:  32%|███▏      | 2562/8000 [00:29<01:01, 88.97it/s]Training:  32%|███▏      | 2571/8000 [00:29<01:01, 88.73it/s]Training:  32%|███▏      | 2581/8000 [00:29<01:00, 89.27it/s]Training:  32%|███▏      | 2591/8000 [00:29<01:00, 89.24it/s]Training:  32%|███▎      | 2600/8000 [00:29<01:00, 89.21it/s]Training:  33%|███▎      | 2610/8000 [00:30<00:59, 90.28it/s]Training:  33%|███▎      | 2620/8000 [00:30<00:58, 91.69it/s]Training:  33%|███▎      | 2630/8000 [00:30<01:00, 89.40it/s]Training:  33%|███▎      | 2639/8000 [00:30<01:00, 88.23it/s]Training:  33%|███▎      | 2648/8000 [00:30<01:00, 88.43it/s]Training:  33%|███▎      | 2657/8000 [00:30<01:00, 87.79it/s]Training:  33%|███▎      | 2666/8000 [00:30<01:00, 88.28it/s]Training:  33%|███▎      | 2675/8000 [00:30<01:01, 87.14it/s]Training:  34%|███▎      | 2684/8000 [00:30<01:01, 86.32it/s]Training:  34%|███▎      | 2693/8000 [00:30<01:02, 84.44it/s]Training:  34%|███▍      | 2702/8000 [00:31<01:02, 85.09it/s]Training:  34%|███▍      | 2711/8000 [00:31<01:01, 85.79it/s]Training:  34%|███▍      | 2720/8000 [00:31<01:01, 86.26it/s]Training:  34%|███▍      | 2729/8000 [00:31<01:00, 87.31it/s]Training:  34%|███▍      | 2738/8000 [00:31<00:59, 87.77it/s]Training:  34%|███▍      | 2748/8000 [00:31<00:59, 88.44it/s]Training:  34%|███▍      | 2757/8000 [00:31<00:59, 88.00it/s]Training:  35%|███▍      | 2766/8000 [00:31<00:59, 87.86it/s]Training:  35%|███▍      | 2775/8000 [00:31<00:59, 87.26it/s]Training:  35%|███▍      | 2784/8000 [00:32<00:59, 87.93it/s]Training:  35%|███▍      | 2793/8000 [00:32<00:59, 87.75it/s]Training:  35%|███▌      | 2802/8000 [00:32<00:58, 88.13it/s]Training:  35%|███▌      | 2811/8000 [00:32<00:59, 87.01it/s]Training:  35%|███▌      | 2820/8000 [00:32<00:59, 86.46it/s]Training:  35%|███▌      | 2829/8000 [00:32<00:59, 87.06it/s]Training:  35%|███▌      | 2839/8000 [00:32<00:58, 88.25it/s]Training:  36%|███▌      | 2848/8000 [00:32<00:59, 87.16it/s]Training:  36%|███▌      | 2857/8000 [00:32<00:59, 85.84it/s]Training:  36%|███▌      | 2866/8000 [00:32<01:00, 85.09it/s]Training:  36%|███▌      | 2875/8000 [00:33<01:00, 85.01it/s]Training:  36%|███▌      | 2884/8000 [00:33<01:00, 84.48it/s]Training:  36%|███▌      | 2894/8000 [00:33<00:58, 87.39it/s]Training:  36%|███▋      | 2903/8000 [00:33<00:57, 88.09it/s]Training:  36%|███▋      | 2912/8000 [00:33<00:58, 87.63it/s]Training:  37%|███▋      | 2921/8000 [00:33<00:57, 88.04it/s]Training:  37%|███▋      | 2930/8000 [00:33<00:57, 88.14it/s]Training:  37%|███▋      | 2939/8000 [00:33<00:58, 87.13it/s]Training:  37%|███▋      | 2948/8000 [00:33<00:57, 87.72it/s]Training:  37%|███▋      | 2957/8000 [00:34<00:57, 87.80it/s]Training:  37%|███▋      | 2967/8000 [00:34<00:56, 88.59it/s]Training:  37%|███▋      | 2976/8000 [00:34<00:57, 86.99it/s]Training:  37%|███▋      | 2985/8000 [00:34<00:57, 87.31it/s]Training:  37%|███▋      | 2994/8000 [00:34<00:58, 86.05it/s]Training:  38%|███▊      | 3004/8000 [00:34<00:56, 87.81it/s]Training:  38%|███▊      | 3014/8000 [00:34<00:56, 88.86it/s]Training:  38%|███▊      | 3023/8000 [00:34<00:56, 87.32it/s]Training:  38%|███▊      | 3032/8000 [00:34<00:56, 87.23it/s]Training:  38%|███▊      | 3041/8000 [00:34<00:57, 86.88it/s]Training:  38%|███▊      | 3050/8000 [00:35<00:56, 87.56it/s]Training:  38%|███▊      | 3059/8000 [00:35<00:56, 87.53it/s]Training:  38%|███▊      | 3069/8000 [00:35<00:54, 90.14it/s]Training:  38%|███▊      | 3079/8000 [00:35<00:55, 89.41it/s]Training:  39%|███▊      | 3089/8000 [00:35<00:54, 90.30it/s]Training:  39%|███▊      | 3099/8000 [00:35<00:54, 90.15it/s]Training:  39%|███▉      | 3109/8000 [00:35<00:53, 90.75it/s]Training:  39%|███▉      | 3119/8000 [00:35<00:54, 88.85it/s]Training:  39%|███▉      | 3129/8000 [00:35<00:54, 89.99it/s]Training:  39%|███▉      | 3139/8000 [00:36<00:55, 87.84it/s]Training:  39%|███▉      | 3148/8000 [00:36<00:55, 86.81it/s]Training:  39%|███▉      | 3157/8000 [00:36<00:55, 86.73it/s]Training:  40%|███▉      | 3166/8000 [00:36<00:55, 87.40it/s]Training:  40%|███▉      | 3175/8000 [00:36<00:56, 85.85it/s]Training:  40%|███▉      | 3184/8000 [00:36<00:55, 86.19it/s]Training:  40%|███▉      | 3193/8000 [00:36<00:55, 86.27it/s]Training:  40%|████      | 3202/8000 [00:36<00:55, 85.95it/s]Training:  40%|████      | 3211/8000 [00:36<00:56, 85.23it/s]Training:  40%|████      | 3220/8000 [00:37<00:56, 84.10it/s]Training:  40%|████      | 3230/8000 [00:37<00:55, 86.40it/s]Training:  40%|████      | 3239/8000 [00:37<00:54, 86.83it/s]Training:  41%|████      | 3249/8000 [00:37<00:53, 88.41it/s]Training:  41%|████      | 3258/8000 [00:37<00:53, 88.83it/s]Training:  41%|████      | 3268/8000 [00:37<00:52, 89.89it/s]Training:  41%|████      | 3278/8000 [00:37<00:51, 90.99it/s]Training:  41%|████      | 3288/8000 [00:37<00:51, 92.12it/s]Training:  41%|████      | 3298/8000 [00:37<00:51, 91.38it/s]Training:  41%|████▏     | 3308/8000 [00:37<00:51, 90.57it/s]Training:  41%|████▏     | 3318/8000 [00:38<00:51, 91.32it/s]Training:  42%|████▏     | 3328/8000 [00:38<00:50, 91.84it/s]Training:  42%|████▏     | 3338/8000 [00:38<00:51, 91.15it/s]Training:  42%|████▏     | 3348/8000 [00:38<00:51, 90.60it/s]Training:  42%|████▏     | 3358/8000 [00:38<00:51, 89.84it/s]Training:  42%|████▏     | 3367/8000 [00:38<00:51, 89.41it/s]Training:  42%|████▏     | 3376/8000 [00:38<00:51, 89.57it/s]Training:  42%|████▏     | 3385/8000 [00:38<00:51, 88.89it/s]Training:  42%|████▏     | 3394/8000 [00:38<00:52, 88.08it/s]Training:  43%|████▎     | 3404/8000 [00:39<00:51, 89.12it/s]Training:  43%|████▎     | 3414/8000 [00:39<00:51, 89.82it/s]Training:  43%|████▎     | 3424/8000 [00:39<00:50, 89.99it/s]Training:  43%|████▎     | 3433/8000 [00:39<00:50, 89.59it/s]Training:  43%|████▎     | 3442/8000 [00:39<00:50, 89.69it/s]Training:  43%|████▎     | 3452/8000 [00:39<00:50, 90.19it/s]Training:  43%|████▎     | 3462/8000 [00:39<00:49, 90.87it/s]Training:  43%|████▎     | 3472/8000 [00:39<00:49, 91.81it/s]Training:  44%|████▎     | 3482/8000 [00:39<00:50, 89.67it/s]Training:  44%|████▎     | 3492/8000 [00:40<00:49, 90.18it/s]Training:  44%|████▍     | 3502/8000 [00:40<00:50, 89.90it/s]Training:  44%|████▍     | 3512/8000 [00:40<00:49, 91.08it/s]Training:  44%|████▍     | 3522/8000 [00:40<00:49, 91.12it/s]Training:  44%|████▍     | 3532/8000 [00:40<00:50, 89.22it/s]Training:  44%|████▍     | 3541/8000 [00:40<00:51, 87.10it/s]Training:  44%|████▍     | 3550/8000 [00:40<00:51, 85.87it/s]Training:  44%|████▍     | 3559/8000 [00:40<00:52, 85.17it/s]Training:  45%|████▍     | 3568/8000 [00:40<00:53, 82.97it/s]Training:  45%|████▍     | 3577/8000 [00:41<00:53, 82.50it/s]Training:  45%|████▍     | 3586/8000 [00:41<00:53, 82.56it/s]Training:  45%|████▍     | 3595/8000 [00:41<00:52, 84.15it/s]Training:  45%|████▌     | 3604/8000 [00:41<00:52, 83.97it/s]Training:  45%|████▌     | 3613/8000 [00:41<00:52, 83.72it/s]Training:  45%|████▌     | 3622/8000 [00:41<00:51, 84.96it/s]Training:  45%|████▌     | 3631/8000 [00:41<00:51, 85.17it/s]Training:  46%|████▌     | 3641/8000 [00:41<00:49, 87.23it/s]Training:  46%|████▌     | 3650/8000 [00:41<00:49, 87.31it/s]Training:  46%|████▌     | 3659/8000 [00:41<00:49, 87.33it/s]Training:  46%|████▌     | 3668/8000 [00:42<00:50, 86.05it/s]Training:  46%|████▌     | 3677/8000 [00:42<00:49, 86.60it/s]Training:  46%|████▌     | 3686/8000 [00:42<00:50, 85.86it/s]Training:  46%|████▌     | 3696/8000 [00:42<00:49, 87.34it/s]Training:  46%|████▋     | 3705/8000 [00:42<00:49, 86.45it/s]Training:  46%|████▋     | 3714/8000 [00:42<00:50, 85.31it/s]Training:  47%|████▋     | 3723/8000 [00:42<00:50, 84.60it/s]Training:  47%|████▋     | 3732/8000 [00:42<00:51, 83.41it/s]Training:  47%|████▋     | 3741/8000 [00:42<00:51, 83.13it/s]Training:  47%|████▋     | 3750/8000 [00:43<00:51, 83.05it/s]Training:  47%|████▋     | 3759/8000 [00:43<00:50, 83.78it/s]Training:  47%|████▋     | 3769/8000 [00:43<00:49, 85.81it/s]Training:  47%|████▋     | 3778/8000 [00:43<00:48, 86.54it/s]Training:  47%|████▋     | 3787/8000 [00:43<00:49, 85.47it/s]Training:  47%|████▋     | 3797/8000 [00:43<00:48, 87.43it/s]Training:  48%|████▊     | 3806/8000 [00:43<00:47, 88.04it/s]Training:  48%|████▊     | 3815/8000 [00:43<00:47, 88.27it/s]Training:  48%|████▊     | 3824/8000 [00:43<00:47, 88.05it/s]Training:  48%|████▊     | 3833/8000 [00:44<00:47, 88.17it/s]Training:  48%|████▊     | 3842/8000 [00:44<00:47, 87.10it/s]Training:  48%|████▊     | 3851/8000 [00:44<00:48, 84.96it/s]Training:  48%|████▊     | 3860/8000 [00:44<00:48, 85.80it/s]Training:  48%|████▊     | 3869/8000 [00:44<00:47, 86.24it/s]Training:  48%|████▊     | 3878/8000 [00:44<00:48, 85.57it/s]Training:  49%|████▊     | 3887/8000 [00:44<00:48, 85.25it/s]Training:  49%|████▊     | 3896/8000 [00:44<00:48, 84.04it/s]Training:  49%|████▉     | 3905/8000 [00:44<00:55, 74.04it/s]Training:  49%|████▉     | 3914/8000 [00:45<00:53, 76.14it/s]Training:  49%|████▉     | 3923/8000 [00:45<00:51, 79.18it/s]Training:  49%|████▉     | 3933/8000 [00:45<00:49, 82.70it/s]Training:  49%|████▉     | 3942/8000 [00:45<00:48, 84.48it/s]Training:  49%|████▉     | 3952/8000 [00:45<00:46, 87.09it/s]Training:  50%|████▉     | 3962/8000 [00:45<00:45, 88.81it/s]Training:  50%|████▉     | 3972/8000 [00:45<00:44, 89.86it/s]Training:  50%|████▉     | 3982/8000 [00:45<00:43, 92.49it/s]Training:  50%|████▉     | 3992/8000 [00:45<00:43, 92.17it/s]Training:  50%|█████     | 4002/8000 [00:45<00:43, 92.57it/s]Training:  50%|█████     | 4012/8000 [00:46<00:43, 91.59it/s]Training:  50%|█████     | 4022/8000 [00:46<00:43, 91.72it/s]Training:  50%|█████     | 4032/8000 [00:46<00:44, 90.01it/s]Training:  51%|█████     | 4042/8000 [00:46<00:43, 90.30it/s]Training:  51%|█████     | 4052/8000 [00:46<00:43, 91.50it/s]Training:  51%|█████     | 4062/8000 [00:46<00:43, 91.07it/s]Training:  51%|█████     | 4072/8000 [00:46<00:43, 90.59it/s]Training:  51%|█████     | 4082/8000 [00:46<00:44, 88.94it/s]Training:  51%|█████     | 4091/8000 [00:46<00:44, 87.07it/s]Training:  51%|█████▏    | 4100/8000 [00:47<00:44, 87.70it/s]Training:  51%|█████▏    | 4109/8000 [00:47<00:44, 87.22it/s]Training:  51%|█████▏    | 4118/8000 [00:47<00:44, 87.36it/s]Training:  52%|█████▏    | 4128/8000 [00:47<00:43, 88.87it/s]Training:  52%|█████▏    | 4138/8000 [00:47<00:43, 89.31it/s]Training:  52%|█████▏    | 4147/8000 [00:47<00:44, 87.49it/s]Training:  52%|█████▏    | 4156/8000 [00:47<00:44, 86.47it/s]Training:  52%|█████▏    | 4165/8000 [00:47<00:44, 85.92it/s]Training:  52%|█████▏    | 4175/8000 [00:47<00:43, 87.21it/s]Training:  52%|█████▏    | 4184/8000 [00:48<00:43, 87.77it/s]Training:  52%|█████▏    | 4193/8000 [00:48<00:43, 87.83it/s]Training:  53%|█████▎    | 4202/8000 [00:48<00:43, 86.85it/s]Training:  53%|█████▎    | 4211/8000 [00:48<00:44, 85.94it/s]Training:  53%|█████▎    | 4220/8000 [00:48<00:43, 86.21it/s]Training:  53%|█████▎    | 4229/8000 [00:48<00:43, 86.86it/s]Training:  53%|█████▎    | 4239/8000 [00:48<00:42, 87.66it/s]Training:  53%|█████▎    | 4248/8000 [00:48<00:43, 86.17it/s]Training:  53%|█████▎    | 4257/8000 [00:48<00:44, 83.50it/s]Training:  53%|█████▎    | 4266/8000 [00:49<00:45, 82.89it/s]Training:  53%|█████▎    | 4275/8000 [00:49<00:45, 81.58it/s]Training:  54%|█████▎    | 4285/8000 [00:49<00:43, 84.56it/s]Training:  54%|█████▎    | 4294/8000 [00:49<00:43, 84.65it/s]Training:  54%|█████▍    | 4303/8000 [00:49<00:43, 84.17it/s]Training:  54%|█████▍    | 4312/8000 [00:49<00:43, 84.98it/s]Training:  54%|█████▍    | 4321/8000 [00:49<00:43, 84.56it/s]Training:  54%|█████▍    | 4330/8000 [00:49<00:43, 83.71it/s]Training:  54%|█████▍    | 4339/8000 [00:49<00:43, 83.44it/s]Training:  54%|█████▍    | 4348/8000 [00:49<00:44, 82.42it/s]Training:  54%|█████▍    | 4357/8000 [00:50<00:43, 83.74it/s]Training:  55%|█████▍    | 4366/8000 [00:50<00:43, 84.29it/s]Training:  55%|█████▍    | 4375/8000 [00:50<00:43, 83.66it/s]Training:  55%|█████▍    | 4384/8000 [00:50<00:43, 83.53it/s]Training:  55%|█████▍    | 4393/8000 [00:50<00:42, 84.45it/s]Training:  55%|█████▌    | 4402/8000 [00:50<00:42, 84.91it/s]Training:  55%|█████▌    | 4411/8000 [00:50<00:42, 83.62it/s]Training:  55%|█████▌    | 4420/8000 [00:50<00:42, 83.50it/s]Training:  55%|█████▌    | 4429/8000 [00:50<00:42, 83.28it/s]Training:  55%|█████▌    | 4438/8000 [00:51<00:42, 82.89it/s]Training:  56%|█████▌    | 4447/8000 [00:51<00:41, 84.70it/s]Training:  56%|█████▌    | 4456/8000 [00:51<00:41, 84.48it/s]Training:  56%|█████▌    | 4465/8000 [00:51<00:41, 84.91it/s]Training:  56%|█████▌    | 4474/8000 [00:51<00:41, 85.63it/s]Training:  56%|█████▌    | 4484/8000 [00:51<00:40, 87.53it/s]Training:  56%|█████▌    | 4493/8000 [00:51<00:40, 86.23it/s]Training:  56%|█████▋    | 4502/8000 [00:51<00:40, 86.59it/s]Training:  56%|█████▋    | 4511/8000 [00:51<00:40, 87.07it/s]Training:  56%|█████▋    | 4520/8000 [00:52<00:40, 85.65it/s]Training:  57%|█████▋    | 4529/8000 [00:52<00:40, 85.60it/s]Training:  57%|█████▋    | 4538/8000 [00:52<00:40, 86.38it/s]Training:  57%|█████▋    | 4547/8000 [00:52<00:39, 86.55it/s]Training:  57%|█████▋    | 4556/8000 [00:52<00:39, 86.82it/s]Training:  57%|█████▋    | 4565/8000 [00:52<00:39, 86.59it/s]Training:  57%|█████▋    | 4574/8000 [00:52<00:39, 87.15it/s]Training:  57%|█████▋    | 4583/8000 [00:52<00:40, 84.47it/s]Training:  57%|█████▋    | 4592/8000 [00:52<00:40, 83.39it/s]Training:  58%|█████▊    | 4601/8000 [00:52<00:41, 81.86it/s]Training:  58%|█████▊    | 4610/8000 [00:53<00:41, 80.80it/s]Training:  58%|█████▊    | 4619/8000 [00:53<00:40, 83.29it/s]Training:  58%|█████▊    | 4628/8000 [00:53<00:40, 83.40it/s]Training:  58%|█████▊    | 4637/8000 [00:53<00:40, 82.24it/s]Training:  58%|█████▊    | 4646/8000 [00:53<00:41, 79.95it/s]Training:  58%|█████▊    | 4655/8000 [00:53<00:41, 80.78it/s]Training:  58%|█████▊    | 4664/8000 [00:53<00:41, 79.93it/s]Training:  58%|█████▊    | 4673/8000 [00:53<00:41, 80.43it/s]Training:  59%|█████▊    | 4682/8000 [00:53<00:41, 79.58it/s]Training:  59%|█████▊    | 4691/8000 [00:54<00:41, 80.04it/s]Training:  59%|█████▉    | 4700/8000 [00:54<00:43, 76.67it/s]Training:  59%|█████▉    | 4708/8000 [00:54<00:43, 75.39it/s]Training:  59%|█████▉    | 4716/8000 [00:54<00:44, 73.66it/s]Training:  59%|█████▉    | 4725/8000 [00:54<00:43, 76.03it/s]Training:  59%|█████▉    | 4734/8000 [00:54<00:42, 77.43it/s]Training:  59%|█████▉    | 4742/8000 [00:54<00:42, 77.15it/s]Training:  59%|█████▉    | 4750/8000 [00:54<00:44, 73.15it/s]Training:  59%|█████▉    | 4758/8000 [00:54<00:44, 73.13it/s]Training:  60%|█████▉    | 4766/8000 [00:55<00:45, 71.64it/s]Training:  60%|█████▉    | 4774/8000 [00:55<00:44, 71.78it/s]Training:  60%|█████▉    | 4782/8000 [00:55<00:44, 72.41it/s]Training:  60%|█████▉    | 4791/8000 [00:55<00:42, 75.06it/s]Training:  60%|█████▉    | 4799/8000 [00:55<00:43, 74.34it/s]Training:  60%|██████    | 4807/8000 [00:55<00:43, 72.96it/s]Training:  60%|██████    | 4815/8000 [00:55<00:45, 70.33it/s]Training:  60%|██████    | 4823/8000 [00:55<00:45, 69.85it/s]Training:  60%|██████    | 4831/8000 [00:56<00:44, 70.48it/s]Training:  60%|██████    | 4839/8000 [00:56<00:45, 69.92it/s]Training:  61%|██████    | 4847/8000 [00:56<00:44, 70.18it/s]Training:  61%|██████    | 4855/8000 [00:56<00:44, 71.38it/s]Training:  61%|██████    | 4863/8000 [00:56<00:44, 70.34it/s]Training:  61%|██████    | 4871/8000 [00:56<00:44, 70.89it/s]Training:  61%|██████    | 4880/8000 [00:56<00:41, 74.43it/s]Training:  61%|██████    | 4888/8000 [00:56<00:44, 70.54it/s]Training:  61%|██████    | 4896/8000 [00:56<00:44, 68.98it/s]Training:  61%|██████▏   | 4904/8000 [00:57<00:44, 69.68it/s]Training:  61%|██████▏   | 4911/8000 [00:57<00:44, 69.25it/s]Training:  61%|██████▏   | 4919/8000 [00:57<00:43, 70.14it/s]Training:  62%|██████▏   | 4927/8000 [00:57<00:42, 71.72it/s]Training:  62%|██████▏   | 4935/8000 [00:57<00:43, 70.09it/s]Training:  62%|██████▏   | 4943/8000 [00:57<00:45, 67.14it/s]Training:  62%|██████▏   | 4950/8000 [00:57<00:47, 64.68it/s]Training:  62%|██████▏   | 4957/8000 [00:57<00:47, 64.37it/s]Training:  62%|██████▏   | 4964/8000 [00:57<00:49, 61.78it/s]Training:  62%|██████▏   | 4971/8000 [00:58<00:48, 62.40it/s]Training:  62%|██████▏   | 4979/8000 [00:58<00:46, 65.37it/s]Training:  62%|██████▏   | 4986/8000 [00:58<00:45, 65.60it/s]Training:  62%|██████▏   | 4993/8000 [00:58<00:48, 62.30it/s]Training:  62%|██████▎   | 5000/8000 [00:58<00:48, 61.26it/s]Training:  63%|██████▎   | 5007/8000 [00:58<00:50, 59.75it/s]Training:  63%|██████▎   | 5014/8000 [00:58<00:48, 61.08it/s]Training:  63%|██████▎   | 5021/8000 [00:58<00:48, 60.99it/s]Training:  63%|██████▎   | 5028/8000 [00:59<00:49, 60.21it/s]Training:  63%|██████▎   | 5035/8000 [00:59<00:50, 59.22it/s]Training:  63%|██████▎   | 5041/8000 [00:59<00:49, 59.41it/s]Training:  63%|██████▎   | 5049/8000 [00:59<00:46, 62.84it/s]Training:  63%|██████▎   | 5056/8000 [00:59<00:47, 62.41it/s]Training:  63%|██████▎   | 5063/8000 [00:59<00:46, 62.94it/s]Training:  63%|██████▎   | 5070/8000 [00:59<00:45, 64.56it/s]Training:  63%|██████▎   | 5078/8000 [00:59<00:43, 66.88it/s]Training:  64%|██████▎   | 5085/8000 [00:59<00:43, 66.58it/s]Training:  64%|██████▎   | 5092/8000 [00:59<00:43, 66.76it/s]Training:  64%|██████▎   | 5099/8000 [01:00<00:43, 67.08it/s]Training:  64%|██████▍   | 5106/8000 [01:00<00:44, 65.34it/s]Training:  64%|██████▍   | 5113/8000 [01:00<00:44, 65.42it/s]Training:  64%|██████▍   | 5120/8000 [01:00<00:44, 64.44it/s]Training:  64%|██████▍   | 5127/8000 [01:00<01:05, 44.17it/s]Training:  64%|██████▍   | 5133/8000 [01:00<01:06, 42.96it/s]Training:  64%|██████▍   | 5138/8000 [01:01<01:11, 40.28it/s]Training:  64%|██████▍   | 5143/8000 [01:01<01:13, 38.97it/s]Training:  64%|██████▍   | 5148/8000 [01:01<01:13, 38.84it/s]Training:  64%|██████▍   | 5154/8000 [01:01<01:06, 42.83it/s]Training:  65%|██████▍   | 5163/8000 [01:01<00:53, 53.14it/s]Training:  65%|██████▍   | 5173/8000 [01:01<00:44, 63.83it/s]Training:  65%|██████▍   | 5183/8000 [01:01<00:39, 71.37it/s]Training:  65%|██████▍   | 5192/8000 [01:01<00:37, 75.10it/s]Training:  65%|██████▌   | 5202/8000 [01:01<00:34, 80.95it/s]Training:  65%|██████▌   | 5211/8000 [01:02<00:33, 82.66it/s]Training:  65%|██████▌   | 5221/8000 [01:02<00:31, 87.52it/s]Training:  65%|██████▌   | 5231/8000 [01:02<00:31, 88.99it/s]Training:  66%|██████▌   | 5240/8000 [01:02<00:31, 88.62it/s]Training:  66%|██████▌   | 5250/8000 [01:02<00:30, 91.45it/s]Training:  66%|██████▌   | 5260/8000 [01:02<00:29, 93.91it/s]Training:  66%|██████▌   | 5270/8000 [01:02<00:29, 93.23it/s]Training:  66%|██████▌   | 5280/8000 [01:02<00:29, 92.01it/s]Training:  66%|██████▌   | 5290/8000 [01:02<00:29, 90.78it/s]Training:  66%|██████▋   | 5300/8000 [01:02<00:30, 87.81it/s]Training:  66%|██████▋   | 5310/8000 [01:03<00:30, 89.07it/s]Training:  66%|██████▋   | 5320/8000 [01:03<00:29, 90.43it/s]Training:  67%|██████▋   | 5330/8000 [01:03<00:30, 88.97it/s]Training:  67%|██████▋   | 5339/8000 [01:03<00:30, 87.07it/s]Training:  67%|██████▋   | 5348/8000 [01:03<00:30, 87.73it/s]Training:  67%|██████▋   | 5358/8000 [01:03<00:28, 91.21it/s]Training:  67%|██████▋   | 5368/8000 [01:03<00:29, 90.30it/s]Training:  67%|██████▋   | 5378/8000 [01:03<00:28, 90.92it/s]Training:  67%|██████▋   | 5388/8000 [01:03<00:28, 91.06it/s]Training:  67%|██████▋   | 5398/8000 [01:04<00:28, 91.42it/s]Training:  68%|██████▊   | 5408/8000 [01:04<00:28, 92.43it/s]Training:  68%|██████▊   | 5418/8000 [01:04<00:27, 94.38it/s]Training:  68%|██████▊   | 5428/8000 [01:04<00:28, 89.84it/s]Training:  68%|██████▊   | 5438/8000 [01:04<00:28, 89.74it/s]Training:  68%|██████▊   | 5448/8000 [01:04<00:27, 91.65it/s]Training:  68%|██████▊   | 5458/8000 [01:04<00:28, 87.92it/s]Training:  68%|██████▊   | 5467/8000 [01:04<00:28, 88.14it/s]Training:  68%|██████▊   | 5476/8000 [01:04<00:28, 88.29it/s]Training:  69%|██████▊   | 5486/8000 [01:05<00:28, 89.13it/s]Training:  69%|██████▊   | 5495/8000 [01:05<00:28, 88.30it/s]Training:  69%|██████▉   | 5505/8000 [01:05<00:27, 89.87it/s]Training:  69%|██████▉   | 5514/8000 [01:05<00:27, 88.87it/s]Training:  69%|██████▉   | 5523/8000 [01:05<00:27, 88.68it/s]Training:  69%|██████▉   | 5533/8000 [01:05<00:27, 89.85it/s]Training:  69%|██████▉   | 5543/8000 [01:05<00:26, 91.28it/s]Training:  69%|██████▉   | 5553/8000 [01:05<00:27, 89.42it/s]Training:  70%|██████▉   | 5562/8000 [01:05<00:27, 87.62it/s]Training:  70%|██████▉   | 5573/8000 [01:06<00:26, 93.22it/s]Training:  70%|██████▉   | 5585/8000 [01:06<00:24, 99.06it/s]Training:  70%|██████▉   | 5595/8000 [01:06<00:24, 98.26it/s]Training:  70%|███████   | 5606/8000 [01:06<00:23, 100.50it/s]Training:  70%|███████   | 5617/8000 [01:06<00:23, 100.49it/s]Training:  70%|███████   | 5628/8000 [01:06<00:24, 95.85it/s] Training:  70%|███████   | 5638/8000 [01:06<00:27, 87.03it/s]Training:  71%|███████   | 5647/8000 [01:06<00:29, 80.42it/s]Training:  71%|███████   | 5656/8000 [01:06<00:31, 74.29it/s]Training:  71%|███████   | 5664/8000 [01:07<00:34, 68.41it/s]Training:  71%|███████   | 5671/8000 [01:07<00:36, 63.94it/s]Training:  71%|███████   | 5678/8000 [01:07<00:37, 62.61it/s]Training:  71%|███████   | 5685/8000 [01:07<00:37, 61.44it/s]Training:  71%|███████   | 5692/8000 [01:07<00:36, 63.21it/s]Training:  71%|███████   | 5699/8000 [01:07<00:37, 61.98it/s]Training:  71%|███████▏  | 5706/8000 [01:07<00:38, 58.97it/s]Training:  71%|███████▏  | 5712/8000 [01:07<00:41, 55.36it/s]Training:  71%|███████▏  | 5718/8000 [01:08<00:40, 55.72it/s]Training:  72%|███████▏  | 5724/8000 [01:08<00:41, 54.86it/s]Training:  72%|███████▏  | 5730/8000 [01:08<00:43, 52.22it/s]Training:  72%|███████▏  | 5736/8000 [01:08<00:43, 52.42it/s]Training:  72%|███████▏  | 5742/8000 [01:08<00:43, 52.34it/s]Training:  72%|███████▏  | 5748/8000 [01:08<00:44, 50.90it/s]Training:  72%|███████▏  | 5754/8000 [01:08<00:44, 49.97it/s]Training:  72%|███████▏  | 5760/8000 [01:08<00:47, 47.17it/s]Training:  72%|███████▏  | 5765/8000 [01:09<00:48, 45.63it/s]Training:  72%|███████▏  | 5770/8000 [01:09<00:50, 44.27it/s]Training:  72%|███████▏  | 5775/8000 [01:09<00:49, 44.56it/s]Training:  72%|███████▏  | 5780/8000 [01:09<00:51, 42.72it/s]Training:  72%|███████▏  | 5785/8000 [01:09<00:51, 43.26it/s]Training:  72%|███████▏  | 5790/8000 [01:09<00:49, 45.03it/s]Training:  72%|███████▏  | 5796/8000 [01:09<00:46, 47.65it/s]Training:  73%|███████▎  | 5801/8000 [01:09<00:46, 47.02it/s]Training:  73%|███████▎  | 5806/8000 [01:09<00:49, 44.29it/s]Training:  73%|███████▎  | 5811/8000 [01:10<00:59, 36.62it/s]Training:  73%|███████▎  | 5815/8000 [01:10<00:58, 37.13it/s]Training:  73%|███████▎  | 5820/8000 [01:10<00:54, 39.89it/s]Training:  73%|███████▎  | 5825/8000 [01:10<00:54, 40.18it/s]Training:  73%|███████▎  | 5831/8000 [01:10<00:49, 43.42it/s]Training:  73%|███████▎  | 5836/8000 [01:10<00:49, 43.65it/s]Training:  73%|███████▎  | 5841/8000 [01:10<00:49, 43.65it/s]Training:  73%|███████▎  | 5847/8000 [01:10<00:47, 45.30it/s]Training:  73%|███████▎  | 5852/8000 [01:11<00:47, 45.42it/s]Training:  73%|███████▎  | 5857/8000 [01:11<00:46, 46.26it/s]Training:  73%|███████▎  | 5862/8000 [01:11<00:46, 45.59it/s]Training:  73%|███████▎  | 5867/8000 [01:11<00:46, 45.86it/s]Training:  73%|███████▎  | 5872/8000 [01:11<00:45, 46.30it/s]Training:  73%|███████▎  | 5877/8000 [01:11<00:48, 43.87it/s]Training:  74%|███████▎  | 5882/8000 [01:11<00:47, 44.88it/s]Training:  74%|███████▎  | 5887/8000 [01:11<00:46, 45.90it/s]Training:  74%|███████▎  | 5892/8000 [01:11<00:47, 44.80it/s]Training:  74%|███████▎  | 5898/8000 [01:12<00:45, 46.11it/s]Training:  74%|███████▍  | 5903/8000 [01:12<00:44, 46.98it/s]Training:  74%|███████▍  | 5908/8000 [01:12<00:45, 46.20it/s]Training:  74%|███████▍  | 5913/8000 [01:12<00:46, 44.80it/s]Training:  74%|███████▍  | 5918/8000 [01:12<00:45, 45.43it/s]Training:  74%|███████▍  | 5923/8000 [01:12<00:44, 46.42it/s]Training:  74%|███████▍  | 5928/8000 [01:12<00:44, 46.95it/s]Training:  74%|███████▍  | 5934/8000 [01:12<00:40, 50.52it/s]Training:  74%|███████▍  | 5940/8000 [01:12<00:39, 52.29it/s]Training:  74%|███████▍  | 5947/8000 [01:13<00:36, 55.52it/s]Training:  74%|███████▍  | 5953/8000 [01:13<00:37, 54.57it/s]Training:  74%|███████▍  | 5959/8000 [01:13<00:38, 53.25it/s]Training:  75%|███████▍  | 5965/8000 [01:13<00:40, 50.29it/s]Training:  75%|███████▍  | 5971/8000 [01:13<00:41, 49.47it/s]Training:  75%|███████▍  | 5977/8000 [01:13<00:40, 50.21it/s]Training:  75%|███████▍  | 5983/8000 [01:13<00:38, 51.91it/s]Training:  75%|███████▍  | 5990/8000 [01:13<00:36, 55.21it/s]Training:  75%|███████▍  | 5997/8000 [01:14<00:34, 57.38it/s]Training:  75%|███████▍  | 5997/8000 [01:30<00:34, 57.38it/s]Training:  75%|███████▌  | 6001/8000 [01:33<34:07,  1.02s/it]Training:  75%|███████▌  | 6014/8000 [01:33<17:21,  1.91it/s]Training:  75%|███████▌  | 6028/8000 [01:33<09:55,  3.31it/s]Training:  76%|███████▌  | 6041/8000 [01:33<06:21,  5.13it/s]Training:  76%|███████▌  | 6055/8000 [01:33<04:08,  7.82it/s]Training:  76%|███████▌  | 6068/8000 [01:33<02:52, 11.22it/s]Training:  76%|███████▌  | 6081/8000 [01:34<02:01, 15.74it/s]Training:  76%|███████▌  | 6093/8000 [01:34<01:30, 21.11it/s]Training:  76%|███████▋  | 6105/8000 [01:34<01:08, 27.77it/s]Training:  76%|███████▋  | 6117/8000 [01:39<05:09,  6.08it/s]Training:  77%|███████▋  | 6130/8000 [01:39<03:35,  8.68it/s]Training:  77%|███████▋  | 6142/8000 [01:40<02:36, 11.89it/s]Training:  77%|███████▋  | 6154/8000 [01:40<01:54, 16.18it/s]Training:  77%|███████▋  | 6166/8000 [01:40<01:24, 21.71it/s]Training:  77%|███████▋  | 6178/8000 [01:40<01:03, 28.56it/s]Training:  77%|███████▋  | 6190/8000 [01:40<00:49, 36.93it/s]Training:  78%|███████▊  | 6202/8000 [01:40<00:38, 46.30it/s]Training:  78%|███████▊  | 6214/8000 [01:47<05:23,  5.53it/s]Training:  78%|███████▊  | 6226/8000 [01:47<03:49,  7.73it/s]Training:  78%|███████▊  | 6238/8000 [01:47<02:44, 10.73it/s]Training:  78%|███████▊  | 6249/8000 [01:47<02:01, 14.37it/s]Training:  78%|███████▊  | 6261/8000 [01:47<01:28, 19.55it/s]Training:  78%|███████▊  | 6273/8000 [01:47<01:05, 26.20it/s]Training:  79%|███████▊  | 6285/8000 [01:47<00:50, 34.04it/s]Training:  79%|███████▊  | 6298/8000 [01:47<00:38, 44.20it/s]Training:  79%|███████▉  | 6310/8000 [01:48<00:31, 54.27it/s]Training:  79%|███████▉  | 6322/8000 [01:54<04:46,  5.85it/s]Training:  79%|███████▉  | 6334/8000 [01:54<03:24,  8.16it/s]Training:  79%|███████▉  | 6345/8000 [01:54<02:30, 11.01it/s]Training:  79%|███████▉  | 6356/8000 [01:54<01:51, 14.79it/s]Training:  80%|███████▉  | 6368/8000 [01:54<01:20, 20.21it/s]Training:  80%|███████▉  | 6379/8000 [01:54<01:01, 26.37it/s]Training:  80%|███████▉  | 6390/8000 [01:55<00:47, 33.72it/s]Training:  80%|████████  | 6401/8000 [01:55<00:38, 41.74it/s]Training:  80%|████████  | 6412/8000 [01:55<00:31, 50.70it/s]Training:  80%|████████  | 6423/8000 [02:01<05:06,  5.15it/s]Training:  80%|████████  | 6435/8000 [02:02<03:32,  7.38it/s]Training:  81%|████████  | 6447/8000 [02:02<02:29, 10.41it/s]Training:  81%|████████  | 6459/8000 [02:02<01:46, 14.44it/s]Training:  81%|████████  | 6471/8000 [02:02<01:17, 19.64it/s]Training:  81%|████████  | 6483/8000 [02:02<00:57, 26.26it/s]Training:  81%|████████  | 6494/8000 [02:02<00:44, 33.47it/s]Training:  81%|████████▏ | 6506/8000 [02:02<00:34, 42.81it/s]Training:  81%|████████▏ | 6517/8000 [02:02<00:29, 51.07it/s]Training:  82%|████████▏ | 6528/8000 [02:09<04:26,  5.53it/s]Training:  82%|████████▏ | 6540/8000 [02:09<03:05,  7.86it/s]Training:  82%|████████▏ | 6551/8000 [02:09<02:14, 10.75it/s]Training:  82%|████████▏ | 6563/8000 [02:09<01:36, 14.96it/s]Training:  82%|████████▏ | 6575/8000 [02:09<01:09, 20.42it/s]Training:  82%|████████▏ | 6587/8000 [02:09<00:51, 27.23it/s]Training:  82%|████████▎ | 6600/8000 [02:09<00:38, 36.32it/s]Training:  83%|████████▎ | 6612/8000 [02:09<00:30, 45.46it/s]Training:  83%|████████▎ | 6624/8000 [02:10<00:25, 54.85it/s]Training:  83%|████████▎ | 6636/8000 [02:16<03:51,  5.90it/s]Training:  83%|████████▎ | 6648/8000 [02:16<02:44,  8.22it/s]Training:  83%|████████▎ | 6660/8000 [02:16<01:57, 11.40it/s]Training:  83%|████████▎ | 6672/8000 [02:16<01:25, 15.61it/s]Training:  84%|████████▎ | 6683/8000 [02:16<01:04, 20.57it/s]Training:  84%|████████▎ | 6694/8000 [02:16<00:48, 26.83it/s]Training:  84%|████████▍ | 6705/8000 [02:16<00:37, 34.31it/s]Training:  84%|████████▍ | 6716/8000 [02:17<00:29, 42.95it/s]Training:  84%|████████▍ | 6727/8000 [02:17<00:24, 52.37it/s]Training:  84%|████████▍ | 6738/8000 [02:23<04:01,  5.22it/s]Training:  84%|████████▍ | 6750/8000 [02:23<02:47,  7.47it/s]Training:  85%|████████▍ | 6762/8000 [02:23<01:57, 10.54it/s]Training:  85%|████████▍ | 6774/8000 [02:24<01:23, 14.63it/s]Training:  85%|████████▍ | 6786/8000 [02:24<01:00, 19.94it/s]Training:  85%|████████▍ | 6797/8000 [02:24<00:46, 25.99it/s]Training:  85%|████████▌ | 6809/8000 [02:24<00:35, 33.95it/s]Training:  85%|████████▌ | 6820/8000 [02:24<00:27, 42.29it/s]Training:  85%|████████▌ | 6832/8000 [02:24<00:22, 52.15it/s]Training:  86%|████████▌ | 6843/8000 [02:30<03:28,  5.54it/s]Training:  86%|████████▌ | 6853/8000 [02:31<02:33,  7.45it/s]Training:  86%|████████▌ | 6864/8000 [02:31<01:49, 10.34it/s]Training:  86%|████████▌ | 6876/8000 [02:31<01:17, 14.52it/s]Training:  86%|████████▌ | 6888/8000 [02:31<00:55, 19.97it/s]Training:  86%|████████▌ | 6899/8000 [02:31<00:42, 26.18it/s]Training:  86%|████████▋ | 6911/8000 [02:31<00:31, 34.36it/s]Training:  87%|████████▋ | 6922/8000 [02:31<00:25, 42.85it/s]Training:  87%|████████▋ | 6933/8000 [02:31<00:20, 52.15it/s]Training:  87%|████████▋ | 6944/8000 [02:31<00:18, 58.31it/s]Training:  87%|████████▋ | 6954/8000 [02:38<03:17,  5.29it/s]Training:  87%|████████▋ | 6965/8000 [02:38<02:19,  7.44it/s]Training:  87%|████████▋ | 6977/8000 [02:38<01:36, 10.61it/s]Training:  87%|████████▋ | 6988/8000 [02:38<01:09, 14.47it/s]Training:  87%|████████▋ | 6999/8000 [02:38<00:51, 19.49it/s]Training:  88%|████████▊ | 7010/8000 [02:38<00:38, 25.73it/s]Training:  88%|████████▊ | 7021/8000 [02:38<00:29, 32.93it/s]Training:  88%|████████▊ | 7031/8000 [02:39<00:23, 40.51it/s]Training:  88%|████████▊ | 7042/8000 [02:39<00:19, 50.04it/s]Training:  88%|████████▊ | 7053/8000 [02:45<02:52,  5.50it/s]Training:  88%|████████▊ | 7063/8000 [02:45<02:04,  7.51it/s]Training:  88%|████████▊ | 7075/8000 [02:45<01:25, 10.81it/s]Training:  89%|████████▊ | 7087/8000 [02:45<01:00, 15.20it/s]Training:  89%|████████▊ | 7099/8000 [02:45<00:43, 20.87it/s]Training:  89%|████████▉ | 7111/8000 [02:45<00:31, 27.91it/s]Training:  89%|████████▉ | 7123/8000 [02:45<00:24, 36.23it/s]Training:  89%|████████▉ | 7135/8000 [02:45<00:18, 45.82it/s]Training:  89%|████████▉ | 7148/8000 [02:46<00:14, 57.00it/s]Training:  90%|████████▉ | 7160/8000 [02:52<02:27,  5.69it/s]Training:  90%|████████▉ | 7172/8000 [02:52<01:44,  7.92it/s]Training:  90%|████████▉ | 7184/8000 [02:52<01:14, 10.96it/s]Training:  90%|████████▉ | 7194/8000 [02:52<00:56, 14.29it/s]Training:  90%|█████████ | 7206/8000 [02:53<00:40, 19.58it/s]Training:  90%|█████████ | 7218/8000 [02:53<00:29, 26.30it/s]Training:  90%|█████████ | 7230/8000 [02:53<00:22, 34.27it/s]Training:  91%|█████████ | 7242/8000 [02:53<00:17, 43.39it/s]Training:  91%|█████████ | 7254/8000 [02:53<00:13, 53.42it/s]Training:  91%|█████████ | 7266/8000 [02:59<02:06,  5.80it/s]Training:  91%|█████████ | 7277/8000 [02:59<01:31,  7.92it/s]Training:  91%|█████████ | 7288/8000 [03:00<01:06, 10.79it/s]Training:  91%|█████████ | 7299/8000 [03:00<00:47, 14.62it/s]Training:  91%|█████████▏| 7311/8000 [03:00<00:34, 20.10it/s]Training:  92%|█████████▏| 7323/8000 [03:00<00:25, 26.96it/s]Training:  92%|█████████▏| 7335/8000 [03:00<00:19, 34.97it/s]Training:  92%|█████████▏| 7347/8000 [03:00<00:14, 44.41it/s]Training:  92%|█████████▏| 7359/8000 [03:00<00:11, 54.87it/s]Training:  92%|█████████▏| 7371/8000 [03:07<01:53,  5.52it/s]Training:  92%|█████████▏| 7383/8000 [03:07<01:19,  7.73it/s]Training:  92%|█████████▏| 7395/8000 [03:07<00:56, 10.75it/s]Training:  93%|█████████▎| 7407/8000 [03:07<00:40, 14.76it/s]Training:  93%|█████████▎| 7419/8000 [03:07<00:29, 19.97it/s]Training:  93%|█████████▎| 7431/8000 [03:07<00:21, 26.60it/s]Training:  93%|█████████▎| 7443/8000 [03:07<00:16, 34.66it/s]Training:  93%|█████████▎| 7455/8000 [03:08<00:12, 43.78it/s]Training:  93%|█████████▎| 7467/8000 [03:08<00:09, 53.50it/s]Training:  93%|█████████▎| 7479/8000 [03:14<01:30,  5.76it/s]Training:  94%|█████████▎| 7491/8000 [03:14<01:03,  8.05it/s]Training:  94%|█████████▍| 7503/8000 [03:14<00:44, 11.18it/s]Training:  94%|█████████▍| 7515/8000 [03:14<00:31, 15.34it/s]Training:  94%|█████████▍| 7527/8000 [03:15<00:22, 20.72it/s]Training:  94%|█████████▍| 7539/8000 [03:15<00:16, 27.49it/s]Training:  94%|█████████▍| 7552/8000 [03:15<00:12, 36.41it/s]Training:  95%|█████████▍| 7565/8000 [03:15<00:09, 46.56it/s]Training:  95%|█████████▍| 7578/8000 [03:15<00:07, 57.52it/s]Training:  95%|█████████▍| 7590/8000 [03:21<01:05,  6.21it/s]Training:  95%|█████████▌| 7602/8000 [03:21<00:46,  8.59it/s]Training:  95%|█████████▌| 7615/8000 [03:21<00:31, 12.07it/s]Training:  95%|█████████▌| 7628/8000 [03:21<00:22, 16.70it/s]Training:  96%|█████████▌| 7640/8000 [03:22<00:16, 22.19it/s]Training:  96%|█████████▌| 7652/8000 [03:22<00:11, 29.10it/s]Training:  96%|█████████▌| 7664/8000 [03:22<00:08, 37.42it/s]Training:  96%|█████████▌| 7677/8000 [03:22<00:06, 47.81it/s]Training:  96%|█████████▌| 7689/8000 [03:28<00:53,  5.82it/s]Training:  96%|█████████▋| 7701/8000 [03:28<00:36,  8.08it/s]Training:  96%|█████████▋| 7712/8000 [03:29<00:26, 10.89it/s]Training:  97%|█████████▋| 7724/8000 [03:29<00:18, 14.99it/s]Training:  97%|█████████▋| 7736/8000 [03:29<00:12, 20.32it/s]Training:  97%|█████████▋| 7747/8000 [03:29<00:09, 25.93it/s]Training:  97%|█████████▋| 7760/8000 [03:29<00:06, 34.78it/s]Training:  97%|█████████▋| 7772/8000 [03:29<00:05, 44.00it/s]Training:  97%|█████████▋| 7784/8000 [03:29<00:03, 54.08it/s]Training:  97%|█████████▋| 7796/8000 [03:36<00:35,  5.81it/s]Training:  98%|█████████▊| 7809/8000 [03:36<00:22,  8.32it/s]Training:  98%|█████████▊| 7821/8000 [03:36<00:15, 11.44it/s]Training:  98%|█████████▊| 7833/8000 [03:36<00:10, 15.60it/s]Training:  98%|█████████▊| 7845/8000 [03:36<00:07, 20.97it/s]Training:  98%|█████████▊| 7857/8000 [03:36<00:05, 27.76it/s]Training:  98%|█████████▊| 7869/8000 [03:36<00:03, 35.93it/s]Training:  99%|█████████▊| 7881/8000 [03:36<00:02, 44.87it/s]Training:  99%|█████████▊| 7893/8000 [03:36<00:01, 54.55it/s]Training:  99%|█████████▉| 7905/8000 [03:43<00:16,  5.80it/s]Training:  99%|█████████▉| 7916/8000 [03:43<00:10,  7.91it/s]Training:  99%|█████████▉| 7928/8000 [03:43<00:06, 11.05it/s]Training:  99%|█████████▉| 7940/8000 [03:43<00:03, 15.24it/s]Training:  99%|█████████▉| 7952/8000 [03:43<00:02, 20.69it/s]Training: 100%|█████████▉| 7964/8000 [03:43<00:01, 27.41it/s]Training: 100%|█████████▉| 7976/8000 [03:43<00:00, 35.63it/s]Training: 100%|█████████▉| 7989/8000 [03:44<00:00, 45.96it/s]Training: 100%|█████████▉| 7999/8000 [03:44<00:00, 35.69it/s]
+INFO:root:##################################################
+Starting training sequence 2...
+##################################################
+INFO:root:Increasing weight on negative examples to reduce false positives...
+Training:   0%|          | 0/800.0 [00:00<?, ?it/s]Training:   2%|▏         | 12/800.0 [00:00<00:07, 110.12it/s]Training:   3%|▎         | 24/800.0 [00:00<00:06, 112.21it/s]Training:   4%|▍         | 36/800.0 [00:00<00:06, 114.52it/s]Training:   6%|▌         | 48/800.0 [00:06<02:42,  4.63it/s] Training:   7%|▋         | 59/800.0 [00:06<01:47,  6.88it/s]Training:   9%|▉         | 70/800.0 [00:06<01:13,  9.92it/s]Training:  10%|█         | 82/800.0 [00:07<00:50, 14.36it/s]Training:  12%|█▏        | 93/800.0 [00:13<02:35,  4.53it/s]Training:  13%|█▎        | 104/800.0 [00:13<01:48,  6.41it/s]Training:  14%|█▍        | 115/800.0 [00:13<01:16,  8.96it/s]Training:  16%|█▌        | 127/800.0 [00:13<00:52, 12.71it/s]Training:  17%|█▋        | 137/800.0 [00:19<02:36,  4.24it/s]Training:  19%|█▊        | 149/800.0 [00:20<01:46,  6.14it/s]Training:  20%|██        | 161/800.0 [00:20<01:13,  8.74it/s]Training:  21%|██▏       | 171/800.0 [00:26<02:42,  3.88it/s]Training:  23%|██▎       | 182/800.0 [00:26<01:53,  5.45it/s]Training:  24%|██▍       | 193/800.0 [00:26<01:19,  7.62it/s]Training:  26%|██▌       | 204/800.0 [00:26<00:56, 10.57it/s]Training:  27%|██▋       | 214/800.0 [00:33<02:21,  4.13it/s]Training:  28%|██▊       | 226/800.0 [00:33<01:35,  6.01it/s]Training:  30%|██▉       | 238/800.0 [00:33<01:05,  8.60it/s]Training:  31%|███       | 249/800.0 [00:33<00:46, 11.77it/s]Training:  32%|███▏      | 259/800.0 [00:39<02:08,  4.22it/s]Training:  34%|███▍      | 271/800.0 [00:39<01:26,  6.11it/s]Training:  35%|███▌      | 283/800.0 [00:39<00:59,  8.71it/s]Training:  37%|███▋      | 295/800.0 [00:40<00:41, 12.19it/s]Training:  38%|███▊      | 305/800.0 [00:46<01:50,  4.48it/s]Training:  40%|███▉      | 317/800.0 [00:46<01:15,  6.43it/s]Training:  41%|████      | 329/800.0 [00:46<00:51,  9.10it/s]Training:  42%|████▏     | 339/800.0 [00:52<01:59,  3.86it/s]Training:  44%|████▍     | 351/800.0 [00:53<01:20,  5.56it/s]Training:  45%|████▌     | 362/800.0 [00:53<00:56,  7.71it/s]Training:  47%|████▋     | 374/800.0 [00:53<00:39, 10.89it/s]Training:  48%|████▊     | 384/800.0 [00:59<01:39,  4.17it/s]Training:  50%|████▉     | 396/800.0 [00:59<01:07,  6.00it/s]Training:  51%|█████     | 408/800.0 [00:59<00:46,  8.52it/s]Training:  52%|█████▎    | 420/800.0 [00:59<00:31, 11.92it/s]Training:  54%|█████▍    | 430/800.0 [01:06<01:26,  4.30it/s]Training:  55%|█████▌    | 442/800.0 [01:06<00:57,  6.17it/s]Training:  57%|█████▋    | 454/800.0 [01:06<00:39,  8.75it/s]Training:  58%|█████▊    | 464/800.0 [01:12<01:24,  3.98it/s]Training:  60%|█████▉    | 476/800.0 [01:12<00:56,  5.72it/s]Training:  61%|██████    | 489/800.0 [01:13<00:37,  8.34it/s]Training:  63%|██████▎   | 502/800.0 [01:13<00:25, 11.86it/s]Training:  64%|██████▍   | 513/800.0 [01:19<01:04,  4.44it/s]Training:  66%|██████▌   | 525/800.0 [01:19<00:43,  6.26it/s]Training:  67%|██████▋   | 537/800.0 [01:19<00:30,  8.76it/s]Training:  68%|██████▊   | 548/800.0 [01:26<01:03,  3.99it/s]Training:  70%|██████▉   | 559/800.0 [01:26<00:43,  5.52it/s]Training:  71%|███████▏  | 570/800.0 [01:26<00:30,  7.63it/s]Training:  73%|███████▎  | 581/800.0 [01:26<00:20, 10.48it/s]Training:  74%|███████▍  | 591/800.0 [01:33<00:51,  4.06it/s]Training:  75%|███████▌  | 602/800.0 [01:33<00:34,  5.73it/s]Training:  77%|███████▋  | 613/800.0 [01:33<00:23,  8.02it/s]Training:  78%|███████▊  | 624/800.0 [01:33<00:15, 11.12it/s]Training:  79%|███████▉  | 634/800.0 [01:39<00:40,  4.10it/s]Training:  81%|████████  | 646/800.0 [01:39<00:25,  5.97it/s]Training:  82%|████████▏ | 659/800.0 [01:40<00:16,  8.77it/s]Training:  84%|████████▍ | 671/800.0 [01:40<00:10, 12.23it/s]Training:  85%|████████▌ | 682/800.0 [01:46<00:25,  4.58it/s]Training:  87%|████████▋ | 694/800.0 [01:46<00:16,  6.51it/s]Training:  88%|████████▊ | 707/800.0 [01:46<00:09,  9.38it/s]Training:  90%|████████▉ | 717/800.0 [01:53<00:20,  3.98it/s]Training:  91%|█████████▏| 730/800.0 [01:53<00:12,  5.83it/s]Training:  93%|█████████▎| 743/800.0 [01:53<00:06,  8.36it/s]Training:  94%|█████████▍| 756/800.0 [01:53<00:03, 11.79it/s]Training:  96%|█████████▌| 767/800.0 [01:59<00:07,  4.71it/s]Training:  98%|█████████▊| 780/800.0 [01:59<00:02,  6.77it/s]Training:  99%|█████████▉| 793/800.0 [01:59<00:00,  9.59it/s]Training: 100%|█████████▉| 799/800.0 [01:59<00:00,  6.68it/s]
+INFO:root:##################################################
+Starting training sequence 3...
+##################################################
+INFO:root:Increasing weight on negative examples to reduce false positives...
+Training:   0%|          | 0/800.0 [00:00<?, ?it/s]Training:   2%|▏         | 12/800.0 [00:00<00:06, 117.17it/s]Training:   3%|▎         | 25/800.0 [00:00<00:06, 120.57it/s]Training:   5%|▍         | 38/800.0 [00:00<00:06, 117.17it/s]Training:   6%|▋         | 50/800.0 [00:06<02:40,  4.66it/s] Training:   8%|▊         | 62/800.0 [00:07<01:44,  7.04it/s]Training:   9%|▉         | 73/800.0 [00:07<01:12,  9.98it/s]Training:  11%|█         | 85/800.0 [00:07<00:49, 14.30it/s]Training:  12%|█▏        | 96/800.0 [00:13<02:36,  4.48it/s]Training:  14%|█▎        | 109/800.0 [00:13<01:43,  6.65it/s]Training:  15%|█▌        | 121/800.0 [00:13<01:12,  9.37it/s]Training:  16%|█▋        | 131/800.0 [00:20<02:49,  3.95it/s]Training:  18%|█▊        | 143/800.0 [00:20<01:55,  5.68it/s]Training:  20%|█▉        | 156/800.0 [00:20<01:17,  8.26it/s]Training:  21%|██        | 169/800.0 [00:20<00:53, 11.75it/s]Training:  22%|██▎       | 180/800.0 [00:27<02:18,  4.48it/s]Training:  24%|██▍       | 192/800.0 [00:27<01:36,  6.32it/s]Training:  26%|██▌       | 204/800.0 [00:27<01:07,  8.85it/s]Training:  27%|██▋       | 214/800.0 [00:33<02:24,  4.04it/s]Training:  28%|██▊       | 225/800.0 [00:33<01:42,  5.63it/s]Training:  30%|██▉       | 237/800.0 [00:33<01:10,  8.03it/s]Training:  31%|███       | 249/800.0 [00:33<00:48, 11.26it/s]Training:  32%|███▏      | 259/800.0 [00:40<02:08,  4.22it/s]Training:  34%|███▍      | 271/800.0 [00:40<01:27,  6.06it/s]Training:  35%|███▌      | 283/800.0 [00:40<01:00,  8.59it/s]Training:  37%|███▋      | 295/800.0 [00:40<00:42, 12.01it/s]Training:  38%|███▊      | 305/800.0 [00:46<01:50,  4.48it/s]Training:  40%|███▉      | 318/800.0 [00:46<01:13,  6.60it/s]Training:  41%|████▏     | 330/800.0 [00:46<00:50,  9.26it/s]Training:  42%|████▎     | 340/800.0 [00:53<01:57,  3.93it/s]Training:  44%|████▍     | 352/800.0 [00:53<01:19,  5.63it/s]Training:  46%|████▌     | 364/800.0 [00:53<00:54,  7.98it/s]Training:  47%|████▋     | 377/800.0 [00:53<00:36, 11.44it/s]Training:  48%|████▊     | 388/800.0 [00:59<01:32,  4.45it/s]Training:  50%|█████     | 401/800.0 [01:00<01:01,  6.45it/s]Training:  52%|█████▏    | 414/800.0 [01:00<00:41,  9.20it/s]Training:  53%|█████▎    | 424/800.0 [01:06<01:31,  4.09it/s]Training:  55%|█████▍    | 436/800.0 [01:06<01:02,  5.80it/s]Training:  56%|█████▌    | 449/800.0 [01:06<00:41,  8.36it/s]Training:  58%|█████▊    | 461/800.0 [01:06<00:29, 11.56it/s]Training:  59%|█████▉    | 472/800.0 [01:13<01:12,  4.51it/s]Training:  60%|██████    | 484/800.0 [01:13<00:49,  6.38it/s]Training:  62%|██████▏   | 497/800.0 [01:13<00:33,  9.15it/s]Training:  63%|██████▎   | 507/800.0 [01:19<01:13,  3.99it/s]Training:  65%|██████▌   | 520/800.0 [01:19<00:48,  5.83it/s]Training:  67%|██████▋   | 533/800.0 [01:20<00:31,  8.36it/s]Training:  68%|██████▊   | 545/800.0 [01:20<00:22, 11.51it/s]Training:  70%|██████▉   | 556/800.0 [01:26<00:54,  4.46it/s]Training:  71%|███████   | 569/800.0 [01:26<00:35,  6.44it/s]Training:  73%|███████▎  | 582/800.0 [01:26<00:23,  9.17it/s]Training:  74%|███████▍  | 592/800.0 [01:32<00:49,  4.20it/s]Training:  76%|███████▌  | 604/800.0 [01:32<00:32,  5.95it/s]Training:  77%|███████▋  | 616/800.0 [01:33<00:22,  8.36it/s]Training:  78%|███████▊  | 628/800.0 [01:33<00:14, 11.63it/s]Training:  80%|███████▉  | 639/800.0 [01:39<00:37,  4.34it/s]Training:  81%|████████▏ | 651/800.0 [01:39<00:24,  6.16it/s]Training:  83%|████████▎ | 661/800.0 [01:39<00:16,  8.19it/s]Training:  84%|████████▍ | 670/800.0 [01:40<00:12, 10.66it/s]Training:  85%|████████▍ | 679/800.0 [01:46<00:30,  4.02it/s]Training:  86%|████████▋ | 692/800.0 [01:46<00:17,  6.12it/s]Training:  88%|████████▊ | 705/800.0 [01:46<00:10,  9.00it/s]Training:  90%|████████▉ | 716/800.0 [01:52<00:21,  3.94it/s]Training:  91%|█████████ | 728/800.0 [01:53<00:12,  5.63it/s]Training:  92%|█████████▎| 740/800.0 [01:53<00:07,  7.96it/s]Training:  94%|█████████▍| 753/800.0 [01:53<00:04, 11.40it/s]Training:  95%|█████████▌| 763/800.0 [01:59<00:08,  4.32it/s]Training:  97%|█████████▋| 776/800.0 [01:59<00:03,  6.31it/s]Training:  98%|█████████▊| 788/800.0 [01:59<00:01,  8.83it/s]Training: 100%|█████████▉| 799/800.0 [01:59<00:00,  6.66it/s]
+INFO:root:Merging checkpoints above the 90th percentile into single model...
+INFO:root:
+################
+Final Model Accuracy: 0.8039801120758057
+Final Model Recall: 0.6178217530250549
+Final Model False Positives per Hour: 0.0
+################
+
+INFO:root:####
+Saving ONNX mode as '/home/czeddaru/.config/hypr/scripts/quickshell/claude/voice/wake_train/build/kandor.onnx'
+/home/czeddaru/.config/hypr/scripts/quickshell/claude/voice/wake_train/openwakeword_repo/openwakeword/train.py:435: DeprecationWarning: You are using the legacy TorchScript-based ONNX export. Starting in PyTorch 2.9, the new torch.export-based ONNX exporter has become the default. Learn more about the new export logic: https://docs.pytorch.org/docs/stable/onnx_export.html. For exporting control flow: https://pytorch.org/tutorials/beginner/onnx/export_control_flow_model_to_onnx_tutorial.html
+  torch.onnx.export(model_to_save.to("cpu"), torch.rand(self.input_shape)[None, ],
+Traceback (most recent call last):
+  File "/home/czeddaru/.config/hypr/scripts/quickshell/claude/voice/wake_train/openwakeword_repo/openwakeword/train.py", line 935, in <module>
+    convert_onnx_to_tflite(os.path.join(config["output_dir"], config["model_name"] + ".onnx"),
+  File "/home/czeddaru/.config/hypr/scripts/quickshell/claude/voice/wake_train/openwakeword_repo/openwakeword/train.py", line 585, in convert_onnx_to_tflite
+    from onnx_tf.backend import prepare
+ModuleNotFoundError: No module named 'onnx_tf'

@@ -1,0 +1,1 @@
+{ "name": "spotify", "nice": 5, "ioclass": "best-effort", "ionice": 6 }

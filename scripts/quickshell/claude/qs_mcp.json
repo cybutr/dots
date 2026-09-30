@@ -1,0 +1,37 @@
+{
+  "mcpServers": {
+    "qs-desktop": {
+      "command": "python3",
+      "args": ["/home/czeddaru/.config/hypr/scripts/quickshell/claude/qs_mcp.py"]
+    },
+    "discord-mcp": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["/home/czeddaru/.local/share/discord-mcp/server.mjs"],
+      "env": {}
+    },
+    "spotify": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["/home/czeddaru/.local/share/spotify-mcp/build/index.js"],
+      "env": {}
+    },
+    "obsidian": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["/home/czeddaru/.local/share/obsidian-mcp/server.mjs"],
+      "env": {}
+    },
+    "gsuite": {
+      "command": "/home/czeddaru/.local/bin/uvx",
+      "args": ["workspace-mcp", "--single-user", "--tool-tier", "core",
+                "--tools", "gmail", "drive", "docs", "sheets", "calendar", "tasks"],
+      "env": {
+        "GOOGLE_OAUTH_CLIENT_ID": "${GOOGLE_OAUTH_CLIENT_ID}",
+        "GOOGLE_OAUTH_CLIENT_SECRET": "${GOOGLE_OAUTH_CLIENT_SECRET}",
+        "OAUTHLIB_INSECURE_TRANSPORT": "${OAUTHLIB_INSECURE_TRANSPORT}",
+        "USER_GOOGLE_EMAIL": "${USER_GOOGLE_EMAIL}"
+      }
+    }
+  }
+}

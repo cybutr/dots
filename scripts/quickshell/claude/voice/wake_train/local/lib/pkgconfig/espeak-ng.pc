@@ -1,0 +1,11 @@
+prefix=/home/czeddaru/.config/hypr/scripts/quickshell/claude/voice/wake_train/local
+exec_prefix=/home/czeddaru/.config/hypr/scripts/quickshell/claude/voice/wake_train/local
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: eSpeak NG
+Description: eSpeak NG is a multi-lingual software speech synthesizer
+Version: 1.51
+Requires:
+Libs: -L${libdir} -lespeak-ng
+Cflags: -I${includedir}

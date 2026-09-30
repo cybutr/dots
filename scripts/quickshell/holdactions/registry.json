@@ -1,0 +1,40 @@
+{
+    "actions": [
+        {
+            "name": "emergency_kill_quickshell",
+            "label": "KILL QUICKSHELL",
+            "sublabel": "force-kills all quickshell processes",
+            "icon": "󰚌",
+            "holdSeconds": 1.6,
+            "glowHex": "#f38ba8",
+            "cmd": "pkill -9 -f 'quickshell'"
+        },
+        {
+            "name": "toggle_dnd",
+            "label": "DO NOT DISTURB",
+            "sublabel": "toggle notification silence",
+            "icon": "󰂛",
+            "holdSeconds": 1.0,
+            "glowHex": "#89dceb",
+            "cmd": "swaync-client -d"
+        },
+        {
+            "name": "lock_and_suspend",
+            "label": "LOCK & SLEEP",
+            "sublabel": "lock screen then suspend",
+            "icon": "󰤄",
+            "holdSeconds": 1.8,
+            "glowHex": "#b4befe",
+            "cmd": "bash ~/.config/hypr/scripts/lock.sh && systemctl suspend"
+        },
+        {
+            "name": "emergency_mute",
+            "label": "EMERGENCY MUTE",
+            "sublabel": "instantly mutes all audio output",
+            "icon": "󰝟",
+            "holdSeconds": 1.2,
+            "glowHex": "#f9e2af",
+            "cmd": "wpctl set-mute @DEFAULT_AUDIO_SINK@ 1"
+        }
+    ]
+}

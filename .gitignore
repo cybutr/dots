@@ -1,0 +1,35 @@
+# Secrets — never commit
+*.env
+.env
+*.key
+*key*.json
+*credentials*.json
+*token*.json
+*token*.pickle
+*.pickle
+qs_colors.json.bak
+
+# Python venvs / caches — huge, regenerable
+venv/
+venv_*/
+__pycache__/
+*.pyc
+*.pyc.*
+.pytest_cache/
+
+# Node
+node_modules/
+
+# Derived/regenerable data
+graphify-out/
+
+# Wake-word training artifacts — regenerable, huge (data/ alone is 17GB,
+# one .npy feature cache blew up the first git push to 15GB)
+scripts/quickshell/claude/voice/wake_train/data/
+scripts/quickshell/claude/voice/wake_train/build/
+
+# Local machine state — not source, changes constantly
+*.lock
+song_cache.json
+song_cache.json.lock
+spotify_snapshot.json
