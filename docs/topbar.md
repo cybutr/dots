@@ -1,6 +1,6 @@
 # Top bar
 
-<img src="assets/topbar.png" alt="Full top bar" width="100%">
+<img src="assets/topbar-v2.png" alt="Full top bar" width="100%">
 
 `scripts/quickshell/TopBar.qml`. One instance per monitor. On a desktop (no `/sys/class/power_supply/BAT*`) it hides Bluetooth, shows Ethernet, and swaps the battery pill for a power button.
 
@@ -10,9 +10,21 @@
 | **Center** | Clock + date · Weather · Timer · Claude status |
 | **Right** | Tray · Keyboard layout · Wi-Fi / Ethernet · Bluetooth · Volume · Battery · optional stats chips (CPU, GPU, net, uptime, Quickshell CPU) |
 
+<img src="assets/stats-chips.png" alt="Stats chips" width="234" align="right">
+
+The stats chips on the right show CPU, GPU, net up/down and uptime, plus the vertical Quickshell-CPU chip.
+
 ## Hover cards
 
 Hover any pill for about a second and a card grows flush out of it. The pill's corners square off to meet it.
+
+<table>
+<tr>
+<td width="30%" valign="top"><img src="assets/card-media.png" alt="Media card"><br><sub>Media, with synced lyrics</sub></td>
+<td width="40%" valign="top"><img src="assets/card-weather.png" alt="Weather card"><br><sub>Weather</sub></td>
+<td width="30%" valign="top"><img src="assets/card-agenda.png" alt="Clock card"><br><sub>Clock: today's agenda</sub></td>
+</tr>
+</table>
 
 | Pill | Card |
 |---|---|
@@ -69,5 +81,7 @@ echo "set 25" > /tmp/qs_timer_cmd && echo start > /tmp/qs_timer_cmd
 ```
 
 ## Resident cards
+
+<img src="assets/card-resident-nudge.png" alt="Resident nudge card under the clock pill" width="100%">
 
 The queue-driven card that drops under the clock pill. See [claude-resident.md](claude-resident.md#cards).

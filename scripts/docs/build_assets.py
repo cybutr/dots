@@ -2,7 +2,8 @@
 """Build the README/docs images from the Guide's full-screen previews.
 
 Reads   scripts/quickshell/guide/previews/preview_<widget>.png  (1920x1080)
-Writes  docs/assets/<widget>.jpg, hero.jpg, topbar*.png
+Writes  docs/assets/<widget>.jpg
+(The hero collage is built separately by build_hero.py.)
 
 Crop boxes follow WindowRegistry.js at 1920x1080, uiScale 1. If you
 recapture at another resolution/scale, adjust BOXES. Needs Pillow.
@@ -29,7 +30,6 @@ BOXES = {
 PAD = 28        # wallpaper margin around each popup
 BAR_H = 60      # never let the padding pull the top bar into a crop
 MAX_W = 1400
-BAR_PARTS = {"left": (0, 0, 715, 62), "center": (826, 0, 1094, 62), "right": (1296, 0, 1920, 62)}
 
 
 def save_jpg(im, path):
@@ -51,15 +51,6 @@ def main():
         save_jpg(crop, OUT / f"{name}.jpg")
         print(f"wrote {name}.jpg")
 
-    hero = Image.open(SRC / "preview_calendar.png").convert("RGB")
-    save_jpg(hero.resize((1600, 900), Image.LANCZOS), OUT / "hero.jpg")
-
-    bar = Image.open(SRC / "preview_volume.png").convert("RGB").crop((0, 0, 1920, 62))
-    bar.save(OUT / "topbar.png", optimize=True)
-    for part, box in BAR_PARTS.items():
-        c = bar.crop(box)
-        c.resize((c.width * 2, c.height * 2), Image.LANCZOS).save(OUT / f"topbar-{part}.png", optimize=True)
-    print("wrote hero.jpg, topbar*.png")
 
 
 if __name__ == "__main__":

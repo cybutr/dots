@@ -17,6 +17,10 @@ flowchart LR
 
 ## Cards
 
+<img src="assets/card-resident-nudge.png" alt="A resident nudge card" width="100%">
+
+<img src="assets/card-resident-shot.png" alt="A screenshot-answer card" width="48%">
+
 The queue is `/tmp/qs_resident_cards.jsonl`, an append-only file with one JSON object per line.
 
 | Field | |

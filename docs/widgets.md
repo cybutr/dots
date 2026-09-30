@@ -10,11 +10,11 @@ bash ~/.config/hypr/scripts/qs_manager.sh toggle <widget>   # or: open / close
 
 ## Music · `music`
 
-<img src="assets/music.jpg" alt="Music popup" width="70%">
+<img src="assets/music-v2.png" alt="Music popup" width="60%">
 
 `music/MusicPopup.qml` · 700×620, top-left · <kbd>Super</kbd> <kbd>M</kbd>
 
-Any MPRIS player, with a spinning vinyl cover and a seek bar. The EasyEffects-backed 10-band EQ has presets (Flat, Bass, Treble, Vocal, Pop, Rock, Jazz, Classic) and a saved custom curve. Metadata comes from `music/music_info.sh`, with a DBus signal watcher for instant updates.
+Any MPRIS player, with a spinning vinyl cover and a seek bar, over a blurred backdrop taken from the album art. The EasyEffects-backed 10-band EQ has presets (Flat, Bass, Treble, Vocal, Pop, Rock, Jazz, Classic), and **My Presets** saves your own curves. Metadata comes from `music/music_info.sh`, with a DBus signal watcher for instant updates.
 
 ## Calendar & weather · `calendar`
 
@@ -87,9 +87,26 @@ A carousel over `wallpaperDir`, filtered by dominant color. Picking a wallpaper 
 
 ## Guide · `guide`
 
+<img src="assets/guide-settings.png" alt="Guide, Settings tab" width="100%">
+
 `guide/GuidePopup.qml` · 1200×750, centered · <kbd>Super</kbd> <kbd>Shift</kbd> <kbd>H</kbd>
 
-The "Imperative" control center. A sidebar holds **System, Settings, Resources, Modules, Keybinds, Matugen, Weather, Startup, Mailbox, Resident** and **Music Stats** (a Spotify-Wrapped-style listening recap). Settings is a searchable, collapsible list of every `settings.json` key with an Apply button (see [settings.md](settings.md)). Tabs lazy-load.
+The "Imperative" control center. The sidebar holds **System, Settings, Resources, Modules, Keybinds, Matugen, Weather, Startup, Mailbox, Resident** and **Music Stats**. Settings is a searchable, collapsible list of every `settings.json` key, grouped by category, with an Apply button (see [settings.md](settings.md)). Tabs lazy-load.
+
+### Music Stats
+
+A Spotify-Wrapped-style recap computed by `music/music_stats.py` from `play_history.jsonl` (logged by `music_info.sh`) and Spotify history. Open it straight to a tab with `qs_manager.sh open guide musicstats-week` (also `-month`, `-vibe`).
+
+<img src="assets/musicstats-wrapped.png" alt="Music Stats, This Week" width="100%">
+
+<table>
+<tr>
+<td width="50%"><img src="assets/musicstats-overview.png" alt="Music Stats overview"><br><sub>Overview: listener type, totals, recent color trail, when you listen</sub></td>
+<td width="50%"><img src="assets/musicstats-hours.png" alt="Top artist, stats and listening by hour"><br><sub>Top artist, plays, unique tracks, peak hour, BPM</sub></td>
+</tr>
+</table>
+
+<img src="assets/musicstats-top.png" alt="Most played, all time and this week" width="100%">
 
 ## Without screenshots (yet)
 
