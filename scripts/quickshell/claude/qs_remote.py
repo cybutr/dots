@@ -8,9 +8,14 @@ get none), and the whole thing can be switched off live with the
 `qsRemoteEnabled` setting. Only the allowlisted actions below exist; nothing
 takes a free-form command.
 
+The touchpad and keyboard (qs_remote_input.py, a WebSocket at /api/v1/input)
+are the one exception by nature: typing is typing. They have their own switch,
+`qsRemoteInputEnabled`, and keybinds run only by id from the laptop's own list.
+
   python3 qs_remote.py          run the server (exec.conf does this)
   python3 qs_remote.py pair     print the setup link for the Fleet app
 """
+import base64
 import fcntl
 import hashlib
 import hmac
@@ -23,6 +28,7 @@ import subprocess
 import sys
 import threading
 import time
+import urllib.request
 from collections import deque
 from concurrent.futures import ThreadPoolExecutor
 from html import escape as _esc
@@ -44,10 +50,14 @@ SETTINGS = os.path.join(HOME, ".config/hypr/settings.json")
 FLEET_TOKENS = os.path.join(HOME, ".local/state/fleet/tokens.env")
 LOCK_SH = os.path.join(HOME, ".config/hypr/scripts/lock.sh")
 ART_ROOTS = (os.path.join(HOME, ".cache"), "/tmp")
+ART_SETTLE = 1.5  # music_info.sh curls the cover straight into place
 ART_MAX = 5 * 1024 * 1024
 MAX_BODY = 4096
-ACT_PER_MIN = 30
-READ_PER_MIN = 120
+ANSWER_MAX = 8 * 1024 * 1024
+# Requests per minute per tailnet login. Sliders stream while dragging (about
+# one request per round trip), so they get their own, much larger bucket.
+LIMITS = {"read": 240, "act": 60, "live": 900, "answer": 20}
+LIVE = {"volume", "brightness"}
 WALL_RE = re.compile(r"^(random|[A-Za-z0-9][A-Za-z0-9._ -]{0,120}\.(jpe?g|png|webp))$", re.I)
 HEX_RE = re.compile(r"#[0-9a-fA-F]{6}")
 COOKIE = "qsr"
@@ -56,6 +66,7 @@ spec = importlib.util.spec_from_file_location("qs_mcp", os.path.join(BASE, "qs_m
 qs = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(qs)
 import resident_card  # noqa: E402
+import qs_remote_input as remote_input  # noqa: E402
 
 
 def log(*a):
@@ -120,7 +131,8 @@ def _music():
         "length": _int(m.get("length"), 0),
         "source": m.get("source") or "",
         "colors": HEX_RE.findall(m.get("vibrantGrad") or m.get("grad") or "")[:3],
-        "art": hashlib.sha1(art.encode()).hexdigest()[:12] if _art_path(art) else "",
+        "art": _art_id(art),
+        "bpm": _int(m.get("bpm"), 0),
     }
 
 
@@ -135,11 +147,30 @@ def _art_path(path):
     if not re.search(r"\.(jpe?g|png|webp)$", real, re.I):
         return None
     try:
-        if not os.path.isfile(real) or os.path.getsize(real) > ART_MAX:
+        st = os.stat(real)
+        if not os.path.isfile(real) or not 0 < st.st_size <= ART_MAX or time.time() - st.st_mtime < ART_SETTLE:
             return None
+        with open(real, "rb") as f:
+            head = f.read(12)
+            f.seek(-2, os.SEEK_END)
+            tail = f.read(2)
     except OSError:
         return None
+    # Only a whole file: a JPEG that ends in EOI, a PNG or WebP with its header.
+    if head[:2] == b"\xff\xd8" and tail != b"\xff\xd9":
+        return None
+    if head[:2] != b"\xff\xd8" and not head.startswith(b"\x89PNG") and head[8:12] != b"WEBP":
+        return None
     return real
+
+
+def _art_id(path):
+    """Changes whenever the file does, so the app refetches a re-downloaded cover."""
+    real = _art_path(path)
+    if not real:
+        return ""
+    st = os.stat(real)
+    return hashlib.sha1(f"{real}:{st.st_size}:{int(st.st_mtime)}".encode()).hexdigest()[:12]
 
 
 def _sysinfo():
@@ -154,6 +185,31 @@ def _night():
         return bool(qs.t_night_light({"action": "status"}).get("on"))
     except Exception:
         return False
+
+
+def _json_run(cmd):
+    try:
+        return json.loads(_run(cmd) or "null")
+    except ValueError:
+        return None
+
+
+def _workspaces():
+    active = _json_run(["hyprctl", "activeworkspace", "-j"]) or {}
+    spaces = _json_run(["hyprctl", "workspaces", "-j"]) or []
+    ids = sorted({w.get("id") for w in spaces if isinstance(w, dict) and isinstance(w.get("id"), int) and w.get("id") > 0})
+    return {"active": _int(active.get("id"), 0) if isinstance(active, dict) else 0, "occupied": ids}
+
+
+def _kb_layout():
+    d = _json_run(["hyprctl", "devices", "-j"]) or {}
+    kbs = d.get("keyboards", []) if isinstance(d, dict) else []
+    main = next((k for k in kbs if k.get("main")), kbs[0] if kbs else {})
+    return str(main.get("active_keymap") or "")
+
+
+def _bluetooth_on():
+    return "Powered: yes" in _run(["bluetoothctl", "show"])
 
 
 # Every probe is a subprocess; run them side by side so a poll costs the
@@ -172,6 +228,12 @@ def snapshot():
         "mute": _POOL.submit(_run, ["pamixer", "--get-mute"]),
         "mic": _POOL.submit(_run, ["pamixer", "--default-source", "--get-mute"]),
         "music": _POOL.submit(_music),
+        "wifi_radio": _POOL.submit(_run, ["nmcli", "radio", "wifi"]),
+        "bt": _POOL.submit(_bluetooth_on),
+        "dnd": _POOL.submit(_run, ["swaync-client", "-D"]),
+        "idle": _POOL.submit(_run, ["pgrep", "-x", "hypridle"]),
+        "ws": _POOL.submit(_workspaces),
+        "kb": _POOL.submit(_kb_layout),
     }
     r = {k: f.result() for k, f in jobs.items()}
     sysinfo = r["sys"]
@@ -199,6 +261,16 @@ def snapshot():
         },
         "network": {"ssid": wifi.get("ssid") or "", "online": str(wifi.get("status", "")).lower() not in ("off", "disconnected", "")},
         "music": r["music"],
+        "toggles": {
+            "wifi": r["wifi_radio"] == "enabled",
+            "bluetooth": r["bt"],
+            "dnd": r["dnd"] == "true",
+            # hypridle not running = the laptop stays awake.
+            "caffeine": not r["idle"],
+        },
+        "workspace": r["ws"],
+        "keyboard": {"layout": r["kb"]},
+        "input": settings().get("qsRemoteInputEnabled", True) is not False,
     }
 
 
@@ -288,14 +360,91 @@ def a_open_widget(args):
     return _ok(qs.t_open_widget({"name": str(args.get("name", ""))[:40], "toggle": bool(args.get("toggle"))}))
 
 
+def a_wifi(args):
+    return _ok(qs._sh(["nmcli", "radio", "wifi", "on" if args.get("on") else "off"]))
+
+
+def a_bluetooth(args):
+    return _ok(qs._sh(["bluetoothctl", "power", "on" if args.get("on") else "off"]))
+
+
+def a_dnd(args):
+    return _ok(qs._sh(["swaync-client", "-dn" if args.get("on") else "-df"]))
+
+
+def a_caffeine(args):
+    """On = keep the laptop awake, by pausing hypridle (the bar's idle toggle does the same)."""
+    running = bool(_run(["pgrep", "-x", "hypridle"]))
+    if bool(args.get("on")) == running:
+        subprocess.Popen(["bash", os.path.join(HOME, ".config/hypr/scripts/toggle_hypridle.sh")],
+                         start_new_session=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    return {"ok": True}
+
+
+def a_kb_layout(_):
+    return _ok(qs._sh(["bash", os.path.join(HOME, ".config/hypr/scripts/switch_kb_layout.sh")]))
+
+
+def a_workspace(args):
+    target = args.get("id")
+    if target in ("next", "prev"):
+        arg = "e+1" if target == "next" else "e-1"
+    else:
+        n = _int(target)
+        if n is None or not 1 <= n <= 20:
+            return {"ok": False, "error": "id must be 1-20, next or prev"}
+        arg = str(n)
+    return _ok(qs._sh(["hyprctl", "dispatch", "workspace", arg]))
+
+
+def a_screen(args):
+    return _ok(qs._sh(["hyprctl", "dispatch", "dpms", "on" if args.get("on", True) else "off"]))
+
+
+def a_screenshot(_):
+    """Full screenshot, sent to the phone through the hub."""
+    path = f"/tmp/fleet-shot-{time.strftime('%Y%m%d-%H%M%S')}.png"
+    r = qs._sh(["grim", path], timeout=10)
+    if not r.get("ok") or not os.path.exists(path):
+        return {"ok": False, "error": "couldn't take the screenshot"}
+    subprocess.Popen([sys.executable, os.path.join(BASE, "fleet_send.py"), path, "--to", "phone"],
+                     start_new_session=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    return {"ok": True}
+
+
+def a_bind(args):
+    """Runs one of the laptop's own keybinds, picked by its position in the
+    laptop's list and checked against its combo, so the phone can never
+    supply what gets run."""
+    if settings().get("qsRemoteInputEnabled", True) is False:
+        return {"ok": False, "error": "keyboard control is turned off on the laptop"}
+    binds = keybinds()
+    i = _int(args.get("id"))
+    if i is None or not 0 <= i < len(binds) or binds[i]["combo"] != str(args.get("combo", "")):
+        return {"ok": False, "error": "that keybind changed on the laptop; refresh the list"}
+    return _ok(qs._run_keybind(binds[i]["raw"]))
+
+
+def keybinds():
+    out = []
+    for b in qs._parse_keybinds():
+        mods = [m for m in b.get("mods", []) if m]
+        combo = "+".join(mods + [b.get("key", "")])
+        desc = b["args"][:80] if b.get("dispatch") == "exec" else f"{b.get('dispatch', '')} {b.get('args', '')}".strip()
+        out.append({"combo": combo, "desc": desc, "dispatch": b.get("dispatch", ""), "raw": b})
+    return out
+
+
 ACTIONS = {
     "media": a_media, "volume": a_volume, "mute": a_mute, "mic": a_mic, "brightness": a_brightness,
     "night_light": a_night_light, "power_profile": a_power_profile, "wallpaper": a_wallpaper,
     "lock": a_lock, "notify": a_notify, "show_card": a_show_card, "open_widget": a_open_widget,
+    "wifi": a_wifi, "bluetooth": a_bluetooth, "dnd": a_dnd, "caffeine": a_caffeine, "kb_layout": a_kb_layout,
+    "workspace": a_workspace, "screen": a_screen, "screenshot": a_screenshot, "bind": a_bind,
 }
 # Names the first version of the API used.
 LEGACY = {"media_control": "media", "set_volume": "volume", "toggle_mute": "mute", "set_wallpaper": "wallpaper"}
-SILENT = {"notify", "show_card"}
+SILENT = {"notify", "show_card", "volume", "brightness", "workspace", "bind"}
 
 
 def describe(name, args):
@@ -311,7 +460,73 @@ def describe(name, args):
         "wallpaper": lambda: f"wallpaper → {args.get('name', 'random')}",
         "lock": lambda: "locked the screen",
         "open_widget": lambda: f"opened {args.get('name')}",
+        "wifi": lambda: "Wi-Fi " + on("on"),
+        "bluetooth": lambda: "Bluetooth " + on("on"),
+        "dnd": lambda: "do not disturb " + on("on"),
+        "caffeine": lambda: "stay awake " + on("on"),
+        "kb_layout": lambda: "switched keyboard layout",
+        "screen": lambda: "screen " + ("on" if args.get("on", True) else "off"),
+        "screenshot": lambda: "screenshot sent to the phone",
     }.get(name, lambda: name.replace("_", " "))()
+
+
+# ---------------------------------------------------------------- photo answers
+
+ANSWER_MODELS = {"fast": "claude-haiku-4-5-20251001", "accurate": "claude-sonnet-5"}
+KAHOOT_COLORS = {1: "red", 2: "blue", 3: "yellow", 4: "green"}
+ANSWER_PROMPT = (
+    "This photo shows a quiz question, usually Kahoot: a question and up to four answer tiles "
+    "(red triangle, blue diamond, yellow circle, green square, in that order). It may be taken "
+    "at an angle, off a screen or a projector. Work out the correct answer.\n"
+    "Reply with ONLY one JSON object, no prose, no code fence:\n"
+    '{"question": "<the question, short>", "answer": "<the correct answer text>", '
+    '"option": <1-4 for the tile, or null>, "confidence": "high" | "medium" | "low"}\n'
+    "If it's true/false, option 1 is the first tile shown. If you can't read a question, "
+    'set "answer" to "can\'t read the question" and "confidence" to "low".'
+)
+
+
+def answer_photo(data, media_type, mode="fast"):
+    try:
+        from claude_say import _PROVIDERS, _read_key
+    except Exception:
+        return {"ok": False, "error": "no Claude API key set up on the laptop"}
+    body = {"model": ANSWER_MODELS[mode], "max_tokens": 300,
+            "messages": [{"role": "user", "content": [
+                {"type": "image", "source": {"type": "base64", "media_type": media_type,
+                                              "data": base64.b64encode(data).decode()}},
+                {"type": "text", "text": ANSWER_PROMPT}]}]}
+    text = ""
+    for keyfile, url in _PROVIDERS:
+        key = _read_key(keyfile)
+        if not key:
+            continue
+        try:
+            req = urllib.request.Request(url, data=json.dumps(body).encode(), method="POST", headers={
+                "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01"})
+            with urllib.request.urlopen(req, timeout=30) as r:
+                out = json.loads(r.read())
+            text = "".join(b.get("text", "") for b in out.get("content", []) if b.get("type") == "text").strip()
+            if text:
+                break
+        except Exception as e:
+            log(f"answer call failed: {type(e).__name__}")
+    if not text:
+        return {"ok": False, "error": "Claude didn't answer; check the API key on the laptop"}
+    parsed = None
+    m = re.search(r"\{.*\}", text, re.S)
+    if m:
+        try:
+            parsed = json.loads(m.group(0))
+        except ValueError:
+            parsed = None
+    if not isinstance(parsed, dict):
+        return {"ok": True, "answer": text[:300], "question": "", "option": None, "color": None, "confidence": "low"}
+    opt = _int(parsed.get("option"))
+    opt = opt if opt in KAHOOT_COLORS else None
+    conf = str(parsed.get("confidence", "medium")).lower()
+    return {"ok": True, "answer": str(parsed.get("answer", ""))[:300], "question": str(parsed.get("question", ""))[:300],
+            "option": opt, "color": KAHOOT_COLORS.get(opt), "confidence": conf if conf in ("high", "medium", "low") else "medium"}
 
 
 # ---------------------------------------------------------------- plumbing
@@ -357,7 +572,8 @@ def run_action(name, args, who):
         log(f"{name} failed: {type(e).__name__}: {e}")
         result = {"ok": False, "error": "action failed"}
     ok = bool(result.get("ok"))
-    audit({"action": name, "args": args, "ok": ok, "user": who[0], "ip": who[1]})
+    if not (ok and name in LIVE):  # a dragged slider would flood the log
+        audit({"action": name, "args": args, "ok": ok, "user": who[0], "ip": who[1]})
     if ok and name not in SILENT:
         try:
             resident_card.emit("Phone", describe(name, args), icon="󰄜", urgency="low",
@@ -445,7 +661,7 @@ class Handler(BaseHTTPRequestHandler):
     def _limit(self, kind):
         who = self._who()
         key = (who[0] or who[1], kind)
-        return self.server.limiter.allow(key, ACT_PER_MIN if kind == "act" else READ_PER_MIN)
+        return self.server.limiter.allow(key, LIMITS[kind])
 
     def _body(self):
         try:
@@ -478,7 +694,39 @@ class Handler(BaseHTTPRequestHandler):
             return self._art()
         if path in ("/api/v1/actions", "/actions"):
             return self._json(200, {"ok": True, "actions": sorted(ACTIONS)})
+        if path == "/api/v1/binds":
+            if not self._input_on():
+                return self._json(503, {"ok": False, "error": "keyboard control is turned off on the laptop"})
+            binds = [{"id": i, "combo": b["combo"], "desc": b["desc"], "dispatch": b["dispatch"]}
+                     for i, b in enumerate(keybinds())]
+            return self._json(200, {"ok": True, "binds": binds})
+        if path == "/api/v1/input":
+            return self._input()
         return self._json(404, {"ok": False, "error": "not found"})
+
+    def _input_on(self):
+        s = settings()
+        return s.get("qsRemoteEnabled", True) is not False and s.get("qsRemoteInputEnabled", True) is not False
+
+    def _input(self):
+        if not self._input_on():
+            return self._json(503, {"ok": False, "error": "touchpad and keyboard are turned off on the laptop"})
+        key = self.headers.get("Sec-WebSocket-Key", "")
+        if "websocket" not in (self.headers.get("Upgrade") or "").lower() or not key:
+            return self._json(400, {"ok": False, "error": "websocket upgrade expected"})
+        self.send_response(101)
+        self.send_header("Upgrade", "websocket")
+        self.send_header("Connection", "Upgrade")
+        self.send_header("Sec-WebSocket-Accept", remote_input.accept_key(key))
+        self.end_headers()
+        self.wfile.flush()
+        self.close_connection = True
+        who = self._who()
+        started = time.time()
+        counts = remote_input.serve(self, self._input_on)
+        # One line per session; what was typed is never recorded.
+        audit({"action": "input_session", "secs": int(time.time() - started), "events": counts,
+               "user": who[0], "ip": who[1]})
 
     def do_POST(self):
         path = urlsplit(self.path).path
@@ -490,6 +738,8 @@ class Handler(BaseHTTPRequestHandler):
         if not self._bearer_ok():
             audit({"path": path[:80], "denied": "auth", "user": self._who()[0], "ip": self._who()[1]})
             return self._json(401, {"ok": False, "error": "unauthorized"})
+        if path == "/api/v1/answer":
+            return self._answer()
         m = re.match(r"^/(?:api/v1/)?action/([a-z_]{1,32})$", path)
         if not m or LEGACY.get(m.group(1), m.group(1)) not in ACTIONS:
             return self._json(404, {"ok": False, "error": "action not allowed"})
@@ -502,7 +752,8 @@ class Handler(BaseHTTPRequestHandler):
             return self._json(400, {"ok": False, "error": "invalid json"})
         if not isinstance(args, dict):
             return self._json(400, {"ok": False, "error": "object expected"})
-        if not self._limit("act"):
+        name = LEGACY.get(m.group(1), m.group(1))
+        if not self._limit("live" if name in LIVE else "act"):
             return self._json(429, {"ok": False, "error": "rate limited"})
         result = run_action(m.group(1), args, self._who())
         if path.startswith("/api/v1/"):
@@ -511,6 +762,28 @@ class Handler(BaseHTTPRequestHandler):
             except Exception:
                 pass
         return self._json(200 if result.get("ok") else 422, result)
+
+    def _answer(self):
+        """A photo of a quiz question in, the answer out (the Kahoot tab)."""
+        if not self._limit("answer"):
+            return self._json(429, {"ok": False, "error": "rate limited"})
+        try:
+            n = int(self.headers.get("Content-Length") or 0)
+        except ValueError:
+            n = 0
+        if not 0 < n <= ANSWER_MAX:
+            return self._json(413, {"ok": False, "error": "send a photo up to 8 MB"})
+        data = self.rfile.read(n)
+        ctype = (self.headers.get("Content-Type") or "image/jpeg").split(";")[0].strip()
+        if ctype not in ("image/jpeg", "image/png", "image/webp"):
+            return self._json(415, {"ok": False, "error": "jpeg, png or webp only"})
+        mode = "accurate" if self.headers.get("X-Answer-Mode") == "accurate" else "fast"
+        started = time.time()
+        result = answer_photo(data, ctype, mode)
+        result["ms"] = int((time.time() - started) * 1000)
+        audit({"action": "answer", "mode": mode, "ok": result.get("ok"), "ms": result["ms"],
+               "user": self._who()[0], "ip": self._who()[1]})
+        return self._json(200 if result.get("ok") else 502, result)
 
     def _art(self):
         try:

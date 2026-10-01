@@ -132,6 +132,7 @@
   },
   "idleAmbientEnabled": false,
   "qsRemoteEnabled": true,
+  "qsRemoteInputEnabled": true,
   "qsRemoteRequireIdentity": true,
   "qsRemoteAllowedLogins": []
 }
