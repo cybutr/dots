@@ -123,6 +123,7 @@ Full list with notes: [docs/widgets.md](docs/widgets.md).
 | [Settings](docs/settings.md) | `settings.json` reference |
 | [Claude resident](docs/claude-resident.md) | Cards, briefs, catch-up, fixes, mailbox |
 | [Performance](docs/performance.md) | Eco mode, lifeline, leak reaper, power tweaks |
+| [Fleet](docs/fleet.md) | Phone app, remote control, file relay, Tailscale key card |
 
 ## Layout
 

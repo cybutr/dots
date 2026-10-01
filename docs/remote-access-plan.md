@@ -1,6 +1,6 @@
 # Remote Access Plan: Phone → VPS → Laptop, plus Windows Status Feed
 
-Status as of 2026-10-01: Phase 1 (mesh) and Phase 6 (qs-remote Tier A) are live — laptop/VPS/phone joined, `qs_remote.py` running behind `tailscale serve`, a mobile page at `/m` confirmed working end to end from the real phone. Phase 3 (fleet hub) exists on the VPS but is minimal. Phases 2, 4, 5, 7 are in progress as of this session. §7's open questions are still mostly unanswered — answer them before Phase 8.
+Status as of 2026-10-01 (evening): Phases 1 (mesh), 3 (hub) and 6 (qs-remote Tier A) are live. qs-remote now has a v1 API with Tailscale-identity checks, a kill switch and cookie-based `/m`. The hub has the §8.2 file relay, and the native Android app (§8) is built in [cybutr/fleet-app](https://github.com/cybutr/fleet-app): Dashboard, Controls, Send. Kahoot (§8.3) is deferred. Laptop side: [fleet.md](fleet.md). §7's questions are still mostly open.
 
 See §8 below for the native Android app, file relay, and Kahoot-photo-answer plan added 2026-10-01 — not started, scoped only.
 
