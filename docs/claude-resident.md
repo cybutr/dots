@@ -19,7 +19,16 @@ flowchart LR
 
 <img src="assets/card-resident-nudge.png" alt="A resident nudge card" width="100%">
 
-<img src="assets/card-resident-shot.png" alt="A screenshot-answer card" width="48%">
+<table>
+<tr>
+<td width="50%"><img src="assets/card-resident-shot.png" alt="Screenshot answer"><br><sub>Screenshot answer</sub></td>
+<td width="50%"><img src="assets/rc-wrapped.png" alt="Weekly wrapped"><br><sub>Weekly wrapped</sub></td>
+</tr>
+<tr>
+<td><img src="assets/rc-battery.png" alt="Battery health"><br><sub>Battery health: cycles, Wh, wear, charge cap</sub></td>
+<td><img src="assets/rc-song.png" alt="On repeat"><br><sub>Replay milestone: on repeat</sub></td>
+</tr>
+</table>
 
 The queue is `/tmp/qs_resident_cards.jsonl`, an append-only file with one JSON object per line.
 

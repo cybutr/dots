@@ -1,6 +1,6 @@
 # Top bar
 
-<img src="assets/topbar-v2.png" alt="Full top bar" width="100%">
+<img src="assets/topbar-v3.png" alt="Full top bar" width="100%">
 
 `scripts/quickshell/TopBar.qml`. One instance per monitor. On a desktop (no `/sys/class/power_supply/BAT*`) it hides Bluetooth, shows Ethernet, and swaps the battery pill for a power button.
 

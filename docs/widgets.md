@@ -10,11 +10,11 @@ bash ~/.config/hypr/scripts/qs_manager.sh toggle <widget>   # or: open / close
 
 ## Music · `music`
 
-<img src="assets/music-v2.png" alt="Music popup" width="60%">
+<img src="assets/music.jpg" alt="Music popup" width="60%">
 
 `music/MusicPopup.qml` · 700×620, top-left · <kbd>Super</kbd> <kbd>M</kbd>
 
-Any MPRIS player, with a spinning vinyl cover and a seek bar, over a blurred backdrop taken from the album art. The EasyEffects-backed 10-band EQ has presets (Flat, Bass, Treble, Vocal, Pop, Rock, Jazz, Classic), and **My Presets** saves your own curves. Metadata comes from `music/music_info.sh`, with a DBus signal watcher for instant updates.
+Any MPRIS player, with a spinning vinyl cover and a seek bar. The popup is frosted glass tinted by the album art. The EasyEffects-backed 10-band EQ has presets (Flat, Bass, Treble, Vocal, Pop, Rock, Jazz, Classic), and **My Presets** saves your own curves. Metadata comes from `music/music_info.sh`, with a DBus signal watcher for instant updates.
 
 ## Calendar & weather · `calendar`
 
@@ -101,12 +101,31 @@ A Spotify-Wrapped-style recap computed by `music/music_stats.py` from `play_hist
 
 <table>
 <tr>
-<td width="50%"><img src="assets/musicstats-overview.png" alt="Music Stats overview"><br><sub>Overview: listener type, totals, recent color trail, when you listen</sub></td>
+<td width="50%"><img src="assets/guide-musicstats.jpg" alt="Music Stats overview"><br><sub>Overview: top artist, totals, recent color trail, when you listen</sub></td>
 <td width="50%"><img src="assets/musicstats-hours.png" alt="Top artist, stats and listening by hour"><br><sub>Top artist, plays, unique tracks, peak hour, BPM</sub></td>
 </tr>
 </table>
 
+<img src="assets/guide-vibe.jpg" alt="Music Stats, Your Vibe" width="100%">
+<sub>Your Vibe: listener type ("The Marathoner") and listening DNA (night owl, early riser, replay, loyalty)</sub>
+
 <img src="assets/musicstats-top.png" alt="Most played, all time and this week" width="100%">
+
+## Claude Ask · `claudeask`
+
+<img src="assets/claude-ask.png" alt="Claude Ask" width="100%">
+
+`claude/ClaudeAsk.qml` · 920×720, centered · <kbd>Super</kbd> <kbd>`</kbd>
+
+Chat with the resident. <kbd>Shift</kbd>+<kbd>Tab</kbd> cycles the mode, and the chips show the model and auto mode. Ask for a dashboard and Claude builds **pinned cards** (`PinnedCards.qml` / `CardRenderer.qml`, through the `qs_mcp.py` pin tools). Here that's system gauges with power actions, media, and quick controls:
+
+<img src="assets/agent-widgets.png" alt="Agent widgets: system, media, quick controls" width="300">
+
+## Lock screen
+
+<img src="assets/lock.jpg" alt="Lock screen" width="100%">
+
+`Lock.qml`, launched by `lock.sh`. Settings are under **Guide → Settings → Lock screen**. Preview without locking: `bash ~/.config/hypr/scripts/lock_test.sh` (password `test`).
 
 ## Without screenshots (yet)
 
@@ -114,7 +133,6 @@ A Spotify-Wrapped-style recap computed by `music/music_stats.py` from `play_hist
 |---|---|---|---|
 | `applauncher` | <kbd>Super</kbd> <kbd>A</kbd> | `applauncher/appLauncher.qml` | 800×700, centered |
 | `clipboard` | <kbd>Super</kbd> <kbd>V</kbd> | `clipboard/ClipboardManager.qml` | cliphist-backed, text and images |
-| `claudeask` | <kbd>Super</kbd> <kbd>`</kbd> | `claude/ClaudeAsk.qml` | Chat with the resident |
 | `quicktell` | <kbd>Super</kbd> <kbd>G</kbd> | `claude/QuickTell.qml` | One-line prompt, voice with <kbd>Alt</kbd> |
 | `quicksettings` | <kbd>Super</kbd> <kbd>U</kbd> | `quicksettings/QuickSettingsDrawer.qml` | Toggle tiles, slides up from the bottom |
 | `notifications` | <kbd>Super</kbd> <kbd>Shift</kbd> <kbd>A</kbd> | `notifications/NotificationCenter.qml` | Legacy or revamp, see `widgetStyles` |

@@ -19,12 +19,12 @@
 
 ## Top bar
 
-<img src="docs/assets/topbar-v2-left.png" alt="Top bar, left: workspace pills with smart names, now playing with visualizer" width="100%">
+<img src="docs/assets/topbar-v3-left.png" alt="Top bar, left: workspace pills, account, now playing with beat-reactive visualizer" width="100%">
 
 <table>
 <tr>
-<td width="42%"><img src="docs/assets/topbar-v2-center.png" alt="Top bar, center: clock, date and weather"></td>
-<td><img src="docs/assets/topbar-v2-right.png" alt="Top bar, right: stats chips, volume, battery"></td>
+<td width="42%"><img src="docs/assets/topbar-v3-center.png" alt="Top bar, center: clock, date and weather"></td>
+<td><img src="docs/assets/topbar-v3-right.png" alt="Top bar, right: Spotify, Quickshell CPU, stats chips, timer, volume, battery"></td>
 </tr>
 </table>
 
@@ -45,17 +45,41 @@ Each pill opens a **hover card** that grows out of it. Pills can also have an **
 <table>
 <tr>
 <td width="50%"><img src="docs/assets/guide-settings.png" alt="Guide settings tab"><br><sub><b>Settings</b>: every <code>settings.json</code> key, searchable, by category</sub></td>
-<td width="50%"><img src="docs/assets/musicstats-overview.png" alt="Music stats overview"><br><sub><b>Music Stats</b>: listener type, color trail, when you listen</sub></td>
+<td width="50%"><img src="docs/assets/guide-vibe.jpg" alt="Music stats, Your Vibe"><br><sub><b>Your Vibe</b>: listener type and listening DNA</sub></td>
 </tr>
 </table>
 
 <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>H</kbd>. The sidebar holds System, Settings, Resources, Modules, Keybinds, Matugen, Weather, Startup, Mailbox, Resident and Music Stats.
 
+## Claude resident
+
+<table>
+<tr>
+<td width="50%"><img src="docs/assets/rc-wrapped.png" alt="Weekly wrapped card"></td>
+<td width="50%"><img src="docs/assets/rc-battery.png" alt="Battery health card"></td>
+</tr>
+<tr>
+<td><img src="docs/assets/rc-song.png" alt="On-repeat card"></td>
+<td><img src="docs/assets/rc-plays.png" alt="Replay milestone card"></td>
+</tr>
+</table>
+
+Cards drop under the clock pill for a weekly wrapped, battery health, songs on repeat, replay milestones, briefs and more. <kbd>Super</kbd>+<kbd>`</kbd> opens **Claude Ask**:
+
+<img src="docs/assets/claude-ask.png" alt="Claude Ask prompt" width="100%">
+
+More in [docs/claude-resident.md](docs/claude-resident.md).
+
+## Lock screen
+
+<img src="docs/assets/lock.jpg" alt="Lock screen" width="100%">
+<sub>Blurred wallpaper with parallax, rolling clock, greeting, weather, now playing. Preview it safely with <code>lock_test.sh</code>.</sub>
+
 ## Widgets
 
 <table>
 <tr>
-<td width="50%"><img src="docs/assets/music-v2.png" alt="Music popup"><br><sub><b>Music</b>: vinyl cover, 10-band EQ, presets, saved curves · <kbd>Super</kbd>+<kbd>M</kbd></sub></td>
+<td width="50%"><img src="docs/assets/music.jpg" alt="Music popup"><br><sub><b>Music</b>: vinyl cover, 10-band EQ, presets, saved curves · <kbd>Super</kbd>+<kbd>M</kbd></sub></td>
 <td width="50%"><img src="docs/assets/network.jpg" alt="Network popup"><br><sub><b>Network</b>: Wi-Fi and Bluetooth radar · <kbd>Super</kbd>+<kbd>N</kbd></sub><br><br><img src="docs/assets/monitors.jpg" alt="Monitors popup"><br><sub><b>Monitors</b>: resolution and refresh picker · <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>M</kbd></sub></td>
 </tr>
 </table>
@@ -117,4 +141,4 @@ Full list with notes: [docs/widgets.md](docs/widgets.md).
         └── <widget>/                                      one folder per popup
 ```
 
-<div align="center"><sub>Top bar, cards, Guide and music shots are from September 2026. The other popups are from April 2026. Popup screenshots are regenerated with <code>scripts/docs/capture.sh</code>. See <a href="docs/installation.md#refreshing-screenshots">Refreshing screenshots</a>.</sub></div>
+<div align="center"><sub>Screenshots from September–October 2026, except focus time and monitors (April 2026). Popup screenshots are regenerated with <code>scripts/docs/capture.sh</code>. See <a href="docs/installation.md#refreshing-screenshots">Refreshing screenshots</a>.</sub></div>
