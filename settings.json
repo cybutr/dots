@@ -130,5 +130,8 @@
     "volume": "revamp",
     "workspaces": "legacy"
   },
-  "idleAmbientEnabled": false
+  "idleAmbientEnabled": false,
+  "qsRemoteEnabled": true,
+  "qsRemoteRequireIdentity": true,
+  "qsRemoteAllowedLogins": []
 }

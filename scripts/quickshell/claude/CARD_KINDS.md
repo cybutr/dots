@@ -84,7 +84,7 @@ card and the Guide stay visually in sync.
 | `brief` | `run_brief(period)` — morning via `claude_resident` periodic, afternoon/night via `tick_day_briefs` | `rescards/RcBriefMorning/Afternoon/Night.qml` by `data.period` | `residentMorningBrief`/`residentAfternoonBrief`/`residentNightBrief` (off/text/spoken) + `…Time` windows | `--test-brief-card morning\|afternoon\|night` |
 | `focusdone` | `focus_done` (called by TopBar `timerFinish()` via `--focus-done <secs> <endTs>`) | `rescards/RcFocusDone.qml` | `residentFocusDoneEnabled` | `--test-focusdone [mins]` |
 | `gitpush` | `~/.config/git-hooks/pre-push` (global `core.hooksPath` git hook, fires on `git push` in ANY repo on the machine) | `rescards/RcGit.qml` | — | simulate: `echo "refs/heads/main abc abc" \| bash ~/.config/git-hooks/pre-push origin url` |
-| `tailscale` | `tick_tailscale_key` (auth-key expiry, hardcoded `TAILSCALE_AUTHKEY_EXPIRY` — Tailscale doesn't expose this via CLI, only the admin console UI) | `rescards/RcTailscale.qml` | — (always on, high-urgency infinite-hold by design) | `tick_tailscale_key({}, force=True)` |
+| `tailscale` | `tick_tailscale_key`: soonest per-device node-key expiry from `tailscale status --json` (`data.keyKind: "node"`, `device`, `devices[].daysLeft`); falls back to a quiet card for the reusable auth key (`keyKind: "auth"`, hardcoded `TAILSCALE_AUTHKEY_EXPIRY`), which only limits adding new devices | `rescards/RcTailscale.qml` | — (always on, high-urgency infinite-hold by design) | `tick_tailscale_key({}, force=True)` |
 
 `rescards/` components share `RcShell.qml` (card fill, accent wash, glow bed, close button)
 and `RcButton.qml` (primary action + "later"). API: `bar`, `theme`, `d`, `actions`, `live`,

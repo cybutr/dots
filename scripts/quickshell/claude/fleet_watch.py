@@ -322,7 +322,75 @@ def refresh_ages(devs, now):
     return devs
 
 
+RELAY_DIR = os.path.expanduser("~/Downloads/Fleet")
+RELAY_PER_CYCLE = 5
+
+
+def _unique(path):
+    root, ext = os.path.splitext(path)
+    n = 2
+    while os.path.exists(path):
+        path = f"{root} ({n}){ext}"
+        n += 1
+    return path
+
+
+def _human(n):
+    for unit in ("B", "KB", "MB", "GB"):
+        if n < 1024 or unit == "GB":
+            return f"{n:.0f} {unit}" if unit == "B" else f"{n:.1f} {unit}"
+        n /= 1024
+
+
+def pull_relay(url, token):
+    """Fetch whatever the phone dropped for us, save it, ack it, tell the desktop."""
+    inbox = _http("GET", f"{url}/relay/{DEVICE}", token)
+    got = 0
+    for drop in (inbox.get("drops") or [])[:RELAY_PER_CYCLE]:
+        drop_id, name = str(drop.get("id", "")), os.path.basename(str(drop.get("name") or "file")) or "file"
+        if not drop_id:
+            continue
+        os.makedirs(RELAY_DIR, exist_ok=True)
+        dest = _unique(os.path.join(RELAY_DIR, name.lstrip(".") or "file"))
+        part = dest + ".part"
+        req = urllib.request.Request(f"{url}/relay/{DEVICE}/{drop_id}", headers={"Authorization": "Bearer " + token})
+        size = 0
+        try:
+            with urllib.request.urlopen(req, timeout=60) as r, open(part, "wb") as f:
+                while True:
+                    chunk = r.read(256 * 1024)
+                    if not chunk:
+                        break
+                    size += len(chunk)
+                    f.write(chunk)
+            if size != int(drop.get("size") or -1):
+                raise OSError(f"short read {size}/{drop.get('size')}")
+            os.replace(part, dest)
+        except Exception as e:
+            log("relay fetch failed:", name, type(e).__name__, e)
+            try:
+                os.unlink(part)
+            except OSError:
+                pass
+            continue
+        _http("POST", f"{url}/relay/{DEVICE}/{drop_id}/ack", token, {})
+        got += 1
+        try:
+            import shlex
+            import resident_card
+            resident_card.emit(
+                "From " + str(drop.get("from") or "phone"), f"{os.path.basename(dest)} · {_human(size)}", "document-save",
+                "normal", 12,
+                [{"label": "Open", "cmd": "xdg-open " + shlex.quote(dest)},
+                 {"label": "Show in folder", "cmd": "xdg-open " + shlex.quote(RELAY_DIR)}],
+                "fleet", "relay-" + drop_id)
+        except Exception as e:
+            log("card failed:", e)
+    return got
+
+
 def main():
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     lock = open(LOCK, "w")
     try:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -363,6 +431,13 @@ def main():
                 out["error"] = f"http {e.code}"
             except Exception as e:
                 out["error"] = type(e).__name__
+            try:
+                pull_relay(url, cfg["FLEET_TOKEN_LAPTOP"])
+                out["relay"] = "ok"
+            except urllib.error.HTTPError as e:
+                out["relay"] = f"http {e.code}"
+            except Exception as e:
+                out["relay"] = type(e).__name__
         out["devices"] = refresh_ages(devices, time.time())
         try:
             _save(OUT, out)

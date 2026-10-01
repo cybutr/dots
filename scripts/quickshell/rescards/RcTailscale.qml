@@ -73,7 +73,7 @@ Item {
                 Text {
                     id: tsEyebrow
                     anchors.centerIn: parent
-                    text: "TAILSCALE · AUTH KEY"
+                    text: rc.d.keyKind === "auth" ? "TAILSCALE · AUTH KEY" : "TAILSCALE · NODE KEY"
                     font.family: "JetBrains Mono"; font.weight: Font.Black; font.pixelSize: rc.s(8); font.letterSpacing: rc.s(1)
                     color: rc.accent
                 }
@@ -93,14 +93,14 @@ Item {
                     }
                     Text {
                         anchors.baseline: bigDays.baseline
-                        text: "until expiry · " + String(rc.d.expiry || "")
+                        text: (rc.d.device ? rc.d.device + " · " : "") + String(rc.d.expiry || "")
                         font.family: "JetBrains Mono"; font.weight: Font.Bold; font.pixelSize: rc.s(11)
                         color: rc.accent
                     }
                 }
                 Text {
                     width: mainCol.width
-                    text: rc.urgent ? "re-auth now — devices drop off the tailnet after this" : "re-auth soon to keep every device connected"
+                    text: rc.d.keyKind === "auth" ? "only affects adding new devices" : rc.urgent ? "re-auth now or it drops off the tailnet" : "re-auth before then to keep it connected"
                     elide: Text.ElideRight
                     font.family: "JetBrains Mono"; font.italic: true; font.pixelSize: rc.s(11)
                     color: rc.theme ? rc.theme.subtext1 : "transparent"
@@ -123,7 +123,7 @@ Item {
                         Text {
                             id: devTxt
                             anchors.centerIn: parent
-                            text: (modelData.online ? "● " : "○ ") + modelData.name
+                            text: (modelData.online ? "● " : "○ ") + modelData.name + (modelData.daysLeft !== undefined ? " " + modelData.daysLeft + "d" : "")
                             font.family: "JetBrains Mono"; font.pixelSize: rc.s(9)
                             color: modelData.online ? "#a6e3a1" : (rc.theme ? rc.theme.subtext0 : "#aaa")
                         }

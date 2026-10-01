@@ -1765,71 +1765,83 @@ def tick_mira_mail(state):
 
 
 TAILSCALE_WARN_DAYS = 14
-# The REUSABLE AUTH KEY's own expiry (shown only in the admin console UI —
-# Tailscale doesn't expose this via `tailscale status`/CLI at all, only a
-# per-device *session* KeyExpiry, which is a different, longer-lived number
-# and not what the user actually wants tracked here). Confirmed by the user
-# 2026-09-30 via the admin console screenshot: "This key will expire on Dec
-# 29, 2026." Update this constant if/when a new key is generated.
+# The reusable AUTH key's own expiry (only shown in the admin console; the
+# CLI doesn't expose it). It only limits adding NEW devices; existing ones
+# follow their node keys, which tick_tailscale_key reads from `tailscale
+# status`. Confirmed by the user 2026-09-30: "This key will expire on Dec 29,
+# 2026." Update this constant when a new key is generated.
 TAILSCALE_AUTHKEY_EXPIRY = "2026-12-29"
 
 
-def _tailscale_devices():
-    """Self + all peers, real names via DNSName (HostName can be a generic
-    'localhost' on some clients, e.g. the Android peer seen this session)."""
+def _node_key_expiries():
+    """Each device's own node-key expiry, from `tailscale status --json`.
+    This is what actually drops a device off the tailnet; a device whose
+    expiry is disabled in the admin console has no KeyExpiry and is skipped."""
+    from datetime import datetime, timezone
     try:
-        out = _run(["tailscale", "status", "--json"])
-        d = json.loads(out)
-        devices = []
-        self_ = d.get("Self", {})
-        devices.append({
-            "name": (self_.get("DNSName") or self_.get("HostName") or "?").split(".")[0],
-            "online": True, "self": True,
-        })
-        for p in (d.get("Peer") or {}).values():
-            devices.append({
-                "name": (p.get("DNSName") or p.get("HostName") or "?").split(".")[0],
-                "online": bool(p.get("Online")), "self": False,
-                "lastSeen": (p.get("LastSeen") or "")[:10],
-            })
-        return devices
+        d = json.loads(_run(["tailscale", "status", "--json"]))
     except Exception:
         return []
+    now = datetime.now(timezone.utc)
+    out = []
+    nodes = [(d.get("Self") or {}, True)] + [(p, False) for p in (d.get("Peer") or {}).values()]
+    for n, is_self in nodes:
+        raw = n.get("KeyExpiry") or ""
+        try:
+            exp = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+        except ValueError:
+            continue
+        out.append({"name": (n.get("DNSName") or n.get("HostName") or "?").split(".")[0],
+                    "online": True if is_self else bool(n.get("Online")), "self": is_self,
+                    "expiry": exp.strftime("%Y-%m-%d"), "daysLeft": max(0, round((exp - now).total_seconds() / 86400))})
+    return sorted(out, key=lambda x: x["daysLeft"])
 
 
 def tick_tailscale_key(state, force=False):
-    """Auth-key expiry nudge — user explicitly wants this hard to miss (they
-    manually re-key every ~90 days and want to catch every device on the
-    tailnet before it lapses, not just this laptop), so unlike most cards
-    this is high urgency + infinite hold (0) starting inside the warn
-    window, and re-emits with the same card_id daily so an accidental
-    dismiss doesn't lose it for long. See CARD_KINDS.md for the 'tailscale'
-    kind shape."""
+    """Node-key expiry nudge. The user re-keys every device by hand (~90
+    days) and wants every device caught before it lapses, so this is high
+    urgency + infinite hold (0) inside the warn window and re-emits with the
+    same card_id daily so an accidental dismiss doesn't lose it for long.
+
+    It tracks each device's NODE key (`KeyExpiry` in `tailscale status`):
+    that is what drops a device off the tailnet. The reusable AUTH key only
+    matters for adding new devices, so it gets a quieter card of its own.
+    See CARD_KINDS.md for the 'tailscale' kind shape."""
     from datetime import datetime, timezone
-    exp = datetime.strptime(TAILSCALE_AUTHKEY_EXPIRY, "%Y-%m-%d").replace(tzinfo=timezone.utc)
     now = datetime.now(timezone.utc)
-    days_left = (exp - now).total_seconds() / 86400
-    if days_left > TAILSCALE_WARN_DAYS and not force:
-        return
-    last = state.get("tailscale_nudge_day")
     today = now.strftime("%Y-%m-%d")
-    if last == today and not force:
+    if state.get("tailscale_nudge_day") == today and not force:
         return
-    state["tailscale_nudge_day"] = today
-    urgency = "high" if days_left <= 3 else "normal"
-    devices = _tailscale_devices()
-    data = {"daysLeft": round(max(0, days_left)), "expiry": TAILSCALE_AUTHKEY_EXPIRY, "devices": devices}
-    stale = [dv["name"] for dv in devices if not dv["online"] and not dv.get("self")]
-    body = f"{data['daysLeft']}d left ({data['expiry']}) — re-auth every device on the tailnet before then."
-    if stale:
-        body += "\nStill offline: " + ", ".join(stale)
-    resident_card.emit(
-        "Tailscale key expiring",
-        body,
-        "network-vpn", urgency, 0,
-        [{"label": "Open admin console", "cmd": "xdg-open https://login.tailscale.com/admin/machines"}],
-        "resident", "tailscale-key-expiry", kind="tailscale", data=data,
-    )
+    nodes = _node_key_expiries()
+    due = [n for n in nodes if n["daysLeft"] <= TAILSCALE_WARN_DAYS]
+    if due or (force and nodes):
+        first = (due or nodes)[0]
+        state["tailscale_nudge_day"] = today
+        names = ", ".join(n["name"] for n in due) or first["name"]
+        data = {"keyKind": "node", "daysLeft": first["daysLeft"], "expiry": first["expiry"],
+                "device": first["name"], "devices": nodes}
+        resident_card.emit(
+            "Tailscale key expiring",
+            f"{first['name']}: {first['daysLeft']}d left ({first['expiry']}). Re-auth before then or it drops off "
+            f"the tailnet.\nDue soon: {names}",
+            "network-vpn", "high" if first["daysLeft"] <= 3 else "normal", 0,
+            [{"label": "Open admin console", "cmd": "xdg-open https://login.tailscale.com/admin/machines"}],
+            "resident", "tailscale-key-expiry", kind="tailscale", data=data,
+        )
+        return
+    exp = datetime.strptime(TAILSCALE_AUTHKEY_EXPIRY, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+    days = round((exp - now).total_seconds() / 86400)
+    if 0 <= days <= 7 or force:
+        state["tailscale_nudge_day"] = today
+        resident_card.emit(
+            "Tailscale auth key expiring",
+            f"{days}d left ({TAILSCALE_AUTHKEY_EXPIRY}). Devices already on the tailnet stay connected; "
+            "you just can't add new ones with this key after that.",
+            "network-vpn", "low", 20,
+            [{"label": "Open keys", "cmd": "xdg-open https://login.tailscale.com/admin/settings/keys"}],
+            "resident", "tailscale-authkey-expiry", kind="tailscale",
+            data={"keyKind": "auth", "daysLeft": max(0, days), "expiry": TAILSCALE_AUTHKEY_EXPIRY, "devices": []},
+        )
 
 
 FLEET_FILE = "/tmp/qs_fleet.json"

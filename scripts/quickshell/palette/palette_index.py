@@ -92,6 +92,8 @@ SETTING_LABELS = {
     "topBarWorkspaceIconsEnabled": ("Workspace icons", "App icons in workspace pills", "workspace icons pills", 0xF0570),
     "cardAnimations": ("Card animations", "Motion on pinned cards", "cards motion", 0xF0570),
     "openGuideAtStartup": ("Guide at startup", "Open the guide on login", "guide startup login", 0xF02D7),
+    "qsRemoteEnabled": ("Phone remote control", "Let the Fleet app control this laptop", "phone remote fleet qs-remote tailscale kill switch app", 0xF011C),
+    "qsRemoteRequireIdentity": ("Remote: require Tailscale login", "Reject requests without a Tailscale identity", "phone remote fleet identity tailscale", 0xF011C),
 }
 SETTING_PREFIXES = [
     ("topBarFlourish", "Bar flourish: "), ("topBar", "Bar: "), ("lock", "Lock screen: "),
