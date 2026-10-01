@@ -24,6 +24,7 @@ import sys
 import threading
 import time
 from collections import deque
+from concurrent.futures import ThreadPoolExecutor
 from html import escape as _esc
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, quote, urlsplit
@@ -141,27 +142,51 @@ def _art_path(path):
     return real
 
 
-def snapshot():
-    sysinfo = {}
+def _sysinfo():
     try:
-        sysinfo = (qs.t_system({}) or {}).get("system") or {}
+        return (qs.t_system({}) or {}).get("system") or {}
     except Exception:
-        pass
+        return {}
+
+
+def _night():
+    try:
+        return bool(qs.t_night_light({"action": "status"}).get("on"))
+    except Exception:
+        return False
+
+
+# Every probe is a subprocess; run them side by side so a poll costs the
+# slowest one, not the sum (sequentially it ran long enough for the phone
+# to give up on the request).
+_POOL = ThreadPoolExecutor(max_workers=8, thread_name_prefix="snap")
+
+
+def snapshot():
+    jobs = {
+        "sys": _POOL.submit(_sysinfo),
+        "bright": _POOL.submit(_run, ["brightnessctl", "-m"]),
+        "profile": _POOL.submit(_run, ["powerprofilesctl", "get"]),
+        "night": _POOL.submit(_night),
+        "vol": _POOL.submit(_run, ["pamixer", "--get-volume"]),
+        "mute": _POOL.submit(_run, ["pamixer", "--get-mute"]),
+        "mic": _POOL.submit(_run, ["pamixer", "--default-source", "--get-mute"]),
+        "music": _POOL.submit(_music),
+    }
+    r = {k: f.result() for k, f in jobs.items()}
+    sysinfo = r["sys"]
     bat = sysinfo.get("battery") or {}
     wifi = sysinfo.get("wifi") or {}
-    bright = _run(["brightnessctl", "-m"]).split(",")
-    profile = _run(["powerprofilesctl", "get"])
-    try:
-        night = bool(qs.t_night_light({"action": "status"}).get("on"))
-    except Exception:
-        night = False
+    bright = r["bright"].split(",")
+    profile = r["profile"]
+    night = r["night"]
     return {
         "host": os.uname().nodename,
         "ts": int(time.time()),
         "audio": {
-            "volume": _int(_run(["pamixer", "--get-volume"]), 0),
-            "muted": _run(["pamixer", "--get-mute"]) == "true",
-            "mic_muted": _run(["pamixer", "--default-source", "--get-mute"]) == "true",
+            "volume": _int(r["vol"], 0),
+            "muted": r["mute"] == "true",
+            "mic_muted": r["mic"] == "true",
         },
         "screen": {
             "brightness": _int(bright[3].rstrip("%"), None) if len(bright) > 3 else None,
@@ -173,7 +198,7 @@ def snapshot():
             "charging": str(bat.get("status", "")).lower() in ("charging", "full"),
         },
         "network": {"ssid": wifi.get("ssid") or "", "online": str(wifi.get("status", "")).lower() not in ("off", "disconnected", "")},
-        "music": _music(),
+        "music": r["music"],
     }
 
 
@@ -340,6 +365,16 @@ def run_action(name, args, who):
         except Exception:
             pass
     return result
+
+
+class Server(ThreadingHTTPServer):
+    daemon_threads = True
+
+    def handle_error(self, request, client_address):
+        # A phone that gave up or switched networks mid-reply is routine.
+        if isinstance(sys.exc_info()[1], (BrokenPipeError, ConnectionResetError, TimeoutError)):
+            return
+        super().handle_error(request, client_address)
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -611,7 +646,7 @@ def main():
     except OSError:
         log("already running")
         return
-    srv = ThreadingHTTPServer((HOST, PORT), Handler)
+    srv = Server((HOST, PORT), Handler)
     srv.daemon_threads = True
     srv.token = load_token()
     srv.limiter = Limiter()
