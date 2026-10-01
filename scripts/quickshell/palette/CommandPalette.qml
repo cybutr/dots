@@ -55,12 +55,13 @@ FocusScope {
     readonly property real hue0: seed.hslHue < 0 ? 0.62 : seed.hslHue
     readonly property var catShift: ({
         media: 0.0, audio: 0.07, timer: 0.13, widget: 0.2, mail: 0.28, app: 0.36, layout: 0.44,
-        system: 0.5, wallpaper: 0.57, setting: 0.64, claude: 0.74, capture: 0.84, power: 0.92
+        system: 0.5, wallpaper: 0.57, setting: 0.64, claude: 0.74, capture: 0.84, power: 0.92,
+        window: 0.31, workspace: 0.4, device: 0.03
     })
     readonly property var catName: ({
         media: "Media", audio: "Sound", timer: "Timer", widget: "Widget", mail: "Mail", app: "App",
         layout: "Layout", system: "System", wallpaper: "Wallpaper", setting: "Setting", claude: "Claude",
-        capture: "Capture", power: "Power"
+        capture: "Capture", power: "Power", window: "Window", workspace: "Workspace", device: "Device"
     })
     function tint(cat) {
         let h = (root.hue0 + (root.catShift[cat] || 0)) % 1
@@ -157,7 +158,7 @@ FocusScope {
         if (!p.ok) { nudge.restart(); return }
         if (a.danger && root.confirmId !== a.id) { root.confirmId = a.id; confirmReset.restart(); return }
         let args = a.args ? a.args : [p.value !== "" ? p.value : (a.arg || "")]
-        if (a.id.indexOf("mailhit.") !== 0) Quickshell.execDetached(["python3", root.dir + "/palette_index.py", "used", a.id])
+        if (a.id.indexOf("mailhit.") !== 0 && a.id.indexOf("window.") !== 0) Quickshell.execDetached(["python3", root.dir + "/palette_index.py", "used", a.id])
         fireAnim.restart()
         if (a.close !== false) root.close()
         Quickshell.execDetached(["bash", "-c", a.cmd, "_"].concat(args))

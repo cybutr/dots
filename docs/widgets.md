@@ -111,6 +111,24 @@ A Spotify-Wrapped-style recap computed by `music/music_stats.py` from `play_hist
 
 <img src="assets/musicstats-top.png" alt="Most played, all time and this week" width="100%">
 
+## Command palette · `palette`
+
+`palette/CommandPalette.qml` · 860×660, top-center · <kbd>Super</kbd> <kbd>K</kbd>
+
+Fuzzy search over everything you can do. Type an action and, if it takes one, a value after it (`volume 40`, `timer 25`, `rename Study`). Dangerous entries need a second press. `palette_index.py` rebuilds the index every time the palette opens, from:
+
+| Source | Entries |
+|---|---|
+| `palette/actions.json` | Hand-written actions: media, sound, system, capture, power, Claude, timer, window, workspace, eco |
+| Open windows | "Go to" any window except the focused one |
+| `WindowRegistry.js` | Open any popup |
+| `settings.json` | Toggle every on/off setting, switch every mode |
+| Saved smartws layouts | Restore or delete |
+| Audio outputs, paired Bluetooth | Switch output, connect or disconnect |
+| `.desktop` files | Launch any app |
+
+The palette can take typed input, unlike the bar, so it's how you rename a smart workspace ("Rename this workspace"). The eco entries write a rule for the focused app's class into `eco/rules.json`.
+
 ## Claude Ask · `claudeask`
 
 <img src="assets/claude-ask.png" alt="Claude Ask" width="100%">

@@ -198,6 +198,79 @@ def layout_actions():
             "cmd": 'bash "$HOME/.config/hypr/scripts/smartws.sh" restore "$1" >/dev/null', "arg": name,
             "verb": "Restore",
         })
+        out.append({
+            "id": "layout.delete." + name, "label": "Delete layout " + name, "hint": f"{n} windows, can't be undone",
+            "cat": "layout", "icon": chr(0xF01B4), "keywords": "delete remove forget layout smart workspaces " + name,
+            "cmd": 'bash "$HOME/.config/hypr/scripts/smartws.sh" delete "$1" >/dev/null', "arg": name,
+            "danger": True, "verb": "Delete",
+        })
+    return out
+
+
+def window_actions():
+    try:
+        clients = json.loads(sh(["hyprctl", "clients", "-j"]) or "[]")
+    except ValueError:
+        return []
+    out = []
+    for c in sorted(clients, key=lambda c: c.get("focusHistoryID", 99)):
+        cls, title = c.get("class") or "", c.get("title") or ""
+        if not cls or c.get("focusHistoryID") == 0 or title == "qs-master" or not c.get("mapped", True):
+            continue
+        ws = (c.get("workspace") or {}).get("name") or ""
+        ws = "scratch" if ws.startswith("special") else "workspace " + ws
+        out.append({
+            "id": "window." + c["address"], "label": title[:80] or cls, "hint": f"{cls} · {ws}",
+            "cat": "window", "icon": chr(0xF05AF),
+            "keywords": "go to switch focus window jump " + cls.lower() + " " + ws,
+            "cmd": 'hyprctl dispatch focuswindow "address:$1" >/dev/null', "arg": c["address"], "verb": "Go to",
+        })
+    return out
+
+
+def sink_actions():
+    try:
+        sinks = json.loads(sh(["pactl", "-f", "json", "list", "sinks"]) or "[]")
+    except ValueError:
+        return []
+    default = sh(["pactl", "get-default-sink"])
+    out = []
+    for k in sinks:
+        name = k.get("name", "")
+        if not name or name == default:
+            continue
+        desc = k.get("description") or name
+        out.append({
+            "id": "sink." + name, "label": "Output to " + desc, "hint": "Make this the default speaker",
+            "cat": "audio", "icon": chr(0xF04C3), "keywords": "audio output speaker headphones sink switch device " + desc.lower(),
+            "cmd": 'pactl set-default-sink "$1"', "arg": name, "verb": "Switch",
+        })
+    return out
+
+
+def bluetooth_actions():
+    def devices(which):
+        res = {}
+        for line in sh(["bluetoothctl", "devices", which]).splitlines():
+            parts = line.split(" ", 2)
+            if len(parts) == 3 and parts[0] == "Device":
+                res[parts[1]] = parts[2]
+        return res
+    paired = devices("Paired")
+    if not paired:
+        return []
+    connected = devices("Connected")
+    out = []
+    for mac, name in paired.items():
+        on = mac in connected
+        out.append({
+            "id": "bt." + mac, "label": ("Disconnect " if on else "Connect ") + name,
+            "hint": "Bluetooth, connected" if on else "Bluetooth, paired",
+            "cat": "device", "icon": chr(0xF00B2 if on else 0xF00AF),
+            "keywords": "bluetooth headphones earbuds speaker pair device " + name.lower(),
+            "cmd": 'bluetoothctl ' + ("disconnect" if on else "connect") + ' "$1" >/dev/null', "arg": mac,
+            "close": True, "verb": "Disconnect" if on else "Connect",
+        })
     return out
 
 
@@ -259,7 +332,8 @@ def build():
             a["state"] = states[a["state"]]
         elif "state" in a:
             del a["state"]
-    actions = static + widget_actions() + setting_actions(settings) + layout_actions() + app_actions()
+    actions = (static + window_actions() + widget_actions() + setting_actions(settings) + layout_actions()
+               + sink_actions() + bluetooth_actions() + app_actions())
     return {"actions": actions, "history": load_json(HISTORY, {})}
 
 
@@ -273,6 +347,29 @@ def write_atomic(path, data):
     os.replace(tmp, path)
 
 
+ECO_RULES = os.path.join(HOME, ".config/hypr/eco/rules.json")
+
+
+def set_eco(level):
+    """Write an eco rule for the focused window's class; 'auto' drops the override."""
+    try:
+        cls = (json.loads(sh(["hyprctl", "activewindow", "-j"]) or "{}").get("class") or "").lower()
+    except ValueError:
+        cls = ""
+    if not cls or level not in ("never", "throttle", "freeze", "auto"):
+        return 1
+    data = load_json(ECO_RULES, None)
+    if not isinstance(data, dict):
+        return 1
+    rules = data.setdefault("rules", {})
+    if level == "auto":
+        rules.pop(cls, None)
+    else:
+        rules[cls] = {**rules.get(cls, {}), "level": level}
+    write_atomic(ECO_RULES, data)
+    return 0
+
+
 def main(argv):
     if len(argv) >= 2 and argv[1] == "set" and len(argv) >= 4:
         s = load_json(SETTINGS, None)
@@ -284,6 +381,8 @@ def main(argv):
             s[argv[2]] = argv[3]
         write_atomic(SETTINGS, s)
         return 0
+    if len(argv) >= 3 and argv[1] == "eco":
+        return set_eco(argv[2])
     if len(argv) >= 3 and argv[1] == "used":
         h = load_json(HISTORY, {})
         e = h.get(argv[2], {"n": 0, "t": 0})

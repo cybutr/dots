@@ -6,6 +6,7 @@
 
 | Keys | Opens |
 |---|---|
+| <kbd>Super</kbd> <kbd>K</kbd> | Command palette (actions, apps, windows, settings) |
 | <kbd>Super</kbd> <kbd>A</kbd> | App launcher |
 | <kbd>Super</kbd> <kbd>V</kbd> | Clipboard history |
 | <kbd>Super</kbd> <kbd>M</kbd> | Music |

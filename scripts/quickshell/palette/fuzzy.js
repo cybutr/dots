@@ -1,6 +1,6 @@
 .pragma library
 
-const CAT_BIAS = { power: 3, system: 2, audio: 2, media: 2, widget: 2, mail: 2, timer: 2, claude: 1, capture: 1, wallpaper: 1, layout: 1, app: 0, setting: -2 }
+const CAT_BIAS = { power: 3, system: 2, audio: 2, media: 2, widget: 2, mail: 2, timer: 2, claude: 1, capture: 1, wallpaper: 1, layout: 1, window: 2, workspace: 1, device: 2, app: 0, setting: -2 }
 
 function editWithin1(a, b) {
     if (a === b) return true
