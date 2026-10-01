@@ -89,7 +89,8 @@ card and the Guide stay visually in sync.
 `rescards/` components share `RcShell.qml` (card fill, accent wash, glow bed, close button)
 and `RcButton.qml` (primary action + "later"). API: `bar`, `theme`, `d`, `actions`, `live`,
 signals `dismissRequested()` / `runRequested(cmd)`, height via `implicitHeight`.
-Test flags emit real cards; restart the bar afterwards to clear them.
+Test flags emit real cards. Guide → Resident → "Card kinds (debug)" fires every kind with one click and clears
+queued cards per kind (`resident_card.py --clear-kind <kind>`, `--count-kinds`); the bar drops cards removed from the queue file live.
 
 Accents are fixed hex per kind (matugen names wash out to grey on some wallpapers):
 calendar `#fab387`, batteryhealth `#a6e3a1`/`#f9e2af`/`#f38ba8` by health, uptimeguilt `#b4befe`,

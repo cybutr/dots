@@ -188,6 +188,7 @@ Item {
     property string setLockAmbientFx: "occasional"
     property string setLockClockStyle: "big"
     property bool setLockShowQuickActions: true
+    property bool setIdleAmbientEnabled: true
     property string setHyprPolishAnimations: "subtle"
     property string setHyprPolishDimInactive: "off"
     property string setHyprPolishWsAccent: "palette"
@@ -259,6 +260,13 @@ Item {
     property bool setCardDepth: true
     property string setCardAccent: "blue"
     property string setAgendaDefaultFilter: "all"
+    property int  setBrightnessCurveMin: 15
+    property int  setBrightnessCurveMax: 100
+    property bool setMusicSuggest: false
+    property int  setResidentActionExpireSecs: 180
+    property string setResidentBriefSpokenSections: "all"
+    property int  setResidentEodHour: 18
+    property int  setResidentLowBatteryMins: 30
 
     // live-apply the card accent the moment it's clicked — patch just the cardAccent
     // key in settings.json (jq) so CardRenderer's settings watcher recolors instantly,
@@ -373,6 +381,7 @@ Item {
             "lockAmbientFx": root.setLockAmbientFx,
             "lockClockStyle": root.setLockClockStyle,
             "lockShowQuickActions": root.setLockShowQuickActions,
+            "idleAmbientEnabled": root.setIdleAmbientEnabled,
             "hyprPolishAnimations": root.setHyprPolishAnimations,
             "hyprPolishDimInactive": root.setHyprPolishDimInactive,
             "hyprPolishWsAccent": root.setHyprPolishWsAccent,
@@ -439,6 +448,13 @@ Item {
             "cardDepth": root.setCardDepth,
             "cardAccent": root.setCardAccent,
             "agendaDefaultFilter": root.setAgendaDefaultFilter,
+            "brightnessCurveMin": root.setBrightnessCurveMin,
+            "brightnessCurveMax": root.setBrightnessCurveMax,
+            "musicSuggest": root.setMusicSuggest,
+            "residentActionExpireSecs": root.setResidentActionExpireSecs,
+            "residentBriefSpokenSections": root.setResidentBriefSpokenSections,
+            "residentEodHour": root.setResidentEodHour,
+            "residentLowBatteryMins": root.setResidentLowBatteryMins,
             "widgetStyles": {
                 "monitors": root.setStyleMonitors,
                 "focustime": root.setStyleFocustime,
@@ -450,10 +466,16 @@ Item {
             }
         };
         let jsonString = JSON.stringify(config, null, 2);
-        
-        let cmd = "mkdir -p ~/.config/hypr/ && echo '" + jsonString + "' > ~/.config/hypr/settings.json";
-                  
-        Quickshell.execDetached(["bash", "-c", cmd]);
+
+        // Write via argv, not shell string interpolation — a prompt/time
+        // field containing a single quote used to break the old
+        // `echo '<json>' > file` command (silent no-op save, data loss).
+        Quickshell.execDetached(["python3", "-c",
+            "import sys, os\n" +
+            "p = os.path.expanduser('~/.config/hypr/settings.json')\n" +
+            "os.makedirs(os.path.dirname(p), exist_ok=True)\n" +
+            "open(p, 'w').write(sys.argv[1])\n",
+            jsonString]);
     }
 
 
@@ -536,6 +558,7 @@ Item {
                         if (parsed.lockAmbientFx !== undefined) root.setLockAmbientFx = parsed.lockAmbientFx;
                         if (parsed.lockClockStyle !== undefined) root.setLockClockStyle = parsed.lockClockStyle;
                         if (parsed.lockShowQuickActions !== undefined) root.setLockShowQuickActions = parsed.lockShowQuickActions;
+                        if (parsed.idleAmbientEnabled !== undefined) root.setIdleAmbientEnabled = parsed.idleAmbientEnabled;
                         if (parsed.hyprPolishAnimations !== undefined) root.setHyprPolishAnimations = parsed.hyprPolishAnimations;
                         if (parsed.hyprPolishDimInactive !== undefined) root.setHyprPolishDimInactive = parsed.hyprPolishDimInactive;
                         if (parsed.hyprPolishWsAccent !== undefined) root.setHyprPolishWsAccent = parsed.hyprPolishWsAccent;
@@ -602,6 +625,13 @@ Item {
                         if (parsed.cardDepth !== undefined) root.setCardDepth = parsed.cardDepth;
                         if (parsed.cardAccent !== undefined) root.setCardAccent = parsed.cardAccent;
                         if (parsed.agendaDefaultFilter !== undefined) root.setAgendaDefaultFilter = parsed.agendaDefaultFilter;
+                        if (parsed.brightnessCurveMin !== undefined) root.setBrightnessCurveMin = parsed.brightnessCurveMin;
+                        if (parsed.brightnessCurveMax !== undefined) root.setBrightnessCurveMax = parsed.brightnessCurveMax;
+                        if (parsed.musicSuggest !== undefined) root.setMusicSuggest = parsed.musicSuggest;
+                        if (parsed.residentActionExpireSecs !== undefined) root.setResidentActionExpireSecs = parsed.residentActionExpireSecs;
+                        if (parsed.residentBriefSpokenSections !== undefined) root.setResidentBriefSpokenSections = Array.isArray(parsed.residentBriefSpokenSections) ? parsed.residentBriefSpokenSections.join(",") : String(parsed.residentBriefSpokenSections);
+                        if (parsed.residentEodHour !== undefined) root.setResidentEodHour = parsed.residentEodHour;
+                        if (parsed.residentLowBatteryMins !== undefined) root.setResidentLowBatteryMins = parsed.residentLowBatteryMins;
                         if (parsed.widgetStyles !== undefined) {
                             if (parsed.widgetStyles.monitors !== undefined) root.setStyleMonitors = parsed.widgetStyles.monitors;
                             if (parsed.widgetStyles.focustime !== undefined) root.setStyleFocustime = parsed.widgetStyles.focustime;
@@ -993,6 +1023,29 @@ Item {
         root.applySectionFilter(t1.x_secAccountsContent, "secAccountsExpanded", "secAccountsHasMatch");
     }
 
+    readonly property var settingsSectionKeys: ["General", "Ambient", "Media", "Calendar", "Claude", "Pinned", "Widget", "Display", "Accounts", "PillBg", "SmartWs", "Resident", "Nudges", "HyprPolish", "Lock"]
+
+    function setAllSectionsExpanded(expanded) {
+        for (let i = 0; i < root.settingsSectionKeys.length; i++) root["sec" + root.settingsSectionKeys[i] + "Expanded"] = expanded;
+    }
+
+    function toggleSpokenSection(name) {
+        const all = ["weather", "events", "tasks", "battery", "notifs", "nudge"];
+        let raw = root.setResidentBriefSpokenSections;
+        let cur = (raw === "all" || raw === "") ? all.slice() : raw.split(",").map(s => s.trim()).filter(s => s !== "");
+        let i = cur.indexOf(name);
+        if (i >= 0) cur.splice(i, 1);
+        else cur.push(name);
+        let ordered = all.filter(s => cur.indexOf(s) >= 0);
+        root.setResidentBriefSpokenSections = ordered.length === all.length ? "all" : (ordered.length === 0 ? "none" : ordered.join(","));
+    }
+
+    function spokenSectionOn(name) {
+        let raw = root.setResidentBriefSpokenSections;
+        if (raw === "all" || raw === "") return true;
+        return raw.split(",").map(s => s.trim()).indexOf(name) >= 0;
+    }
+
     property var tabNames: ["System", "Settings", "Resources", "Modules", "Keybinds", "Matugen", "Weather", "Startup", "Mailbox", "Resident", "Music Stats"]
     property var tabIcons: ["", "", "󰣖", "󰣆", "󰌌", "󰏘", "󰖐", "", "", "󰚩", "♫"]
 
@@ -1209,7 +1262,7 @@ Item {
                             Layout.alignment: Qt.AlignVCenter
                             spacing: root.s(2)
                             Text { 
-                                text: "Imperative"
+                                text: "Czeddaru"
                                 font.family: "JetBrains Mono"
                                 font.weight: Font.Black
                                 font.pixelSize: root.s(15)
@@ -1217,7 +1270,7 @@ Item {
                                 Layout.alignment: Qt.AlignLeft 
                             }
                             Text { 
-                                text: "v1.0.25"
+                                text: "up the ass"
                                 font.family: "JetBrains Mono"
                                 font.pixelSize: root.s(11)
                                 color: root.subtext0
@@ -1985,6 +2038,10 @@ Item {
                     }
 
                     // --- SEARCH ---
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: root.s(10)
+
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.preferredHeight: root.s(40)
@@ -2027,6 +2084,47 @@ Item {
                                 MouseArea { id: clearSearchMa; anchors.fill: parent; anchors.margins: root.s(-6); hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: settingsSearchInput.text = "" }
                             }
                         }
+                    }
+
+                    Rectangle {
+                        Layout.preferredHeight: root.s(40)
+                        Layout.preferredWidth: collapseAllRow.implicitWidth + root.s(28)
+                        radius: root.s(8)
+                        color: collapseAllMa.containsMouse ? root.surface1 : root.surface0
+                        border.color: root.surface1
+                        border.width: 1
+                        Behavior on color { ColorAnimation { duration: 150 } }
+
+                        RowLayout {
+                            id: collapseAllRow
+                            anchors.centerIn: parent
+                            spacing: root.s(8)
+                            Text { text: "󰅃"; font.family: "Iosevka Nerd Font"; font.pixelSize: root.s(15); color: root.subtext0 }
+                            Text { text: "Collapse all"; font.family: "JetBrains Mono"; font.weight: Font.Bold; font.pixelSize: root.s(12); color: root.text }
+                        }
+
+                        MouseArea { id: collapseAllMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: root.setAllSectionsExpanded(false) }
+                    }
+
+                    Rectangle {
+                        Layout.preferredHeight: root.s(40)
+                        Layout.preferredWidth: expandAllRow.implicitWidth + root.s(28)
+                        radius: root.s(8)
+                        color: expandAllMa.containsMouse ? root.surface1 : root.surface0
+                        border.color: root.surface1
+                        border.width: 1
+                        Behavior on color { ColorAnimation { duration: 150 } }
+
+                        RowLayout {
+                            id: expandAllRow
+                            anchors.centerIn: parent
+                            spacing: root.s(8)
+                            Text { text: "󰅀"; font.family: "Iosevka Nerd Font"; font.pixelSize: root.s(15); color: root.subtext0 }
+                            Text { text: "Expand all"; font.family: "JetBrains Mono"; font.weight: Font.Bold; font.pixelSize: root.s(12); color: root.text }
+                        }
+
+                        MouseArea { id: expandAllMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: root.setAllSectionsExpanded(true) }
+                    }
                     }
 
                     // --- SETTINGS LIST (STRICTLY ALIGNED) ---
@@ -3070,6 +3168,130 @@ Item {
                                         Behavior on x { NumberAnimation { duration: 200; easing.type: Easing.OutBack } }
                                     }
                                     MouseArea { anchors.fill: parent; onClicked: root.setEcoModeEnabled = !root.setEcoModeEnabled; cursorShape: Qt.PointingHandCursor }
+                                }
+                            }
+                        }
+                    }
+
+                    // Setting: Eco Throttle Delay
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: root.s(60)
+                        radius: root.s(8)
+                        color: Qt.alpha(root.surface0, 0.4)
+                        border.color: root.surface1
+                        border.width: 1
+
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.margins: root.s(15)
+                            spacing: root.s(20)
+
+                            Item {
+                                Layout.preferredWidth: settingsCol.iconColWidth
+                                Layout.alignment: Qt.AlignVCenter
+                                Text { anchors.centerIn: parent; text: "󰾆"; font.family: "Iosevka Nerd Font"; font.pixelSize: root.s(20); color: root.teal }
+                            }
+
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                spacing: root.s(4)
+                                Text { text: "Eco Throttle Delay"; font.family: "JetBrains Mono"; font.weight: Font.Bold; font.pixelSize: root.s(13); color: root.text }
+                                Text { text: "Seconds an app must sit unfocused before eco mode caps its CPU."; font.family: "JetBrains Mono"; font.pixelSize: root.s(11); color: root.subtext0; elide: Text.ElideRight; Layout.fillWidth: true }
+                            }
+
+                            Item {
+                                Layout.preferredWidth: settingsCol.controlColWidth
+                                Layout.fillHeight: true
+
+                                RowLayout {
+                                    anchors.right: parent.right
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    spacing: root.s(10)
+
+                                    Rectangle {
+                                        width: root.s(30); height: root.s(30); radius: root.s(6)
+                                        color: ecoThrottleMinusMa.pressed ? root.surface2 : root.surface1
+                                        Text { anchors.centerIn: parent; text: "-"; font.family: "JetBrains Mono"; font.weight: Font.Bold; font.pixelSize: root.s(14); color: root.text }
+                                        MouseArea { id: ecoThrottleMinusMa; anchors.fill: parent; onClicked: root.setEcoThrottleSecs = Math.max(5, root.setEcoThrottleSecs - 5) }
+                                    }
+
+                                    Text {
+                                        text: root.setEcoThrottleSecs + "s"
+                                        font.family: "JetBrains Mono"; font.weight: Font.Black; font.pixelSize: root.s(14)
+                                        color: root.text
+                                        Layout.minimumWidth: root.s(40)
+                                        horizontalAlignment: Text.AlignHCenter
+                                    }
+
+                                    Rectangle {
+                                        width: root.s(30); height: root.s(30); radius: root.s(6)
+                                        color: ecoThrottlePlusMa.pressed ? root.surface2 : root.surface1
+                                        Text { anchors.centerIn: parent; text: "+"; font.family: "JetBrains Mono"; font.weight: Font.Bold; font.pixelSize: root.s(14); color: root.text }
+                                        MouseArea { id: ecoThrottlePlusMa; anchors.fill: parent; onClicked: root.setEcoThrottleSecs = Math.min(600, root.setEcoThrottleSecs + 5) }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Setting: Eco Freeze Delay
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: root.s(60)
+                        radius: root.s(8)
+                        color: Qt.alpha(root.surface0, 0.4)
+                        border.color: root.surface1
+                        border.width: 1
+
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.margins: root.s(15)
+                            spacing: root.s(20)
+
+                            Item {
+                                Layout.preferredWidth: settingsCol.iconColWidth
+                                Layout.alignment: Qt.AlignVCenter
+                                Text { anchors.centerIn: parent; text: "󰜗"; font.family: "Iosevka Nerd Font"; font.pixelSize: root.s(20); color: root.sapphire }
+                            }
+
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                spacing: root.s(4)
+                                Text { text: "Eco Freeze Delay"; font.family: "JetBrains Mono"; font.weight: Font.Bold; font.pixelSize: root.s(13); color: root.text }
+                                Text { text: "How long an app must stay hidden on another workspace before eco mode freezes it."; font.family: "JetBrains Mono"; font.pixelSize: root.s(11); color: root.subtext0; elide: Text.ElideRight; Layout.fillWidth: true }
+                            }
+
+                            Item {
+                                Layout.preferredWidth: settingsCol.controlColWidth
+                                Layout.fillHeight: true
+
+                                RowLayout {
+                                    anchors.right: parent.right
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    spacing: root.s(10)
+
+                                    Rectangle {
+                                        width: root.s(30); height: root.s(30); radius: root.s(6)
+                                        color: ecoFreezeMinusMa.pressed ? root.surface2 : root.surface1
+                                        Text { anchors.centerIn: parent; text: "-"; font.family: "JetBrains Mono"; font.weight: Font.Bold; font.pixelSize: root.s(14); color: root.text }
+                                        MouseArea { id: ecoFreezeMinusMa; anchors.fill: parent; onClicked: root.setEcoFreezeSecs = Math.max(30, root.setEcoFreezeSecs - 30) }
+                                    }
+
+                                    Text {
+                                        text: root.setEcoFreezeSecs % 60 === 0 ? (root.setEcoFreezeSecs / 60) + "m" : root.setEcoFreezeSecs + "s"
+                                        font.family: "JetBrains Mono"; font.weight: Font.Black; font.pixelSize: root.s(14)
+                                        color: root.text
+                                        Layout.minimumWidth: root.s(40)
+                                        horizontalAlignment: Text.AlignHCenter
+                                    }
+
+                                    Rectangle {
+                                        width: root.s(30); height: root.s(30); radius: root.s(6)
+                                        color: ecoFreezePlusMa.pressed ? root.surface2 : root.surface1
+                                        Text { anchors.centerIn: parent; text: "+"; font.family: "JetBrains Mono"; font.weight: Font.Bold; font.pixelSize: root.s(14); color: root.text }
+                                        MouseArea { id: ecoFreezePlusMa; anchors.fill: parent; onClicked: root.setEcoFreezeSecs = Math.min(3600, root.setEcoFreezeSecs + 30) }
+                                    }
                                 }
                             }
                         }
@@ -5729,6 +5951,13 @@ Item {
                                         value: root.setLockShowQuickActions ? "on" : "off"
                                         onPicked: (v) => root.setLockShowQuickActions = (v === "on")
                                     }
+
+                                    LockChoiceRow {
+                                        glyph: "󰒲"; title: "Idle ambient"; sub: "Full-screen ambient visual between going idle and the lock. Music-reactive glow while playing, slow wallpaper drift otherwise. Any input dismisses it."
+                                        choices: [ { v: "on", l: "On" }, { v: "off", l: "Off" } ]
+                                        value: root.setIdleAmbientEnabled ? "on" : "off"
+                                        onPicked: (v) => root.setIdleAmbientEnabled = (v === "on")
+                                    }
                                 }
                             }
                         }
@@ -6744,6 +6973,64 @@ Item {
                         }
                     }
 
+                    // Setting: Spoken Brief Sections
+                    Rectangle {
+                        id: spokenSectionsCard
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: root.s(60)
+                        radius: root.s(8)
+                        color: Qt.alpha(root.surface0, 0.4)
+                        border.color: root.surface1
+                        border.width: 1
+
+                        property var opts: [
+                            { id: "weather", label: "weather" },
+                            { id: "events", label: "events" },
+                            { id: "tasks", label: "tasks" },
+                            { id: "battery", label: "battery" },
+                            { id: "notifs", label: "notifs" },
+                            { id: "nudge", label: "nudge" }
+                        ]
+
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.margins: root.s(15)
+                            spacing: root.s(20)
+
+                            Item {
+                                Layout.preferredWidth: settingsCol.iconColWidth
+                                Layout.alignment: Qt.AlignVCenter
+                                Text { anchors.centerIn: parent; text: "󰔊"; font.family: "Iosevka Nerd Font"; font.pixelSize: root.s(20); color: root.peach }
+                            }
+
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                spacing: root.s(4)
+                                Text { text: "Spoken Brief Sections"; font.family: "JetBrains Mono"; font.weight: Font.Bold; font.pixelSize: root.s(13); color: root.text }
+                                Text { text: "Which parts of a spoken brief get read aloud. The card always shows everything."; font.family: "JetBrains Mono"; font.pixelSize: root.s(11); color: root.subtext0; elide: Text.ElideRight; Layout.fillWidth: true }
+                            }
+
+                            RowLayout {
+                                Layout.alignment: Qt.AlignVCenter
+                                spacing: root.s(6)
+                                Repeater {
+                                    model: spokenSectionsCard.opts
+                                    delegate: Rectangle {
+                                        required property var modelData
+                                        property bool sel: root.spokenSectionOn(modelData.id)
+                                        Layout.preferredHeight: root.s(28)
+                                        Layout.preferredWidth: l_spokenSectionsCard.implicitWidth + root.s(18)
+                                        radius: root.s(7)
+                                        color: sel ? root.peach : (m_spokenSectionsCard.containsMouse ? root.surface2 : root.surface1)
+                                        Behavior on color { ColorAnimation { duration: 150 } }
+                                        Text { id: l_spokenSectionsCard; anchors.centerIn: parent; text: modelData.label; font.family: "JetBrains Mono"; font.weight: Font.Bold; font.pixelSize: root.s(11); color: parent.sel ? root.base : root.subtext0 }
+                                        MouseArea { id: m_spokenSectionsCard; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: root.toggleSpokenSection(modelData.id) }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     // Setting: Catch-up On Return
                     Rectangle {
                         id: catchUpCard
@@ -7241,6 +7528,246 @@ Item {
                                         color: expirePlusMa.pressed ? root.surface2 : root.surface1
                                         Text { anchors.centerIn: parent; text: "+"; font.family: "JetBrains Mono"; font.weight: Font.Bold; font.pixelSize: root.s(14); color: root.text }
                                         MouseArea { id: expirePlusMa; anchors.fill: parent; onClicked: root.setResidentPassiveExpireSecs = Math.min(300, root.setResidentPassiveExpireSecs + 10) }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Setting: Action Nudge Auto-Dismiss
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: root.s(60)
+                        radius: root.s(8)
+                        color: Qt.alpha(root.surface0, 0.4)
+                        border.color: root.surface1
+                        border.width: 1
+
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.margins: root.s(15)
+                            spacing: root.s(20)
+
+                            Item {
+                                Layout.preferredWidth: settingsCol.iconColWidth
+                                Layout.alignment: Qt.AlignVCenter
+                                Text { anchors.centerIn: parent; text: "󰦒"; font.family: "Iosevka Nerd Font"; font.pixelSize: root.s(20); color: root.mauve }
+                            }
+
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                spacing: root.s(4)
+                                Text { text: "Action Nudge Auto-Dismiss"; font.family: "JetBrains Mono"; font.weight: Font.Bold; font.pixelSize: root.s(13); color: root.text }
+                                Text { text: "Seconds before nudges with a run button stop pulsing and clear themselves."; font.family: "JetBrains Mono"; font.pixelSize: root.s(11); color: root.subtext0; elide: Text.ElideRight; Layout.fillWidth: true }
+                            }
+
+                            Item {
+                                Layout.preferredWidth: settingsCol.controlColWidth
+                                Layout.fillHeight: true
+
+                                RowLayout {
+                                    anchors.right: parent.right
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    spacing: root.s(10)
+
+                                    Rectangle {
+                                        width: root.s(30); height: root.s(30); radius: root.s(6)
+                                        color: actionExpireMinusMa.pressed ? root.surface2 : root.surface1
+                                        Text { anchors.centerIn: parent; text: "-"; font.family: "JetBrains Mono"; font.weight: Font.Bold; font.pixelSize: root.s(14); color: root.text }
+                                        MouseArea { id: actionExpireMinusMa; anchors.fill: parent; onClicked: root.setResidentActionExpireSecs = Math.max(30, root.setResidentActionExpireSecs - 30) }
+                                    }
+
+                                    Text {
+                                        text: root.setResidentActionExpireSecs + "s"
+                                        font.family: "JetBrains Mono"; font.weight: Font.Black; font.pixelSize: root.s(14)
+                                        color: root.text
+                                        Layout.minimumWidth: root.s(40)
+                                        horizontalAlignment: Text.AlignHCenter
+                                    }
+
+                                    Rectangle {
+                                        width: root.s(30); height: root.s(30); radius: root.s(6)
+                                        color: actionExpirePlusMa.pressed ? root.surface2 : root.surface1
+                                        Text { anchors.centerIn: parent; text: "+"; font.family: "JetBrains Mono"; font.weight: Font.Bold; font.pixelSize: root.s(14); color: root.text }
+                                        MouseArea { id: actionExpirePlusMa; anchors.fill: parent; onClicked: root.setResidentActionExpireSecs = Math.min(1800, root.setResidentActionExpireSecs + 30) }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Setting: End-of-Day Review Hour
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: root.s(60)
+                        radius: root.s(8)
+                        color: Qt.alpha(root.surface0, 0.4)
+                        border.color: root.surface1
+                        border.width: 1
+
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.margins: root.s(15)
+                            spacing: root.s(20)
+
+                            Item {
+                                Layout.preferredWidth: settingsCol.iconColWidth
+                                Layout.alignment: Qt.AlignVCenter
+                                Text { anchors.centerIn: parent; text: "󰖚"; font.family: "Iosevka Nerd Font"; font.pixelSize: root.s(20); color: root.yellow }
+                            }
+
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                spacing: root.s(4)
+                                Text { text: "End-of-Day Review Hour"; font.family: "JetBrains Mono"; font.weight: Font.Bold; font.pixelSize: root.s(13); color: root.text }
+                                Text { text: "From this hour on, the resident pins a once-a-day review card: focus stats, done tasks, tomorrow."; font.family: "JetBrains Mono"; font.pixelSize: root.s(11); color: root.subtext0; elide: Text.ElideRight; Layout.fillWidth: true }
+                            }
+
+                            Item {
+                                Layout.preferredWidth: settingsCol.controlColWidth
+                                Layout.fillHeight: true
+
+                                RowLayout {
+                                    anchors.right: parent.right
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    spacing: root.s(10)
+
+                                    Rectangle {
+                                        width: root.s(30); height: root.s(30); radius: root.s(6)
+                                        color: eodHourMinusMa.pressed ? root.surface2 : root.surface1
+                                        Text { anchors.centerIn: parent; text: "-"; font.family: "JetBrains Mono"; font.weight: Font.Bold; font.pixelSize: root.s(14); color: root.text }
+                                        MouseArea { id: eodHourMinusMa; anchors.fill: parent; onClicked: root.setResidentEodHour = Math.max(0, root.setResidentEodHour - 1) }
+                                    }
+
+                                    Text {
+                                        text: (root.setResidentEodHour < 10 ? "0" : "") + root.setResidentEodHour + ":00"
+                                        font.family: "JetBrains Mono"; font.weight: Font.Black; font.pixelSize: root.s(14)
+                                        color: root.text
+                                        Layout.minimumWidth: root.s(50)
+                                        horizontalAlignment: Text.AlignHCenter
+                                    }
+
+                                    Rectangle {
+                                        width: root.s(30); height: root.s(30); radius: root.s(6)
+                                        color: eodHourPlusMa.pressed ? root.surface2 : root.surface1
+                                        Text { anchors.centerIn: parent; text: "+"; font.family: "JetBrains Mono"; font.weight: Font.Bold; font.pixelSize: root.s(14); color: root.text }
+                                        MouseArea { id: eodHourPlusMa; anchors.fill: parent; onClicked: root.setResidentEodHour = Math.min(23, root.setResidentEodHour + 1) }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Setting: Low Battery Warning
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: root.s(60)
+                        radius: root.s(8)
+                        color: Qt.alpha(root.surface0, 0.4)
+                        border.color: root.surface1
+                        border.width: 1
+
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.margins: root.s(15)
+                            spacing: root.s(20)
+
+                            Item {
+                                Layout.preferredWidth: settingsCol.iconColWidth
+                                Layout.alignment: Qt.AlignVCenter
+                                Text { anchors.centerIn: parent; text: "󰂃"; font.family: "Iosevka Nerd Font"; font.pixelSize: root.s(20); color: root.red }
+                            }
+
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                spacing: root.s(4)
+                                Text { text: "Low Battery Warning"; font.family: "JetBrains Mono"; font.weight: Font.Bold; font.pixelSize: root.s(13); color: root.text }
+                                Text { text: "Minutes of battery left before the resident offers its emergency power-save fix."; font.family: "JetBrains Mono"; font.pixelSize: root.s(11); color: root.subtext0; elide: Text.ElideRight; Layout.fillWidth: true }
+                            }
+
+                            Item {
+                                Layout.preferredWidth: settingsCol.controlColWidth
+                                Layout.fillHeight: true
+
+                                RowLayout {
+                                    anchors.right: parent.right
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    spacing: root.s(10)
+
+                                    Rectangle {
+                                        width: root.s(30); height: root.s(30); radius: root.s(6)
+                                        color: lowBattMinsMinusMa.pressed ? root.surface2 : root.surface1
+                                        Text { anchors.centerIn: parent; text: "-"; font.family: "JetBrains Mono"; font.weight: Font.Bold; font.pixelSize: root.s(14); color: root.text }
+                                        MouseArea { id: lowBattMinsMinusMa; anchors.fill: parent; onClicked: root.setResidentLowBatteryMins = Math.max(5, root.setResidentLowBatteryMins - 5) }
+                                    }
+
+                                    Text {
+                                        text: root.setResidentLowBatteryMins + "m"
+                                        font.family: "JetBrains Mono"; font.weight: Font.Black; font.pixelSize: root.s(14)
+                                        color: root.text
+                                        Layout.minimumWidth: root.s(40)
+                                        horizontalAlignment: Text.AlignHCenter
+                                    }
+
+                                    Rectangle {
+                                        width: root.s(30); height: root.s(30); radius: root.s(6)
+                                        color: lowBattMinsPlusMa.pressed ? root.surface2 : root.surface1
+                                        Text { anchors.centerIn: parent; text: "+"; font.family: "JetBrains Mono"; font.weight: Font.Bold; font.pixelSize: root.s(14); color: root.text }
+                                        MouseArea { id: lowBattMinsPlusMa; anchors.fill: parent; onClicked: root.setResidentLowBatteryMins = Math.min(120, root.setResidentLowBatteryMins + 5) }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Setting: Focus Soundtrack Suggestion
+                    Rectangle {
+                        id: musicSuggestCard
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: root.s(60)
+                        radius: root.s(8)
+                        color: Qt.alpha(root.surface0, 0.4)
+                        border.color: root.surface1
+                        border.width: 1
+
+                        property var opts: [
+                            { id: true, label: "on" },
+                            { id: false, label: "off" }
+                        ]
+
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.margins: root.s(15)
+                            spacing: root.s(20)
+
+                            Item {
+                                Layout.preferredWidth: settingsCol.iconColWidth
+                                Layout.alignment: Qt.AlignVCenter
+                                Text { anchors.centerIn: parent; text: "󰝚"; font.family: "Iosevka Nerd Font"; font.pixelSize: root.s(20); color: root.green }
+                            }
+
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                spacing: root.s(4)
+                                Text { text: "Focus Soundtrack Suggestion"; font.family: "JetBrains Mono"; font.weight: Font.Bold; font.pixelSize: root.s(13); color: root.text }
+                                Text { text: "Suggest music when you open Focus Time with nothing playing."; font.family: "JetBrains Mono"; font.pixelSize: root.s(11); color: root.subtext0; elide: Text.ElideRight; Layout.fillWidth: true }
+                            }
+
+                            RowLayout {
+                                Layout.alignment: Qt.AlignVCenter
+                                spacing: root.s(6)
+                                Repeater {
+                                    model: musicSuggestCard.opts
+                                    delegate: Rectangle {
+                                        required property var modelData
+                                        property bool sel: modelData.id === root.setMusicSuggest
+                                        Layout.preferredHeight: root.s(28)
+                                        Layout.preferredWidth: l_musicSuggestCard.implicitWidth + root.s(18)
+                                        radius: root.s(7)
+                                        color: sel ? root.peach : (m_musicSuggestCard.containsMouse ? root.surface2 : root.surface1)
+                                        Behavior on color { ColorAnimation { duration: 150 } }
+                                        Text { id: l_musicSuggestCard; anchors.centerIn: parent; text: modelData.label; font.family: "JetBrains Mono"; font.weight: Font.Bold; font.pixelSize: root.s(11); color: parent.sel ? root.base : root.subtext0 }
+                                        MouseArea { id: m_musicSuggestCard; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: root.setMusicSuggest = modelData.id }
                                     }
                                 }
                             }
@@ -8169,6 +8696,130 @@ Item {
                                         color: tempPlusMa.pressed ? root.surface2 : root.surface1
                                         Text { anchors.centerIn: parent; text: "+"; font.family: "JetBrains Mono"; font.weight: Font.Bold; font.pixelSize: root.s(14); color: root.text }
                                         MouseArea { id: tempPlusMa; anchors.fill: parent; onClicked: root.setNightLightTemp = Math.min(6500, root.setNightLightTemp + 250) }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Setting: Brightness Curve Floor
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: root.s(60)
+                        radius: root.s(8)
+                        color: Qt.alpha(root.surface0, 0.4)
+                        border.color: root.surface1
+                        border.width: 1
+
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.margins: root.s(15)
+                            spacing: root.s(20)
+
+                            Item {
+                                Layout.preferredWidth: settingsCol.iconColWidth
+                                Layout.alignment: Qt.AlignVCenter
+                                Text { anchors.centerIn: parent; text: "󰃞"; font.family: "Iosevka Nerd Font"; font.pixelSize: root.s(20); color: root.sapphire }
+                            }
+
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                spacing: root.s(4)
+                                Text { text: "Brightness Curve Floor"; font.family: "JetBrains Mono"; font.weight: Font.Bold; font.pixelSize: root.s(13); color: root.text }
+                                Text { text: "Lowest brightness the sun-following brightness curve dims to at night."; font.family: "JetBrains Mono"; font.pixelSize: root.s(11); color: root.subtext0; elide: Text.ElideRight; Layout.fillWidth: true }
+                            }
+
+                            Item {
+                                Layout.preferredWidth: settingsCol.controlColWidth
+                                Layout.fillHeight: true
+
+                                RowLayout {
+                                    anchors.right: parent.right
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    spacing: root.s(10)
+
+                                    Rectangle {
+                                        width: root.s(30); height: root.s(30); radius: root.s(6)
+                                        color: curveMinMinusMa.pressed ? root.surface2 : root.surface1
+                                        Text { anchors.centerIn: parent; text: "-"; font.family: "JetBrains Mono"; font.weight: Font.Bold; font.pixelSize: root.s(14); color: root.text }
+                                        MouseArea { id: curveMinMinusMa; anchors.fill: parent; onClicked: root.setBrightnessCurveMin = Math.max(1, root.setBrightnessCurveMin - 5) }
+                                    }
+
+                                    Text {
+                                        text: root.setBrightnessCurveMin + "%"
+                                        font.family: "JetBrains Mono"; font.weight: Font.Black; font.pixelSize: root.s(14)
+                                        color: root.text
+                                        Layout.minimumWidth: root.s(50)
+                                        horizontalAlignment: Text.AlignHCenter
+                                    }
+
+                                    Rectangle {
+                                        width: root.s(30); height: root.s(30); radius: root.s(6)
+                                        color: curveMinPlusMa.pressed ? root.surface2 : root.surface1
+                                        Text { anchors.centerIn: parent; text: "+"; font.family: "JetBrains Mono"; font.weight: Font.Bold; font.pixelSize: root.s(14); color: root.text }
+                                        MouseArea { id: curveMinPlusMa; anchors.fill: parent; onClicked: root.setBrightnessCurveMin = Math.min(root.setBrightnessCurveMax - 5, root.setBrightnessCurveMin + 5) }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Setting: Brightness Curve Ceiling
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: root.s(60)
+                        radius: root.s(8)
+                        color: Qt.alpha(root.surface0, 0.4)
+                        border.color: root.surface1
+                        border.width: 1
+
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.margins: root.s(15)
+                            spacing: root.s(20)
+
+                            Item {
+                                Layout.preferredWidth: settingsCol.iconColWidth
+                                Layout.alignment: Qt.AlignVCenter
+                                Text { anchors.centerIn: parent; text: "󰃠"; font.family: "Iosevka Nerd Font"; font.pixelSize: root.s(20); color: root.yellow }
+                            }
+
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                spacing: root.s(4)
+                                Text { text: "Brightness Curve Ceiling"; font.family: "JetBrains Mono"; font.weight: Font.Bold; font.pixelSize: root.s(13); color: root.text }
+                                Text { text: "Highest brightness the curve reaches at midday."; font.family: "JetBrains Mono"; font.pixelSize: root.s(11); color: root.subtext0; elide: Text.ElideRight; Layout.fillWidth: true }
+                            }
+
+                            Item {
+                                Layout.preferredWidth: settingsCol.controlColWidth
+                                Layout.fillHeight: true
+
+                                RowLayout {
+                                    anchors.right: parent.right
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    spacing: root.s(10)
+
+                                    Rectangle {
+                                        width: root.s(30); height: root.s(30); radius: root.s(6)
+                                        color: curveMaxMinusMa.pressed ? root.surface2 : root.surface1
+                                        Text { anchors.centerIn: parent; text: "-"; font.family: "JetBrains Mono"; font.weight: Font.Bold; font.pixelSize: root.s(14); color: root.text }
+                                        MouseArea { id: curveMaxMinusMa; anchors.fill: parent; onClicked: root.setBrightnessCurveMax = Math.max(root.setBrightnessCurveMin + 5, root.setBrightnessCurveMax - 5) }
+                                    }
+
+                                    Text {
+                                        text: root.setBrightnessCurveMax + "%"
+                                        font.family: "JetBrains Mono"; font.weight: Font.Black; font.pixelSize: root.s(14)
+                                        color: root.text
+                                        Layout.minimumWidth: root.s(50)
+                                        horizontalAlignment: Text.AlignHCenter
+                                    }
+
+                                    Rectangle {
+                                        width: root.s(30); height: root.s(30); radius: root.s(6)
+                                        color: curveMaxPlusMa.pressed ? root.surface2 : root.surface1
+                                        Text { anchors.centerIn: parent; text: "+"; font.family: "JetBrains Mono"; font.weight: Font.Bold; font.pixelSize: root.s(14); color: root.text }
+                                        MouseArea { id: curveMaxPlusMa; anchors.fill: parent; onClicked: root.setBrightnessCurveMax = Math.min(100, root.setBrightnessCurveMax + 5) }
                                     }
                                 }
                             }
@@ -10141,6 +10792,63 @@ Item {
 
                 ListModel { id: shotHistoryModel }
 
+                readonly property string ckDir: "$HOME/.config/hypr/scripts/quickshell/claude"
+                readonly property string ckExtras: "python3 \"" + ckDir + "/resident_extras.py\" "
+                readonly property var cardKinds: [
+                    { kind: "wrapped", desc: "Weekly / monthly Spotify Wrapped becomes due", fires: [
+                        { label: "Week", cmd: ckExtras + "--test-wrapped week" },
+                        { label: "Month", cmd: ckExtras + "--test-wrapped month" }] },
+                    { kind: "nowplaying", desc: "Every 20th play of the same track", fires: [
+                        { label: "Fire", cmd: ckExtras + "--test-nowplaying" }] },
+                    { kind: "calendar", desc: "15 min or less before a calendar event, once per event", fires: [
+                        { label: "Fire", cmd: ckExtras + "--test-calendar" }] },
+                    { kind: "batteryhealth", desc: "Weekly battery health check", fires: [
+                        { label: "Fire", cmd: ckExtras + "--test-batteryhealth" }] },
+                    { kind: "uptimeguilt", desc: "Uptime crosses a 3/5/7/10/14/21/30 day tier, once per boot", fires: [
+                        { label: "Fire", cmd: ckExtras + "--test-uptimeguilt" }] },
+                    { kind: "brief", desc: "Morning / afternoon / night brief inside its time window", fires: [
+                        { label: "Morning", cmd: ckExtras + "--test-brief-card morning" },
+                        { label: "Afternoon", cmd: ckExtras + "--test-brief-card afternoon" },
+                        { label: "Night", cmd: ckExtras + "--test-brief-card night" }] },
+                    { kind: "focusdone", desc: "Timer pill finishes a focus session", fires: [
+                        { label: "Fire", cmd: ckExtras + "--test-focusdone 25" }] },
+                    { kind: "gitpush", desc: "git push in any repo (global pre-push hook)", fires: [
+                        { label: "Fire", cmd: "cd \"$HOME/.config/hypr\" || exit 1; log=\"" + ckDir + "/git_push_log.jsonl\"; n=$(wc -l < \"$log\" 2>/dev/null || echo 0); " +
+                            "echo 'refs/heads/main abc123 refs/heads/main def456' | bash \"$HOME/.config/git-hooks/pre-push\" origin url; " +
+                            "head -n \"$n\" \"$log\" > \"$log.tmp\" && mv -f \"$log.tmp\" \"$log\"; echo 'fired via pre-push hook'" }] },
+                    { kind: "tailscale", desc: "Tailscale auth-key expiry enters the warn window", fires: [
+                        { label: "Fire", cmd: "cd \"" + ckDir + "\" && python3 -c 'import resident_extras as r; r.tick_tailscale_key({}, force=True); print(\"emitted tailscale-key-expiry\")'" }] }
+                ]
+                property var cardKindCounts: ({})
+                readonly property int cardKindTotal: {
+                    let n = 0
+                    for (let i = 0; i < cardKinds.length; i++) n += cardKindCounts[cardKinds[i].kind] || 0
+                    return n
+                }
+                function loadCardCounts() { ckCountLoader.running = false; ckCountLoader.running = true }
+                function clearCardKinds(kinds) {
+                    ckClearProc.command = ["bash", "-c", "python3 \"" + ckDir + "/resident_card.py\" " + kinds.map(function (k) { return "--clear-kind " + k }).join(" ")]
+                    ckClearProc.running = false
+                    ckClearProc.running = true
+                }
+
+                Timer { interval: 1500; running: residentTab.visible; repeat: true; triggeredOnStart: true; onTriggered: residentTab.loadCardCounts() }
+
+                Process {
+                    id: ckCountLoader
+                    command: ["bash", "-c", "python3 \"" + residentTab.ckDir + "/resident_card.py\" --count-kinds 2>/dev/null || echo '{}'"]
+                    stdout: StdioCollector {
+                        onStreamFinished: {
+                            try { residentTab.cardKindCounts = JSON.parse(this.text.trim() || "{}") } catch (e) {}
+                        }
+                    }
+                }
+
+                Process {
+                    id: ckClearProc
+                    onExited: residentTab.loadCardCounts()
+                }
+
                 function loadStats() { statsLoader.running = false; statsLoader.running = true }
                 function loadShotHistory() { shotHistoryLoader.running = false; shotHistoryLoader.running = true }
 
@@ -10217,6 +10925,127 @@ Item {
                             text: "Read-only track record — proactive-fix findings by category, muted categories, and daily/weekly check history."
                             font.family: "JetBrains Mono"; font.pixelSize: root.s(13); color: root.subtext0
                             Layout.fillWidth: true; wrapMode: Text.WordWrap
+                        }
+
+                        Rectangle { Layout.fillWidth: true; height: 1; color: Qt.alpha(root.surface1, 0.5) }
+
+                        RowLayout {
+                            Layout.fillWidth: true
+                            Text { text: "Card kinds (debug)"; font.family: "JetBrains Mono"; font.weight: Font.Bold; font.pixelSize: root.s(15); color: root.text }
+                            Item { Layout.fillWidth: true }
+                            Text { text: residentTab.cardKindTotal + " queued"; font.family: "JetBrains Mono"; font.pixelSize: root.s(11); color: root.subtext0 }
+                            Rectangle {
+                                Layout.preferredWidth: root.s(80); Layout.preferredHeight: root.s(28)
+                                radius: root.s(8)
+                                opacity: residentTab.cardKindTotal > 0 ? 1.0 : 0.4
+                                color: ckClearAllMa.containsMouse && residentTab.cardKindTotal > 0 ? Qt.alpha(root.red, 0.15) : root.surface0
+                                border.color: ckClearAllMa.containsMouse && residentTab.cardKindTotal > 0 ? root.red : root.surface2; border.width: 1
+                                Text { anchors.centerIn: parent; text: "Clear all"; font.family: "JetBrains Mono"; font.pixelSize: root.s(11); color: root.text }
+                                MouseArea {
+                                    id: ckClearAllMa
+                                    anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                                    onClicked: if (residentTab.cardKindTotal > 0) residentTab.clearCardKinds(residentTab.cardKinds.map(function (k) { return k.kind }))
+                                }
+                            }
+                        }
+                        Text {
+                            text: "Fires a real card through each kind's test path. Clear removes every queued card of that kind (test or real) from the bar."
+                            font.family: "JetBrains Mono"; font.pixelSize: root.s(11); color: root.subtext0
+                            Layout.fillWidth: true; wrapMode: Text.WordWrap
+                        }
+                        Repeater {
+                            model: residentTab.cardKinds
+                            delegate: Rectangle {
+                                id: ckRow
+                                required property var modelData
+                                readonly property int queued: residentTab.cardKindCounts[modelData.kind] || 0
+                                property string status: ""
+                                property bool busy: ckFireProc.running
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: ckRowCol.implicitHeight + root.s(16)
+                                radius: root.s(8)
+                                color: Qt.alpha(root.surface0, 0.4)
+                                border.color: ckRow.queued > 0 ? root.mauve : root.surface1
+                                border.width: 1
+
+                                property string outText: ""
+                                property string errText: ""
+                                function summarize() {
+                                    let e = ckRow.errText.trim()
+                                    if (e !== "") { ckRow.status = "error: " + e.split("\n").pop(); return }
+                                    let t = ckRow.outText.trim().split("\n").filter(function (l) { return l.length > 0 })
+                                    let last = t.length > 0 ? t[t.length - 1] : ""
+                                    if (last === "" || last === "null") { ckRow.status = "no card emitted"; return }
+                                    try {
+                                        let o = JSON.parse(last)
+                                        if (o && o.id) { ckRow.status = "emitted " + o.id; return }
+                                    } catch (err) {}
+                                    ckRow.status = last
+                                }
+
+                                Process {
+                                    id: ckFireProc
+                                    stdout: StdioCollector { onStreamFinished: { ckRow.outText = this.text; ckRow.summarize() } }
+                                    stderr: StdioCollector { onStreamFinished: { ckRow.errText = this.text; ckRow.summarize() } }
+                                    onExited: residentTab.loadCardCounts()
+                                }
+
+                                ColumnLayout {
+                                    id: ckRowCol
+                                    anchors.left: parent.left; anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter
+                                    anchors.leftMargin: root.s(10); anchors.rightMargin: root.s(10)
+                                    spacing: root.s(4)
+
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        spacing: root.s(8)
+                                        Text { text: ckRow.modelData.kind; font.family: "JetBrains Mono"; font.weight: Font.Bold; font.pixelSize: root.s(12); color: root.text; Layout.preferredWidth: root.s(120); elide: Text.ElideRight }
+                                        Text { text: ckRow.modelData.desc; font.family: "JetBrains Mono"; font.pixelSize: root.s(11); color: root.subtext0; Layout.fillWidth: true; elide: Text.ElideRight }
+                                        Repeater {
+                                            model: ckRow.modelData.fires
+                                            delegate: Rectangle {
+                                                required property var modelData
+                                                Layout.preferredWidth: ckFireLbl.implicitWidth + root.s(18); Layout.preferredHeight: root.s(24)
+                                                radius: root.s(6)
+                                                opacity: ckRow.busy ? 0.5 : 1.0
+                                                color: ckFireMa.containsMouse ? root.surface2 : root.surface1
+                                                Text { id: ckFireLbl; anchors.centerIn: parent; text: parent.modelData.label; font.family: "JetBrains Mono"; font.pixelSize: root.s(10); color: root.text }
+                                                MouseArea {
+                                                    id: ckFireMa
+                                                    anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                                                    onClicked: {
+                                                        if (ckRow.busy) return
+                                                        ckRow.status = "firing " + parent.modelData.label.toLowerCase() + "…"
+                                                        ckRow.outText = ""
+                                                        ckRow.errText = ""
+                                                        ckFireProc.command = ["bash", "-c", parent.modelData.cmd]
+                                                        ckFireProc.running = true
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        Rectangle {
+                                            Layout.preferredWidth: ckClearLbl.implicitWidth + root.s(18); Layout.preferredHeight: root.s(24)
+                                            radius: root.s(6)
+                                            opacity: ckRow.queued > 0 ? 1.0 : 0.4
+                                            color: ckClearMa.containsMouse && ckRow.queued > 0 ? Qt.alpha(root.red, 0.15) : "transparent"
+                                            border.color: ckClearMa.containsMouse && ckRow.queued > 0 ? root.red : root.surface2; border.width: 1
+                                            Text { id: ckClearLbl; anchors.centerIn: parent; text: "Clear" + (ckRow.queued > 0 ? " (" + ckRow.queued + ")" : ""); font.family: "JetBrains Mono"; font.pixelSize: root.s(10); color: root.text }
+                                            MouseArea {
+                                                id: ckClearMa
+                                                anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                                                onClicked: if (ckRow.queued > 0) { ckRow.status = ""; residentTab.clearCardKinds([ckRow.modelData.kind]) }
+                                            }
+                                        }
+                                    }
+                                    Text {
+                                        visible: ckRow.status !== ""
+                                        text: ckRow.status
+                                        font.family: "JetBrains Mono"; font.pixelSize: root.s(10); color: ckRow.status.indexOf("error") === 0 ? root.red : root.subtext0
+                                        Layout.fillWidth: true; elide: Text.ElideRight
+                                    }
+                                }
+                            }
                         }
 
                         Rectangle { Layout.fillWidth: true; height: 1; color: Qt.alpha(root.surface1, 0.5) }

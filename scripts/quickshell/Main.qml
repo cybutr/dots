@@ -163,7 +163,7 @@ PanelWindow {
 
     property var warmComponents: []
     property int warmIndex: 0
-    readonly property var warmWidgets: ["claudeask", "guide", "quicksettings", "volume", "battery", "calendar", "music", "network", "power", "wallpaper", "workspaces", "focustime", "monitors", "notifications", "applauncher"]
+    readonly property var warmWidgets: ["claudeask", "palette", "guide", "quicksettings", "volume", "battery", "calendar", "music", "network", "power", "wallpaper", "workspaces", "focustime", "monitors", "notifications", "applauncher"]
     Timer {
         interval: 350; repeat: true; running: !masterWindow.isStartup && masterWindow.warmIndex < masterWindow.warmWidgets.length
         onTriggered: {
@@ -300,7 +300,7 @@ PanelWindow {
             props["notifModel"] = masterWindow.notifModel;
             props["liveNotifs"] = masterWindow.liveNotifs;
         }
-        if (widget === "wallpaper" || widget === "quicktell" || widget === "holdaction" || widget === "guide") props["widgetArg"] = arg;
+        if (widget === "wallpaper" || widget === "quicktell" || widget === "holdaction" || widget === "guide" || widget === "leader") props["widgetArg"] = arg;
         return props;
     }
 

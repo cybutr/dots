@@ -171,6 +171,42 @@ def log_shot_answer(question_or_mode, answer, image_path=""):
         pass
 
 
+def _queue_cards():
+    try:
+        with open(QUEUE) as f:
+            lines = f.read().splitlines()
+    except OSError:
+        return []
+    out = []
+    for ln in lines:
+        try:
+            out.append((ln, json.loads(ln)))
+        except Exception:
+            out.append((ln, None))
+    return out
+
+
+def clear_kinds(kinds):
+    kinds = set(kinds)
+    cards = _queue_cards()
+    keep = [ln for ln, c in cards if not (c and c.get("kind") in kinds)]
+    removed = len(cards) - len(keep)
+    if removed:
+        tmp = QUEUE + ".tmp"
+        with open(tmp, "w") as f:
+            f.write("\n".join(keep) + ("\n" if keep else ""))
+        os.replace(tmp, QUEUE)
+    return removed
+
+
+def count_kinds():
+    counts = {}
+    for _, c in _queue_cards():
+        if c and c.get("kind"):
+            counts[c["kind"]] = counts.get(c["kind"], 0) + 1
+    return counts
+
+
 def _has_id(line, card_id):
     try:
         return json.loads(line).get("id") == card_id
@@ -199,7 +235,15 @@ def main():
     ap.add_argument("--ttl", type=int, default=None)
     ap.add_argument("--no-pulse", action="store_true")
     ap.add_argument("--open-card", action="store_true", help="also force the pill's hover card open for the flag's duration")
+    ap.add_argument("--clear-kind", action="append", default=[], help="remove queued cards of this kind (repeatable)")
+    ap.add_argument("--count-kinds", action="store_true", help="print queued card count per kind as JSON")
     a = ap.parse_args()
+    if a.count_kinds:
+        print(json.dumps(count_kinds()))
+        return
+    if a.clear_kind:
+        print(json.dumps({"removed": clear_kinds(a.clear_kind)}))
+        return
     if a.pill:
         flag = pill_flag(a.pill, tint=a.tint, urgency=a.urgency, pulse=not a.no_pulse,
                          ttl_secs=a.ttl, style=a.style, open_card=a.open_card)

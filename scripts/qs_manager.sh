@@ -247,7 +247,7 @@ if [[ "$ACTION" == "open" || "$ACTION" == "toggle" ]]; then
     if [[ "$TARGET" == "wallpaper" ]]; then
         handle_wallpaper_prep
         echo "$TARGET:$WALLPAPER_THUMB" > "$IPC_FILE"
-    elif [[ "$TARGET" == "quicktell" ]]; then
+    elif [[ "$TARGET" == "quicktell" || "$TARGET" == "leader" ]]; then
         if [[ -n "$SUBTARGET" ]]; then echo "$TARGET:$SUBTARGET" > "$IPC_FILE"; else echo "$TARGET" > "$IPC_FILE"; fi
     elif [[ "$TARGET" == "workspaces" ]]; then
         echo "$TARGET" > "$IPC_FILE"

@@ -1286,6 +1286,7 @@ Variants {
             property var residentHistory: []
             property var residentSeen: ({})
             property bool residentBaselined: false
+            property var residentFileIds: ({})
             property bool residentHistoryPinned: false
             property real residentHoldElapsed: 0
             property int residentAgeTick: 0
@@ -1337,6 +1338,7 @@ Variants {
                 let lines = text.split("\n")
                 let now = Date.now() / 1000
                 let fresh = []
+                let present = {}
                 for (let i = 0; i < lines.length; i++) {
                     let ln = lines[i].trim()
                     if (ln === "") continue
@@ -1344,6 +1346,7 @@ Variants {
                     try { c = JSON.parse(ln) } catch (e) { continue }
                     if (!c || !c.id) continue
                     let key = String(c.id)
+                    present[key] = true
                     let stamp = String(c.ts || 0)
                     if (barWindow.residentSeen[key] === stamp) continue
                     barWindow.residentSeen[key] = stamp
@@ -1373,6 +1376,16 @@ Variants {
                     barWindow.residentQueue = q
                     if (hadNone && q.length > 0) { barWindow.residentIdx = 0; barWindow.residentHoldElapsed = 0 }
                 }
+                let prevIds = barWindow.residentFileIds
+                let kept = barWindow.residentQueue.filter(function (x) { return present[String(x.id)] === true || prevIds[String(x.id)] !== true })
+                if (kept.length !== barWindow.residentQueue.length) {
+                    let curGone = barWindow.residentCur !== null && kept.indexOf(barWindow.residentCur) < 0
+                    barWindow.residentQueue = kept
+                    barWindow.residentIdx = Math.min(barWindow.residentIdx, Math.max(0, kept.length - 1))
+                    if (curGone) barWindow.residentHoldElapsed = 0
+                    if (kept.length === 0) barWindow.residentHistoryPinned = false
+                }
+                barWindow.residentFileIds = present
                 barWindow.residentPersist()
             }
             function residentDismiss() {

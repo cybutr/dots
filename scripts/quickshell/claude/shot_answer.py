@@ -20,7 +20,11 @@ def main():
     if len(sys.argv) < 2 or not os.path.exists(sys.argv[1]):
         return
     cfg = _settings()
-    prompt = cfg.get("residentShotAnswerPrompt") or DEFAULT_PROMPT
+    try:
+        from shot_prompts import active_text
+        prompt = active_text()
+    except Exception:
+        prompt = cfg.get("residentShotAnswerPrompt") or DEFAULT_PROMPT
     ans = _vision_call(sys.argv[1], prompt, 500, MODEL)
     if ans and "ANSWER:" in ans:
         ans = ans.rsplit("ANSWER:", 1)[1].strip()

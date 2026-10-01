@@ -62,6 +62,8 @@ function getLayout(name, mx, my, mw, mh, userScale, styles) {
         "applauncher": { w: s(800, scale), h: s(700, scale), rx: Math.floor((mw/2)-(s(800, scale)/2)), ry: Math.floor((mh/2)-(s(700, scale)/2)), comp: "applauncher/appLauncher.qml" },
         "clipboard": { w: s(800, scale), h: s(700, scale), rx: Math.floor((mw/2)-(s(800, scale)/2)), ry: Math.floor((mh/2)-(s(700, scale)/2)), comp: "clipboard/ClipboardManager.qml" },
         "claudeask": { w: s(920, scale), h: s(720, scale), rx: Math.floor((mw/2)-(s(920, scale)/2)), ry: Math.floor((mh/2)-(s(720, scale)/2)), comp: "claude/ClaudeAsk.qml" },
+        "palette":   { w: s(860, scale), h: s(660, scale), rx: Math.floor((mw/2)-(s(860, scale)/2)), ry: Math.floor(mh * 0.12), comp: "palette/CommandPalette.qml" },
+        "leader":    { w: s(880, scale), h: s(580, scale), rx: Math.floor((mw/2)-(s(880, scale)/2)), ry: Math.floor((mh/2)-(s(580, scale)/2)), comp: "leader/LeaderPopup.qml" },
         "quicktell": { w: s(720, scale), h: s(260, scale), rx: Math.floor((mw/2)-(s(720, scale)/2)), ry: Math.floor((mh/2)-(s(260, scale)/2)), comp: "claude/QuickTell.qml" },
 
         // agent-only widgets — no keybind, opened via MCP open_widget

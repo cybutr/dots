@@ -1,0 +1,9 @@
+{
+  "active": "geoguessr",
+  "prompts": {
+    "geoguessr": "guess where this is in geoguessr in short answer and guess where in the country we are please give me and guess precise location, give me one line answer with guess or possible guesses, and if  u say a specific part of the country you gotta lead me where to click in that country to find it, like north south go there and there, especially if its a big country",
+    "solve": "Solve what's in this screenshot correctly. First reason briefly (max 4 short sentences) about which answer is actually right, checking each option against real domain knowledge. Then end with a final line starting with 'ANSWER:' followed by only the answer, max 15 words. Multiple choice: option number plus at most 6 words of that option (in the question's language). Problem: just the result. Error: the one-line fix.",
+    "translate": "translate this into english, one line no fluff"
+  },
+  "syncedSetting": "guess where this is in geoguessr in short answer and guess where in the country we are please give me and guess precise location, give me one line answer with guess or possible guesses, and if  u say a specific part of the country you gotta lead me where to click in that country to find it, like north south go there and there, especially if its a big country"
+}

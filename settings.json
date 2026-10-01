@@ -129,5 +129,6 @@
     "notifications_center": "legacy",
     "volume": "revamp",
     "workspaces": "legacy"
-  }
+  },
+  "idleAmbientEnabled": false
 }
