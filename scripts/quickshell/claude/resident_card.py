@@ -37,7 +37,7 @@ def pill_flag(pill, tint=None, urgency="normal", pulse=True, ttl_secs=None, styl
     """Sets the single active pill-takeover flag. `pill` must match one of
     the names TopBar.qml's resident pill watcher recognizes: battery, wifi,
     bt, cpu, gpu, net, uptime, volume, clock, weather, claude, account,
-    media.
+    media, fleet.
 
     `style` picks how TopBar.qml renders the takeover:
     - "wash" (default) — a soft tinted fill wash, ambient/ongoing-condition

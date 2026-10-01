@@ -300,7 +300,7 @@ PanelWindow {
             props["notifModel"] = masterWindow.notifModel;
             props["liveNotifs"] = masterWindow.liveNotifs;
         }
-        if (widget === "wallpaper" || widget === "quicktell" || widget === "holdaction" || widget === "guide" || widget === "leader") props["widgetArg"] = arg;
+        if (widget === "wallpaper" || widget === "quicktell" || widget === "holdaction" || widget === "guide" || widget === "leader" || widget === "palette") props["widgetArg"] = arg;
         return props;
     }
 

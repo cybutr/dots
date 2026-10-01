@@ -666,7 +666,7 @@ import Quickshell.Io
             }
             Process {
                 id: ackWatcher; running: true
-                command: ["/home/czeddaru/.config/hypr/scripts/quickshell/lifeline.sh", "f=/tmp/qs_card_acks; touch \"$f\"; inotifywait -m -e close_write,modify,moved_to \"$f\" 2>/dev/null"]
+                command: ["/home/czeddaru/.config/hypr/scripts/quickshell/lifeline.sh", "f=/tmp/qs_card_acks; touch \"$f\"; exec inotifywait -m -e close_write,modify,moved_to \"$f\" 2>/dev/null"]
                 stdout: SplitParser { splitMarker: "\n"; onRead: (data) => { ackReader.running = false; ackReader.running = true; } }
             }
             Component {
@@ -679,10 +679,11 @@ import Quickshell.Io
                         Repeater {
                             model: 3
                             delegate: Rectangle {
+                                id: pendingDot
                                 required property int index
                                 width: cr.s(3); height: cr.s(3); radius: width / 2; color: cr.accent
                                 SequentialAnimation on opacity {
-                                    running: true; loops: Animation.Infinite
+                                    running: pendingDot.visible; loops: Animation.Infinite
                                     PauseAnimation { duration: index * 150 }
                                     NumberAnimation { to: 1.0; duration: 200 }
                                     NumberAnimation { to: 0.25; duration: 400 }
@@ -1428,7 +1429,7 @@ import Quickshell.Io
                     Process {
                         id: agWatcher
                         running: true
-                        command: ["/home/czeddaru/.config/hypr/scripts/quickshell/lifeline.sh", "f='" + ag.cacheFile + "'; touch \"$f\"; inotifywait -m -e close_write,create,delete \"$f\" 2>/dev/null"]
+                        command: ["/home/czeddaru/.config/hypr/scripts/quickshell/lifeline.sh", "f='" + ag.cacheFile + "'; touch \"$f\"; exec inotifywait -m -e close_write,create,delete \"$f\" 2>/dev/null"]
                         stdout: SplitParser { splitMarker: "\n"; onRead: (data) => { agProc.running = false; agProc.running = true; } }
                     }
                     Timer { interval: 300000; running: true; repeat: true; triggeredOnStart: true; onTriggered: { agProc.running = false; agProc.running = true; } }

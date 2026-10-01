@@ -76,7 +76,8 @@ Variants {
                 Region { item: volTip.visible && volWrap.hoverConfirmed ? volTip : null }
                 Region { item: batTip.visible && batteryStatusPill.hoverConfirmed ? batTip : null }
                 Region { item: wifiTip.visible && wifiWrap.hoverConfirmed ? wifiTip : null }
-                Region { item: btTip.visible && btWrap.hoverConfirmed ? btTip : null }            }
+                Region { item: btTip.visible && btWrap.hoverConfirmed ? btTip : null }
+                Region { item: fleetCard.visible && fleetPill.hoverConfirmed ? fleetCard : null }            }
 
             // Dynamic Matugen Palette
             MatugenColors {
@@ -862,6 +863,7 @@ Variants {
                         else if (cmd === "uptimefx") barWindow.fireFx("uptime", 8000)
                         else if (cmd === "wsfx") barWindow.fireFx("ws", 8000)
                         else if (cmd === "claudefx") barWindow.fireFx("claude", 8000)
+                        else if (cmd === "fleetfx") { barWindow.fireFx("fleet", 8000); barWindow.fleetPulse++ }
                     }
                 }
             }
@@ -1116,6 +1118,73 @@ Variants {
             onWifiSsidChanged: if (barWindow.isStartupReady) barWindow.fireFx("wifi", 5000)
             onSkyPhaseChanged: if (barWindow.isStartupReady) barWindow.fireFx("sky", 8000)
             onWeatherCategoryChanged: if (barWindow.isStartupReady) barWindow.fireFx("sky", 8000)
+
+            property string topBarFleetMode: "occasional"
+            property var fleetDevices: []
+            property bool fleetOk: false
+            property bool fleetTailnet: false
+            property string fleetError: ""
+            property real fleetTs: 0
+            property real fleetNow: Date.now() / 1000
+            property var fleetPrevStates: ({})
+            property int fleetPulse: 0
+            property color fleetPulseTint: "#a6e3a1"
+            readonly property bool fleetWatcherDead: fleetTs > 0 && fleetNow - fleetTs > 120
+            readonly property bool fleetShow: topBarFleetMode === "always" || (topBarFleetMode === "occasional" && fleetDevices.length > 0)
+            function fleetColor(st) {
+                if (barWindow.fleetWatcherDead) return mocha.overlay0
+                return st === "online" ? "#a6e3a1" : (st === "stale" ? "#f9e2af" : (st === "offline" ? "#f38ba8" : mocha.overlay0))
+            }
+            function fleetAge(d) {
+                if (!d.last_seen) return "never"
+                let a = Math.max(0, barWindow.fleetNow - d.last_seen)
+                return a < 20 ? "now" : barWindow.ecoFmtDur(a) + " ago"
+            }
+            function fleetLong(secs) {
+                let t = Math.floor(secs || 0)
+                if (t >= 86400) return Math.floor(t / 86400) + "d " + Math.floor((t % 86400) / 3600) + "h"
+                return barWindow.ecoFmtDur(t)
+            }
+            Timer {
+                interval: fleetPill.hoverConfirmed ? 1000 : 30000; repeat: true
+                running: barWindow.fleetShow
+                onTriggered: barWindow.fleetNow = Date.now() / 1000
+            }
+            Process {
+                id: fleetWatcher
+                running: true
+                command: ["/home/czeddaru/.config/hypr/scripts/quickshell/lifeline.sh", "exec inotifywait -qq -e moved_to -e close_write --include 'qs_fleet\\.json$' /tmp"]
+                onExited: { fleetReader.running = true; running = true }
+            }
+            Process {
+                id: fleetReader
+                running: true
+                command: ["cat", "/tmp/qs_fleet.json"]
+                stdout: StdioCollector {
+                    onStreamFinished: {
+                        let d
+                        try { d = JSON.parse(this.text.trim() || "{}") } catch (e) { return }
+                        let devs = Array.isArray(d.devices) ? d.devices : []
+                        let prev = barWindow.fleetPrevStates, next = {}, changed = null
+                        for (let i = 0; i < devs.length; i++) {
+                            next[devs[i].name] = devs[i].state
+                            if (prev[devs[i].name] !== undefined && prev[devs[i].name] !== devs[i].state) changed = devs[i].state
+                        }
+                        barWindow.fleetPrevStates = next
+                        barWindow.fleetDevices = devs
+                        barWindow.fleetOk = !!d.ok
+                        barWindow.fleetTailnet = !!d.tailnet
+                        barWindow.fleetError = d.error || ""
+                        barWindow.fleetTs = d.ts || 0
+                        barWindow.fleetNow = Date.now() / 1000
+                        if (changed !== null && barWindow.isStartupReady) {
+                            barWindow.fleetPulseTint = barWindow.fleetColor(changed)
+                            barWindow.fireFx("fleet", 4000)
+                            barWindow.fleetPulse++
+                        }
+                    }
+                }
+            }
 
             property string topBarEcoIndicatorMode: "occasional"
             property bool ecoModeEnabled: true
@@ -1674,6 +1743,7 @@ Variants {
                             if (parsed.topBarWorkspaceTintMode !== undefined) barWindow.topBarWorkspaceTintMode = parsed.topBarWorkspaceTintMode;
                             if (parsed.topBarClaudeAuroraMode !== undefined) barWindow.topBarClaudeAuroraMode = parsed.topBarClaudeAuroraMode;
                             if (parsed.topBarEcoIndicatorMode !== undefined) barWindow.topBarEcoIndicatorMode = parsed.topBarEcoIndicatorMode;
+                            if (parsed.topBarFleetMode !== undefined) barWindow.topBarFleetMode = parsed.topBarFleetMode;
                             if (parsed.ecoModeEnabled !== undefined) barWindow.ecoModeEnabled = parsed.ecoModeEnabled;
                             if (parsed.topBarTimerEnabled !== undefined) barWindow.topBarTimerEnabled = parsed.topBarTimerEnabled;
                             if (parsed.topBarTimerFillMode !== undefined) barWindow.topBarTimerFillMode = parsed.topBarTimerFillMode;
@@ -5442,6 +5512,179 @@ Variants {
                     }
                 }
 
+                HoverCard {
+                    id: fleetCard
+                    flush: false
+                    active: fleetPill.visible && (fleetPill.cardKeep || fleetPill.hoverConfirmed)
+                    confirmed: fleetPill.hoverConfirmed
+                    phase: 0.62
+                    width: barWindow.s(300)
+                    x: Math.min(barRow.width - width - barWindow.s(6), rightLayout.x + fleetPill.x + fleetPill.width / 2 - width / 2)
+                    y: barRow.height + barWindow.s(2)
+                    height: fleetCol.implicitHeight + barWindow.s(18)
+
+                    component FleetBar: Item {
+                        id: fb
+                        property string label: ""
+                        property var value: null
+                        visible: value !== null && value !== undefined
+                        height: barWindow.s(14)
+                        readonly property real v: Math.max(0, Math.min(100, value || 0))
+                        readonly property color tone: v >= 90 ? mocha.red : (v >= 75 ? mocha.peach : mocha.teal)
+                        Text {
+                            id: fbLabel
+                            anchors.left: parent.left; anchors.verticalCenter: parent.verticalCenter
+                            text: fb.label
+                            font.family: "JetBrains Mono"; font.pixelSize: barWindow.s(9); color: mocha.subtext0
+                        }
+                        Rectangle {
+                            anchors.left: fbLabel.right; anchors.leftMargin: barWindow.s(4)
+                            anchors.right: fbPct.left; anchors.rightMargin: barWindow.s(4)
+                            anchors.verticalCenter: parent.verticalCenter
+                            height: barWindow.s(4); radius: height / 2
+                            color: Qt.rgba(mocha.surface1.r, mocha.surface1.g, mocha.surface1.b, 0.6)
+                            Rectangle {
+                                width: parent.width * fb.v / 100; height: parent.height; radius: parent.radius
+                                color: fb.tone
+                            }
+                        }
+                        Text {
+                            id: fbPct
+                            anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter
+                            text: Math.round(fb.v) + "%"
+                            font.family: "JetBrains Mono"; font.pixelSize: barWindow.s(9); font.weight: Font.Bold; color: fb.tone
+                        }
+                    }
+
+                    Column {
+                        id: fleetCol
+                        anchors.left: parent.left; anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter
+                        anchors.leftMargin: barWindow.s(14); anchors.rightMargin: barWindow.s(14)
+                        spacing: barWindow.s(8)
+                        Item {
+                            width: parent.width
+                            height: fleetHead.height
+                            Row {
+                                id: fleetHead
+                                spacing: barWindow.s(6)
+                                Text { anchors.verticalCenter: parent.verticalCenter; text: "󰒍"; font.family: "Iosevka Nerd Font"; font.pixelSize: barWindow.s(13); color: mocha.teal }
+                                Text {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: {
+                                        let n = 0
+                                        for (let i = 0; i < barWindow.fleetDevices.length; i++) if (barWindow.fleetDevices[i].state === "online") n++
+                                        return "FLEET  " + n + "/" + barWindow.fleetDevices.length + " online"
+                                    }
+                                    font.family: "JetBrains Mono"; font.pixelSize: barWindow.s(11); font.weight: Font.Bold; color: mocha.text
+                                }
+                            }
+                            Text {
+                                anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter
+                                width: Math.max(0, parent.width - fleetHead.width - barWindow.s(8))
+                                horizontalAlignment: Text.AlignRight; elide: Text.ElideRight
+                                text: barWindow.fleetWatcherDead ? "watcher stopped"
+                                    : (barWindow.fleetTs === 0 ? "no data" : (barWindow.fleetOk ? "" : barWindow.fleetError))
+                                font.family: "JetBrains Mono"; font.pixelSize: barWindow.s(9); color: mocha.peach
+                            }
+                        }
+                        Text {
+                            visible: barWindow.fleetDevices.length === 0
+                            width: parent.width; elide: Text.ElideRight
+                            text: "No devices reporting yet"
+                            font.family: "JetBrains Mono"; font.pixelSize: barWindow.s(10); color: mocha.subtext0
+                        }
+                        Repeater {
+                            model: barWindow.fleetDevices
+                            Column {
+                                id: fleetRow
+                                width: fleetCol.width
+                                spacing: barWindow.s(4)
+                                readonly property var dv: modelData
+                                Rectangle {
+                                    visible: index > 0
+                                    width: parent.width; height: 1
+                                    color: Qt.rgba(mocha.text.r, mocha.text.g, mocha.text.b, 0.06)
+                                }
+                                Item {
+                                    width: parent.width
+                                    height: barWindow.s(16)
+                                    Rectangle {
+                                        id: fleetRowDot
+                                        anchors.left: parent.left; anchors.verticalCenter: parent.verticalCenter
+                                        width: barWindow.s(7); height: width; radius: width / 2
+                                        color: fleetRow.dv.state === "offline" ? "transparent" : barWindow.fleetColor(fleetRow.dv.state)
+                                        border.width: fleetRow.dv.state === "offline" ? barWindow.s(1.5) : 0
+                                        border.color: barWindow.fleetColor(fleetRow.dv.state)
+                                    }
+                                    Text {
+                                        anchors.left: fleetRowDot.right; anchors.leftMargin: barWindow.s(6)
+                                        anchors.right: fleetRowAge.left; anchors.rightMargin: barWindow.s(6)
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        elide: Text.ElideRight
+                                        textFormat: Text.PlainText
+                                        text: fleetRow.dv.name + (fleetRow.dv.host && fleetRow.dv.host !== fleetRow.dv.name ? "  " + fleetRow.dv.host : "")
+                                        font.family: "JetBrains Mono"; font.pixelSize: barWindow.s(11); font.weight: Font.Bold; color: mocha.text
+                                    }
+                                    Text {
+                                        id: fleetRowAge
+                                        anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter
+                                        text: barWindow.fleetAge(fleetRow.dv)
+                                        font.family: "JetBrains Mono"; font.pixelSize: barWindow.s(9); color: barWindow.fleetColor(fleetRow.dv.state)
+                                    }
+                                }
+                                Row {
+                                    visible: fleetRow.dv.state !== "offline"
+                                    width: parent.width
+                                    spacing: barWindow.s(8)
+                                    readonly property real cell: (width - spacing * 2) / 3
+                                    FleetBar { width: parent.cell; label: "CPU"; value: fleetRow.dv.cpu_pct }
+                                    FleetBar { width: parent.cell; label: "RAM"; value: fleetRow.dv.ram_used_pct }
+                                    FleetBar { width: parent.cell; label: "DSK"; value: fleetRow.dv.disk_pct }
+                                }
+                                Text {
+                                    readonly property string line: {
+                                        let p = []
+                                        if (fleetRow.dv.uptime_s) p.push("up " + barWindow.fleetLong(fleetRow.dv.uptime_s))
+                                        if (fleetRow.dv.idle_s) p.push("idle " + barWindow.fleetLong(fleetRow.dv.idle_s))
+                                        if (fleetRow.dv.foreground) p.push(fleetRow.dv.foreground)
+                                        return p.join("  ·  ")
+                                    }
+                                    visible: line !== "" && fleetRow.dv.state !== "offline"
+                                    width: parent.width; elide: Text.ElideRight
+                                    textFormat: Text.PlainText
+                                    text: line
+                                    font.family: "JetBrains Mono"; font.pixelSize: barWindow.s(9); color: mocha.subtext1
+                                }
+                                Flow {
+                                    visible: (fleetRow.dv.containers || []).length > 0
+                                    width: parent.width
+                                    spacing: barWindow.s(4)
+                                    Repeater {
+                                        model: fleetRow.dv.containers || []
+                                        Rectangle {
+                                            height: barWindow.s(16)
+                                            width: Math.min(fleetRow.width, ctrName.implicitWidth + barWindow.s(12))
+                                            radius: barWindow.s(5)
+                                            color: Qt.rgba(mocha.surface0.r, mocha.surface0.g, mocha.surface0.b, 0.6)
+                                            border.width: 1
+                                            border.color: Qt.rgba((modelData.up ? mocha.green : mocha.red).r, (modelData.up ? mocha.green : mocha.red).g, (modelData.up ? mocha.green : mocha.red).b, 0.5)
+                                            Text {
+                                                id: ctrName
+                                                anchors.centerIn: parent
+                                                width: Math.min(implicitWidth, fleetRow.width - barWindow.s(12))
+                                                elide: Text.ElideRight
+                                                textFormat: Text.PlainText
+                                                text: modelData.name
+                                                font.family: "JetBrains Mono"; font.pixelSize: barWindow.s(9); color: modelData.up ? mocha.subtext1 : mocha.red
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
                 // ---------------- RIGHT ----------------
                 RowLayout {
                     id: rightLayout
@@ -5454,10 +5697,11 @@ Variants {
                     readonly property bool statsCol2On: (barWindow.topBarShowGpu && barWindow.gpuAvailable) || (barWindow.topBarShowUptime && barWindow.uptimeStr !== "")
                     readonly property real col2Save: statsCol2On ? gpuChip.width + barWindow.s(4) : 0
                     readonly property real qsCpuSave: barWindow.topBarShowQuickshellCpu ? qsCpuPill.Layout.preferredWidth + spacing : 0
+                    readonly property real fleetSave: barWindow.fleetShow ? fleetPill.Layout.preferredWidth + spacing : 0
                     readonly property real timerSave: barWindow.topBarTimerEnabled && barWindow.timerState === "idle" ? timerPill.Layout.preferredWidth + spacing : 0
                     readonly property real statsSave: cpuChip.width + barWindow.s(10) + spacing
                     readonly property real naturalWidth: (trayPill.targetWidth > 0 ? trayPill.targetWidth + spacing : 0)
-                        + qsCpuSave + statsSave + col2Save
+                        + qsCpuSave + fleetSave + statsSave + col2Save
                         + (barWindow.topBarTimerEnabled ? timerPill.Layout.preferredWidth + spacing : 0)
                         + sysCapsule.targetWidth + barWindow.s(30)
                     readonly property int compactLevel: {
@@ -5465,7 +5709,7 @@ Variants {
                         if (over <= 0) return 0
                         over -= col2Save
                         if (over <= 0) return 1
-                        over -= qsCpuSave
+                        over -= qsCpuSave + fleetSave
                         if (over <= 0) return 2
                         over -= timerSave
                         if (over <= 0) return 3
@@ -5779,6 +6023,91 @@ Variants {
                             color: barWindow.qsCpuPct >= 35 ? mocha.red : (barWindow.qsCpuPct >= 20 ? mocha.peach : mocha.teal)
                         }
                         MouseArea { id: qsCpuHoverArea; anchors.fill: parent; hoverEnabled: true; acceptedButtons: Qt.NoButton }
+                    }
+
+                    Rectangle {
+                        id: fleetPill
+                        visible: barWindow.fleetShow && rightLayout.compactLevel < 2
+                        Layout.alignment: Qt.AlignVCenter
+                        Layout.preferredHeight: barWindow.barHeight
+                        Layout.preferredWidth: fleetDots.width + barWindow.s(16)
+                        radius: barWindow.s(10)
+                        color: Qt.rgba(mocha.surface0.r, mocha.surface0.g, mocha.surface0.b, 0.4)
+                        border.width: 1
+                        border.color: barWindow.topBarAccentLine
+                            ? Qt.tint(Qt.rgba(mocha.text.r, mocha.text.g, mocha.text.b, 0.05), Qt.rgba(barWindow.accentCycleColor.r, barWindow.accentCycleColor.g, barWindow.accentCycleColor.b, 0.10 + 0.22 * barWindow.ambientBreath(0.62)))
+                            : Qt.rgba(mocha.text.r, mocha.text.g, mocha.text.b, 0.05)
+                        clip: true
+                        property bool hoverConfirmed: false
+                        readonly property bool isHovered: fleetMouse.containsMouse
+                        readonly property bool cardKeep: isHovered || fleetCard.cardHovered
+                        onCardKeepChanged: {
+                            if (cardKeep) {
+                                fleetCloseGrace.stop()
+                                barWindow.fleetNow = Date.now() / 1000
+                                if (!hoverConfirmed) fleetHoverDelay.restart()
+                            } else {
+                                fleetHoverDelay.stop()
+                                fleetCloseGrace.restart()
+                            }
+                        }
+                        Timer { id: fleetHoverDelay; interval: 1000; onTriggered: fleetPill.hoverConfirmed = true }
+                        Timer { id: fleetCloseGrace; interval: 200; onTriggered: { fleetHoverDelay.stop(); fleetPill.hoverConfirmed = false } }
+                        PillBg {
+                            id: fleetBg
+                            kind: "pulse"
+                            radius: fleetPill.radius
+                            px: barWindow.s(1)
+                            tint: barWindow.fleetPulseTint
+                            shown: barWindow.pillFxOn("occasional", barWindow.fxFlash("fleet") || fleetPill.isHovered)
+                        }
+                        Connections {
+                            target: barWindow
+                            function onFleetPulseChanged() { fleetBg.fire() }
+                        }
+                        PillBg {
+                            id: residentFleetBg
+                            kind: barWindow.residentPillFlag.style === "border" ? "border" : "pulse"
+                            radius: fleetPill.radius
+                            px: barWindow.s(1)
+                            tint: barWindow.residentPillFlag.tint || "#fab387"
+                            shown: barWindow.residentPillActive("fleet")
+                        }
+                        Connections {
+                            target: barWindow
+                            function onResidentPillBurstChanged() {
+                                if (barWindow.residentPillFlag.pill !== "fleet") return
+                                residentFleetBg.fire()
+                                if (barWindow.residentPillFlag.open_card) {
+                                    fleetCloseGrace.stop()
+                                    barWindow.fleetNow = Date.now() / 1000
+                                    fleetPill.hoverConfirmed = true
+                                    fleetForceOpenTimer.interval = Math.max(200, ((barWindow.residentPillFlag.expires_ts || 0) - Date.now() / 1000) * 1000)
+                                    fleetForceOpenTimer.restart()
+                                }
+                            }
+                        }
+                        Timer { id: fleetForceOpenTimer; onTriggered: if (!fleetPill.cardKeep) fleetPill.hoverConfirmed = false }
+                        Grid {
+                            id: fleetDots
+                            anchors.centerIn: parent
+                            flow: Grid.TopToBottom
+                            rows: Math.max(1, Math.min(3, barWindow.fleetDevices.length))
+                            rowSpacing: barWindow.s(5)
+                            columnSpacing: barWindow.s(5)
+                            Repeater {
+                                model: barWindow.fleetDevices.length > 0 ? barWindow.fleetDevices : [{ name: "", state: "" }]
+                                Rectangle {
+                                    width: barWindow.s(7); height: width; radius: width / 2
+                                    readonly property color dot: barWindow.fleetColor(modelData.state)
+                                    color: modelData.state === "offline" ? "transparent" : dot
+                                    border.width: modelData.state === "offline" ? barWindow.s(1.5) : 0
+                                    border.color: dot
+                                    opacity: modelData.state === "stale" ? 0.75 : 1
+                                }
+                            }
+                        }
+                        MouseArea { id: fleetMouse; anchors.fill: parent; hoverEnabled: true; acceptedButtons: Qt.NoButton }
                     }
 
                     // Combined CPU/GPU/Net/Uptime stats module — no outer pill/box

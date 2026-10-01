@@ -220,7 +220,7 @@ Item {
     Process {
         id: insightWatcher
         running: true
-        command: ["/home/czeddaru/.config/hypr/scripts/quickshell/lifeline.sh", "touch /tmp/qs_focus_insight; inotifywait -m -e close_write /tmp/qs_focus_insight 2>/dev/null"]
+        command: ["/home/czeddaru/.config/hypr/scripts/quickshell/lifeline.sh", "touch /tmp/qs_focus_insight; exec inotifywait -m -e close_write /tmp/qs_focus_insight 2>/dev/null"]
         stdout: SplitParser { splitMarker: "\n"; onRead: (_) => { insightReader.running = false; insightReader.running = true } }
     }
     Process {

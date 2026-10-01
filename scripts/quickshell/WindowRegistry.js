@@ -52,7 +52,7 @@ function getLayout(name, mx, my, mw, mh, userScale, styles) {
         "focustime": { w: s(900, scale), h: s(720, scale), rx: Math.floor((mw/2)-(s(900, scale)/2)), ry: Math.floor((mh/2)-(s(720, scale)/2)), comp: (styles && styles.focustime === "revamp") ? "focustime/FocusTimePopupRevamp.qml" : "focustime/FocusTimePopup.qml" },
         
         // Guide Popup (Centered)
-        "guide":     { w: s(1200, scale), h: s(750, scale), rx: Math.floor((mw/2)-(s(1200, scale)/2)), ry: Math.floor((mh/2)-(s(750, scale)/2)), comp: "guide/GuidePopup.qml" },
+        "guide":     { w: s(1200, scale), h: s(750, scale), rx: Math.floor((mw/2)-(s(1200, scale)/2)), ry: Math.floor((mh/2)-(s(750, scale)/2)), comp: (styles && styles.guide === "legacy") ? "guide/GuidePopupLegacy.qml" : "guide/GuidePopup.qml" },
         // Full width, centered vertically
         "wallpaper": { w: mw, h: s(650, scale), rx: 0, ry: Math.floor((mh/2)-(s(650, scale)/2)), comp: (styles && styles.wallpaper === "revamp") ? "wallpaper/WallpaperPickerRevamp.qml" : "wallpaper/WallpaperPicker.qml" },
         
@@ -62,7 +62,7 @@ function getLayout(name, mx, my, mw, mh, userScale, styles) {
         "applauncher": { w: s(800, scale), h: s(700, scale), rx: Math.floor((mw/2)-(s(800, scale)/2)), ry: Math.floor((mh/2)-(s(700, scale)/2)), comp: "applauncher/appLauncher.qml" },
         "clipboard": { w: s(800, scale), h: s(700, scale), rx: Math.floor((mw/2)-(s(800, scale)/2)), ry: Math.floor((mh/2)-(s(700, scale)/2)), comp: "clipboard/ClipboardManager.qml" },
         "claudeask": { w: s(920, scale), h: s(720, scale), rx: Math.floor((mw/2)-(s(920, scale)/2)), ry: Math.floor((mh/2)-(s(720, scale)/2)), comp: "claude/ClaudeAsk.qml" },
-        "palette":   { w: s(860, scale), h: s(660, scale), rx: Math.floor((mw/2)-(s(860, scale)/2)), ry: Math.floor(mh * 0.12), comp: "palette/CommandPalette.qml" },
+        "palette":   { w: s(860, scale), h: s(660, scale), rx: Math.floor((mw/2)-(s(860, scale)/2)), ry: Math.floor(mh * 0.12), comp: (styles && styles.palette === "legacy") ? "palette/CommandPaletteLegacy.qml" : "palette/CommandPalette.qml" },
         "leader":    { w: s(880, scale), h: s(580, scale), rx: Math.floor((mw/2)-(s(880, scale)/2)), ry: Math.floor((mh/2)-(s(580, scale)/2)), comp: "leader/LeaderPopup.qml" },
         "quicktell": { w: s(720, scale), h: s(260, scale), rx: Math.floor((mw/2)-(s(720, scale)/2)), ry: Math.floor((mh/2)-(s(260, scale)/2)), comp: "claude/QuickTell.qml" },
 

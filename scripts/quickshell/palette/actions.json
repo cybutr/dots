@@ -1,927 +1,1382 @@
 {
- "actions": [
-  {
-   "id": "media.playpause",
-   "label": "Play or pause",
-   "hint": "Toggle whatever is playing",
-   "cat": "media",
-   "icon": "󰐎",
-   "keywords": "music spotify resume stop toggle",
-   "cmd": "bash $HOME/.config/hypr/scripts/media_control.sh play-pause",
-   "keys": "Super Space",
-   "verb": "Play / pause"
-  },
-  {
-   "id": "media.next",
-   "label": "Next track",
-   "hint": "Skip to the next song",
-   "cat": "media",
-   "icon": "󰒭",
-   "keywords": "music skip spotify forward",
-   "cmd": "bash $HOME/.config/hypr/scripts/media_control.sh next",
-   "keys": "Super .",
-   "verb": "Skip"
-  },
-  {
-   "id": "media.prev",
-   "label": "Previous track",
-   "hint": "Go back one song",
-   "cat": "media",
-   "icon": "󰒮",
-   "keywords": "music back spotify rewind",
-   "cmd": "bash $HOME/.config/hypr/scripts/media_control.sh previous",
-   "keys": "Super ,",
-   "verb": "Go back"
-  },
-  {
-   "id": "media.seekback",
-   "label": "Seek back 10 seconds",
-   "hint": "Rewind the current track",
-   "cat": "media",
-   "icon": "󰑟",
-   "keywords": "rewind back seek skip music",
-   "cmd": "bash $HOME/.config/hypr/scripts/media_seek.sh back",
-   "keys": "Super Brightness-",
-   "verb": "Seek"
-  },
-  {
-   "id": "media.seekfwd",
-   "label": "Seek forward 10 seconds",
-   "hint": "Jump ahead in the current track",
-   "cat": "media",
-   "icon": "󰈑",
-   "keywords": "forward ahead seek skip music",
-   "cmd": "bash $HOME/.config/hypr/scripts/media_seek.sh forward",
-   "keys": "Super Brightness+",
-   "verb": "Seek"
-  },
-  {
-   "id": "audio.volume",
-   "label": "Set volume",
-   "hint": "Output volume, 0 to 150",
-   "cat": "audio",
-   "icon": "󰕾",
-   "keywords": "sound loud quiet audio level",
-   "cmd": "wpctl set-volume @DEFAULT_AUDIO_SINK@ \"$1%\"; pamixer --get-volume > /tmp/qs_volume_osd",
-   "param": {
-    "kind": "number",
-    "unit": "%",
-    "min": 0,
-    "max": 150,
-    "required": true
-   },
-   "verb": "Set volume"
-  },
-  {
-   "id": "audio.mute",
-   "label": "Mute sound",
-   "hint": "Mute or unmute the speakers",
-   "cat": "audio",
-   "icon": "󰖁",
-   "keywords": "toggle audio silence speakers unmute",
-   "cmd": "bash $HOME/.config/hypr/scripts/volume_step.sh mute-toggle",
-   "keys": "Super Ctrl M",
-   "state": "mute",
-   "verb": "Toggle"
-  },
-  {
-   "id": "audio.mic",
-   "label": "Mute microphone",
-   "hint": "Mute or unmute the default mic",
-   "cat": "audio",
-   "icon": "󰍭",
-   "keywords": "toggle mic input unmute",
-   "cmd": "bash $HOME/.config/hypr/scripts/mic_mute_toggle.sh",
-   "keys": "Super Alt M",
-   "state": "mic",
-   "verb": "Toggle"
-  },
-  {
-   "id": "audio.muteall",
-   "label": "Mute everything now",
-   "hint": "Hard mute, not a toggle",
-   "cat": "audio",
-   "icon": "󰖁",
-   "keywords": "emergency panic mute silence quiet sound",
-   "cmd": "wpctl set-mute @DEFAULT_AUDIO_SINK@ 1",
-   "verb": "Mute"
-  },
-  {
-   "id": "sys.brightness",
-   "label": "Set brightness",
-   "hint": "Screen brightness in percent",
-   "cat": "system",
-   "icon": "󰃠",
-   "keywords": "screen backlight dim bright",
-   "cmd": "brightnessctl set \"$1%\" >/dev/null; brightnessctl -m | cut -d, -f4 | tr -d % > /tmp/qs_brightness_osd",
-   "param": {
-    "kind": "number",
-    "unit": "%",
-    "min": 1,
-    "max": 100,
-    "required": true
-   },
-   "verb": "Set brightness"
-  },
-  {
-   "id": "sys.nightlight",
-   "label": "Night light",
-   "hint": "Warm the screen colours",
-   "cat": "system",
-   "icon": "󰖔",
-   "keywords": "toggle wlsunset warm blue light evening",
-   "cmd": "bash $HOME/.config/hypr/scripts/toggle_night_light.sh",
-   "keys": "Super Shift G",
-   "state": "nightlight",
-   "verb": "Toggle"
-  },
-  {
-   "id": "sys.idle",
-   "label": "Idle lock",
-   "hint": "Auto-lock and sleep when idle",
-   "cat": "system",
-   "icon": "󰒲",
-   "keywords": "toggle hypridle idle inhibit caffeine",
-   "cmd": "bash $HOME/.config/hypr/scripts/toggle_hypridle.sh",
-   "keys": "Super Shift I",
-   "state": "idle",
-   "verb": "Toggle"
-  },
-  {
-   "id": "sys.wakelock",
-   "label": "Keep awake with lid closed",
-   "hint": "Block lid-close suspend",
-   "cat": "system",
-   "icon": "󰅶",
-   "keywords": "toggle wakelock caffeine lid inhibit",
-   "cmd": "bash $HOME/.config/hypr/scripts/toggle_wakelock.sh",
-   "keys": "Super Alt K",
-   "state": "wakelock",
-   "verb": "Toggle"
-  },
-  {
-   "id": "sys.brightcurve",
-   "label": "Brightness curve",
-   "hint": "Follow the time-of-day brightness curve",
-   "cat": "system",
-   "icon": "󰃠",
-   "keywords": "toggle auto brightness schedule",
-   "cmd": "bash $HOME/.config/hypr/scripts/toggle_brightness_curve.sh",
-   "keys": "Super Alt B",
-   "verb": "Toggle"
-  },
-  {
-   "id": "sys.dnd",
-   "label": "Do not disturb",
-   "hint": "Silence notification popups",
-   "cat": "system",
-   "icon": "󰂛",
-   "keywords": "toggle dnd notifications quiet silence focus",
-   "cmd": "swaync-client -d >/dev/null",
-   "state": "dnd",
-   "verb": "Toggle"
-  },
-  {
-   "id": "sys.kblayout",
-   "label": "Switch keyboard layout",
-   "hint": "Cycle between us and cz",
-   "cat": "system",
-   "icon": "󰌌",
-   "keywords": "keyboard language czech english input",
-   "cmd": "bash $HOME/.config/hypr/scripts/switch_kb_layout.sh",
-   "keys": "Super Shift Space",
-   "verb": "Switch"
-  },
-  {
-   "id": "sys.pp.performance",
-   "label": "Performance power profile",
-   "hint": "Full speed, more fan",
-   "cat": "system",
-   "icon": "󰓅",
-   "keywords": "power profile fast turbo",
-   "cmd": "powerprofilesctl set performance",
-   "verb": "Switch"
-  },
-  {
-   "id": "sys.pp.balanced",
-   "label": "Balanced power profile",
-   "hint": "The everyday default",
-   "cat": "system",
-   "icon": "󰓅",
-   "keywords": "power profile normal default",
-   "cmd": "powerprofilesctl set balanced",
-   "verb": "Switch"
-  },
-  {
-   "id": "sys.pp.saver",
-   "label": "Power saver profile",
-   "hint": "Stretch the battery",
-   "cat": "system",
-   "icon": "󰌪",
-   "keywords": "power profile battery save low",
-   "cmd": "powerprofilesctl set power-saver",
-   "verb": "Switch"
-  },
-  {
-   "id": "sys.powersave",
-   "label": "Emergency power save",
-   "hint": "Throttle everything to survive on battery",
-   "cat": "system",
-   "icon": "󰂃",
-   "keywords": "battery low eco survive",
-   "cmd": "bash $HOME/.config/hypr/scripts/quickshell/claude/resident_actions.sh emergency_power_save",
-   "verb": "Save power"
-  },
-  {
-   "id": "sys.powerrestore",
-   "label": "Leave power save",
-   "hint": "Undo emergency power save",
-   "cat": "system",
-   "icon": "󰁹",
-   "keywords": "battery restore normal eco",
-   "cmd": "bash $HOME/.config/hypr/scripts/quickshell/claude/resident_actions.sh restore_eco",
-   "verb": "Restore"
-  },
-  {
-   "id": "sys.picker",
-   "label": "Pick a colour",
-   "hint": "Copy any on-screen colour as hex",
-   "cat": "system",
-   "icon": "󰈊",
-   "keywords": "color colour eyedropper hyprpicker hex",
-   "cmd": "sleep 0.4; hyprpicker -a",
-   "keys": "Super Shift C",
-   "verb": "Pick"
-  },
-  {
-   "id": "sys.orphans",
-   "label": "Clean up leaked processes",
-   "hint": "Kill orphaned watcher loops",
-   "cat": "system",
-   "icon": "󰃢",
-   "keywords": "orphans leak slow load reaper kill cleanup",
-   "cmd": "bash $HOME/.config/hypr/scripts/kill_orphans.sh >/dev/null",
-   "verb": "Clean up"
-  },
-  {
-   "id": "sys.journal",
-   "label": "Vacuum the user journal",
-   "hint": "Trim journald logs to 100 MB",
-   "cat": "system",
-   "icon": "󰃢",
-   "keywords": "disk logs space cleanup",
-   "cmd": "bash $HOME/.config/hypr/scripts/quickshell/claude/resident_actions.sh vacuum_user_journal",
-   "verb": "Vacuum"
-  },
-  {
-   "id": "sys.restartbar",
-   "label": "Restart the top bar",
-   "hint": "Reload TopBar.qml",
-   "cat": "system",
-   "icon": "󰜉",
-   "keywords": "quickshell reload bar refresh",
-   "cmd": "setsid -f bash $HOME/.config/hypr/scripts/quickshell/claude/qsdev.sh bar >/dev/null 2>&1",
-   "verb": "Restart"
-  },
-  {
-   "id": "sys.restartshell",
-   "label": "Restart the shell",
-   "hint": "Reload every popup widget",
-   "cat": "system",
-   "icon": "󰜉",
-   "keywords": "quickshell reload main widgets refresh",
-   "cmd": "sleep 0.4; setsid -f bash $HOME/.config/hypr/scripts/quickshell/claude/qsdev.sh main >/dev/null 2>&1",
-   "verb": "Restart"
-  },
-  {
-   "id": "sys.clipwipe",
-   "label": "Clear clipboard history",
-   "hint": "Forget everything you copied",
-   "cat": "system",
-   "icon": "󰅌",
-   "keywords": "clipboard cliphist wipe clear history forget privacy",
-   "cmd": "cliphist wipe",
-   "danger": true,
-   "verb": "Clear"
-  },
-  {
-   "id": "dev.lockpreview",
-   "label": "Preview the lock screen",
-   "hint": "Doesn't lock. Password is test",
-   "cat": "system",
-   "icon": "󰌾",
-   "keywords": "lock screen test preview dev design",
-   "cmd": "bash $HOME/.config/hypr/scripts/lock_test.sh >/dev/null 2>&1",
-   "verb": "Preview"
-  },
-  {
-   "id": "dev.screenshots",
-   "label": "Retake doc screenshots",
-   "hint": "Opens each popup and captures it",
-   "cat": "system",
-   "icon": "󰄀",
-   "keywords": "docs readme screenshots capture grim dev",
-   "cmd": "bash $HOME/.config/hypr/scripts/docs/capture.sh >/dev/null 2>&1",
-   "verb": "Capture"
-  },
-  {
-   "id": "capture.region",
-   "label": "Screenshot a region",
-   "hint": "Drag to select, saved and copied",
-   "cat": "capture",
-   "icon": "󰹑",
-   "keywords": "screenshot capture snip grab",
-   "cmd": "sleep 0.45; $HOME/.config/hypr/scripts/screenshot.sh",
-   "keys": "Super Shift S",
-   "verb": "Capture"
-  },
-  {
-   "id": "capture.full",
-   "label": "Screenshot the whole screen",
-   "hint": "Everything, right now",
-   "cat": "capture",
-   "icon": "󰄀",
-   "keywords": "screenshot capture full screen",
-   "cmd": "sleep 0.45; $HOME/.config/hypr/scripts/screenshot.sh --full",
-   "keys": "Super Print",
-   "verb": "Capture"
-  },
-  {
-   "id": "capture.freeze",
-   "label": "Screenshot frozen",
-   "hint": "Freeze the screen, then select",
-   "cat": "capture",
-   "icon": "󰹑",
-   "keywords": "screenshot capture freeze",
-   "cmd": "sleep 0.45; $HOME/.config/hypr/scripts/screenshot.sh --freeze",
-   "keys": "Super Ctrl S",
-   "verb": "Capture"
-  },
-  {
-   "id": "capture.edit",
-   "label": "Screenshot and annotate",
-   "hint": "Region, then open the editor",
-   "cat": "capture",
-   "icon": "󰏫",
-   "keywords": "screenshot edit annotate draw swappy markup",
-   "cmd": "bash $HOME/.config/hypr/scripts/screenshot.sh --edit",
-   "keys": "Shift Print",
-   "verb": "Capture"
-  },
-  {
-   "id": "capture.ask",
-   "label": "Ask Claude about the screen",
-   "hint": "Select a region and ask about it",
-   "cat": "capture",
-   "icon": "󰚩",
-   "keywords": "screenshot claude question explain",
-   "cmd": "sleep 0.45; bash $HOME/.config/hypr/scripts/quickshell/claude/screenshot_ask.sh",
-   "keys": "Super Shift Z",
-   "verb": "Select"
-  },
-  {
-   "id": "capture.answer",
-   "label": "Screenshot answer",
-   "hint": "Claude answers what's in a region, as a card",
-   "cat": "capture",
-   "icon": "󰚩",
-   "keywords": "screenshot answer solve claude explain card",
-   "cmd": "bash $HOME/.config/hypr/scripts/quickshell/claude/screenshot_answer.sh",
-   "keys": "Super Ctrl Z",
-   "verb": "Capture"
-  },
-  {
-   "id": "capture.shotask",
-   "label": "Ask about a region",
-   "hint": "Pick a region, then type a question",
-   "cat": "capture",
-   "icon": "󰚩",
-   "keywords": "screenshot ask claude region question",
-   "cmd": "bash $HOME/.config/hypr/scripts/quickshell/claude/shot_ask.sh",
-   "keys": "Super Alt Z",
-   "verb": "Capture"
-  },
-  {
-   "id": "capture.recfull",
-   "label": "Record the screen",
-   "hint": "Start or stop a full-screen recording",
-   "cat": "capture",
-   "icon": "󰑊",
-   "keywords": "record video capture screencast",
-   "cmd": "sleep 0.45; $HOME/.config/hypr/scripts/screenrec-toggle.sh full",
-   "keys": "Super Alt R",
-   "verb": "Record"
-  },
-  {
-   "id": "capture.recregion",
-   "label": "Record a region",
-   "hint": "Start or stop a region recording",
-   "cat": "capture",
-   "icon": "󰑊",
-   "keywords": "record video capture region",
-   "cmd": "sleep 0.45; $HOME/.config/hypr/scripts/screenrec-toggle.sh region",
-   "keys": "Super Alt Shift R",
-   "verb": "Record"
-  },
-  {
-   "id": "power.lock",
-   "label": "Lock screen",
-   "hint": "Lock the session",
-   "cat": "power",
-   "icon": "󰌾",
-   "keywords": "lock away secure",
-   "cmd": "sleep 0.3; bash $HOME/.config/hypr/scripts/lock.sh",
-   "keys": "Super L",
-   "verb": "Lock"
-  },
-  {
-   "id": "power.suspend",
-   "label": "Sleep",
-   "hint": "Lock, then suspend",
-   "cat": "power",
-   "icon": "󰒲",
-   "keywords": "suspend sleep standby",
-   "cmd": "sleep 0.3; bash $HOME/.config/hypr/scripts/lock.sh & sleep 1; systemctl suspend",
-   "verb": "Sleep"
-  },
-  {
-   "id": "power.reboot",
-   "label": "Restart the computer",
-   "hint": "Reboot now",
-   "cat": "power",
-   "icon": "󰜉",
-   "keywords": "reboot restart",
-   "cmd": "systemctl reboot",
-   "danger": true,
-   "verb": "Restart"
-  },
-  {
-   "id": "power.shutdown",
-   "label": "Shut down",
-   "hint": "Power off now",
-   "cat": "power",
-   "icon": "󰐥",
-   "keywords": "shutdown poweroff turn off",
-   "cmd": "systemctl poweroff -i",
-   "danger": true,
-   "verb": "Shut down"
-  },
-  {
-   "id": "power.logout",
-   "label": "Log out",
-   "hint": "Exit Hyprland",
-   "cat": "power",
-   "icon": "󰍃",
-   "keywords": "logout exit quit hyprland session",
-   "cmd": "hyprctl dispatch exit",
-   "danger": true,
-   "verb": "Log out"
-  },
-  {
-   "id": "claude.ask",
-   "label": "Ask Claude",
-   "hint": "Open the chat, prefilled with what you type",
-   "cat": "claude",
-   "icon": "󰚩",
-   "keywords": "chat ai assistant question help",
-   "cmd": "if [ -n \"$1\" ]; then printf \"claude:%s\" \"$1\" > /tmp/qs_widget_state; else bash $HOME/.config/hypr/scripts/qs_manager.sh open claudeask; fi",
-   "param": {
-    "kind": "text",
-    "required": false
-   },
-   "keys": "Super `",
-   "close": false,
-   "verb": "Ask"
-  },
-  {
-   "id": "claude.tell",
-   "label": "Quick tell",
-   "hint": "One line to Claude, no window",
-   "cat": "claude",
-   "icon": "󰭻",
-   "keywords": "message claude note quick",
-   "cmd": "bash $HOME/.config/hypr/scripts/qs_manager.sh open quicktell",
-   "keys": "Super G",
-   "close": false,
-   "verb": "Open"
-  },
-  {
-   "id": "claude.voice",
-   "label": "Talk to Claude",
-   "hint": "Speak instead of typing",
-   "cat": "claude",
-   "icon": "󰍬",
-   "keywords": "voice speak microphone claude",
-   "cmd": "bash $HOME/.config/hypr/scripts/qs_manager.sh open quicktell voice",
-   "keys": "Super Alt G",
-   "close": false,
-   "verb": "Listen"
-  },
-  {
-   "id": "claude.scratch",
-   "label": "Scratchpad",
-   "hint": "Jot something down",
-   "cat": "claude",
-   "icon": "󰎞",
-   "keywords": "note notes jot write",
-   "cmd": "sleep 0.3; bash $HOME/.config/hypr/scripts/scratchpad.sh",
-   "keys": "Super P",
-   "verb": "Open"
-  },
-  {
-   "id": "claude.brief",
-   "label": "Brief me now",
-   "hint": "Weather, agenda, battery and nudges as a card",
-   "cat": "claude",
-   "icon": "󰎕",
-   "keywords": "brief summary morning afternoon night today overview",
-   "cmd": "h=$(date +%H); p=morning; [ \"$h\" -ge 12 ] && p=afternoon; [ \"$h\" -ge 18 ] && p=night; python3 $HOME/.config/hypr/scripts/quickshell/claude/resident_extras.py --test-brief-card \"$p\" >/dev/null 2>&1",
-   "verb": "Brief me"
-  },
-  {
-   "id": "claude.wrapped",
-   "label": "Weekly wrapped",
-   "hint": "Your listening this week, as a card",
-   "cat": "claude",
-   "icon": "󰄨",
-   "keywords": "wrapped music stats week listening spotify recap",
-   "cmd": "python3 $HOME/.config/hypr/scripts/quickshell/claude/resident_extras.py --test-wrapped week >/dev/null 2>&1",
-   "verb": "Show"
-  },
-  {
-   "id": "claude.wrappedmonth",
-   "label": "Monthly wrapped",
-   "hint": "Your listening this month, as a card",
-   "cat": "claude",
-   "icon": "󰄨",
-   "keywords": "wrapped music stats month listening spotify recap",
-   "cmd": "python3 $HOME/.config/hypr/scripts/quickshell/claude/resident_extras.py --test-wrapped month >/dev/null 2>&1",
-   "verb": "Show"
-  },
-  {
-   "id": "claude.batteryhealth",
-   "label": "Battery health",
-   "hint": "Cycles, capacity and wear, as a card",
-   "cat": "claude",
-   "icon": "󰁹",
-   "keywords": "battery health wear cycles capacity",
-   "cmd": "python3 $HOME/.config/hypr/scripts/quickshell/claude/resident_extras.py --test-batteryhealth >/dev/null 2>&1",
-   "verb": "Show"
-  },
-  {
-   "id": "claude.account",
-   "label": "Switch Claude account",
-   "hint": "Cycle to the next account",
-   "cat": "claude",
-   "icon": "󰀙",
-   "keywords": "anthropic account switch cycle api key",
-   "cmd": "bash $HOME/.config/hypr/scripts/anthropic_acct.sh cycle >/dev/null",
-   "keys": "Super Alt A",
-   "verb": "Switch"
-  },
-  {
-   "id": "mail.open",
-   "label": "Open Mira",
-   "hint": "Your mail, all accounts",
-   "cat": "mail",
-   "icon": "󰇮",
-   "keywords": "mail email gmail inbox mira",
-   "cmd": "bash $HOME/.config/hypr/scripts/mira_toggle.sh",
-   "keys": "Super Shift Y",
-   "verb": "Open"
-  },
-  {
-   "id": "mail.search",
-   "label": "Search mail",
-   "hint": "Gmail search across every account",
-   "cat": "mail",
-   "icon": "󰍉",
-   "keywords": "email gmail find inbox mira lookup",
-   "cmd": "bash $HOME/.config/hypr/scripts/mira_toggle.sh search \"$1\"",
-   "param": {
-    "kind": "text",
-    "required": true,
-    "hint": "words, from:, subject:"
-   },
-   "live": "mail",
-   "verb": "Search"
-  },
-  {
-   "id": "wall.random",
-   "label": "Random wallpaper",
-   "hint": "Pick one and recolour everything",
-   "cat": "wallpaper",
-   "icon": "󰒝",
-   "keywords": "set wallpaper shuffle background theme matugen",
-   "cmd": "bash $HOME/.config/hypr/scripts/quickshell/wallpaper/set_wallpaper.sh random >/dev/null 2>&1",
-   "verb": "Shuffle"
-  },
-  {
-   "id": "wall.set",
-   "label": "Set wallpaper",
-   "hint": "By file name, or random",
-   "cat": "wallpaper",
-   "icon": "󰋩",
-   "keywords": "background change theme",
-   "cmd": "bash $HOME/.config/hypr/scripts/quickshell/wallpaper/set_wallpaper.sh \"${1:-random}\" >/dev/null 2>&1",
-   "param": {
-    "kind": "text",
-    "required": false,
-    "hint": "file name"
-   },
-   "verb": "Set"
-  },
-  {
-   "id": "timer.start",
-   "label": "Start a timer",
-   "hint": "Countdown in the top bar",
-   "cat": "timer",
-   "icon": "󱎫",
-   "keywords": "timer countdown focus pomodoro minutes start",
-   "cmd": "echo stop > /tmp/qs_timer_cmd; sleep 0.35; echo \"set $1\" > /tmp/qs_timer_cmd; sleep 0.35; echo start > /tmp/qs_timer_cmd",
-   "param": {
-    "kind": "number",
-    "unit": "min",
-    "min": 1,
-    "max": 1439,
-    "default": 25,
-    "required": false
-   },
-   "verb": "Start"
-  },
-  {
-   "id": "timer.5",
-   "label": "Short break, 5 min",
-   "hint": "Start a 5-minute timer",
-   "cat": "timer",
-   "icon": "󰔛",
-   "keywords": "timer countdown focus pomodoro start 5",
-   "cmd": "echo stop > /tmp/qs_timer_cmd; sleep 0.35; echo \"set $1\" > /tmp/qs_timer_cmd; sleep 0.35; echo start > /tmp/qs_timer_cmd",
-   "arg": "5",
-   "verb": "Start"
-  },
-  {
-   "id": "timer.15",
-   "label": "Quarter hour, 15 min",
-   "hint": "Start a 15-minute timer",
-   "cat": "timer",
-   "icon": "󰔛",
-   "keywords": "timer countdown focus pomodoro start 15",
-   "cmd": "echo stop > /tmp/qs_timer_cmd; sleep 0.35; echo \"set $1\" > /tmp/qs_timer_cmd; sleep 0.35; echo start > /tmp/qs_timer_cmd",
-   "arg": "15",
-   "verb": "Start"
-  },
-  {
-   "id": "timer.25",
-   "label": "Focus session, 25 min",
-   "hint": "Start a 25-minute timer",
-   "cat": "timer",
-   "icon": "󰔛",
-   "keywords": "timer countdown focus pomodoro start 25",
-   "cmd": "echo stop > /tmp/qs_timer_cmd; sleep 0.35; echo \"set $1\" > /tmp/qs_timer_cmd; sleep 0.35; echo start > /tmp/qs_timer_cmd",
-   "arg": "25",
-   "verb": "Start"
-  },
-  {
-   "id": "timer.44",
-   "label": "Class hour, 44 min",
-   "hint": "Start a 44-minute timer",
-   "cat": "timer",
-   "icon": "󰔛",
-   "keywords": "timer countdown focus pomodoro start 44",
-   "cmd": "echo stop > /tmp/qs_timer_cmd; sleep 0.35; echo \"set $1\" > /tmp/qs_timer_cmd; sleep 0.35; echo start > /tmp/qs_timer_cmd",
-   "arg": "44",
-   "verb": "Start"
-  },
-  {
-   "id": "timer.50",
-   "label": "Deep work, 50 min",
-   "hint": "Start a 50-minute timer",
-   "cat": "timer",
-   "icon": "󰔛",
-   "keywords": "timer countdown focus pomodoro start 50",
-   "cmd": "echo stop > /tmp/qs_timer_cmd; sleep 0.35; echo \"set $1\" > /tmp/qs_timer_cmd; sleep 0.35; echo start > /tmp/qs_timer_cmd",
-   "arg": "50",
-   "verb": "Start"
-  },
-  {
-   "id": "timer.pause",
-   "label": "Pause the timer",
-   "hint": "Hold the countdown",
-   "cat": "timer",
-   "icon": "󰏤",
-   "keywords": "timer hold",
-   "cmd": "echo pause > /tmp/qs_timer_cmd",
-   "verb": "Pause"
-  },
-  {
-   "id": "timer.resume",
-   "label": "Resume the timer",
-   "hint": "Carry on counting down",
-   "cat": "timer",
-   "icon": "󰐊",
-   "keywords": "timer continue",
-   "cmd": "echo resume > /tmp/qs_timer_cmd",
-   "verb": "Resume"
-  },
-  {
-   "id": "timer.stop",
-   "label": "Stop the timer",
-   "hint": "Cancel the countdown",
-   "cat": "timer",
-   "icon": "󰓛",
-   "keywords": "timer cancel reset",
-   "cmd": "echo stop > /tmp/qs_timer_cmd",
-   "verb": "Stop"
-  },
-  {
-   "id": "layout.save",
-   "label": "Save workspace layout",
-   "hint": "Snapshot every window's place",
-   "cat": "layout",
-   "icon": "󰆓",
-   "keywords": "smart workspaces windows snapshot",
-   "cmd": "bash $HOME/.config/hypr/scripts/smartws.sh save \"${1:-layout-$(date +%m%d-%H%M)}\" >/dev/null",
-   "param": {
-    "kind": "text",
-    "required": false,
-    "hint": "layout name"
-   },
-   "verb": "Save"
-  },
-  {
-   "id": "ws.go",
-   "label": "Go to workspace",
-   "hint": "Switch to a workspace by number",
-   "cat": "workspace",
-   "icon": "󰕰",
-   "keywords": "workspace switch go jump number desktop",
-   "cmd": "bash $HOME/.config/hypr/scripts/qs_manager.sh \"$1\"",
-   "param": {
-    "kind": "number",
-    "min": 1,
-    "max": 10,
-    "required": true
-   },
-   "keys": "Super 1-0",
-   "verb": "Go"
-  },
-  {
-   "id": "ws.rename",
-   "label": "Rename this workspace",
-   "hint": "Name it yourself instead of the smart name",
-   "cat": "workspace",
-   "icon": "󰑕",
-   "keywords": "rename name label title workspace smart",
-   "cmd": "ws=$(hyprctl activeworkspace -j | jq -r .id); bash $HOME/.config/hypr/scripts/smartws.sh rename \"$ws\" \"$1\" >/dev/null",
-   "param": {
-    "kind": "text",
-    "required": true,
-    "hint": "a name"
-   },
-   "verb": "Rename"
-  },
-  {
-   "id": "ws.autoname",
-   "label": "Auto-name this workspace",
-   "hint": "Go back to the smart name",
-   "cat": "workspace",
-   "icon": "󰑐",
-   "keywords": "reset auto smart name workspace undo rename",
-   "cmd": "ws=$(hyprctl activeworkspace -j | jq -r .id); bash $HOME/.config/hypr/scripts/smartws.sh rename \"$ws\" auto >/dev/null",
-   "verb": "Reset"
-  },
-  {
-   "id": "ws.cycle",
-   "label": "Cycle workspace name",
-   "hint": "Try the next smart name and icon",
-   "cat": "workspace",
-   "icon": "󰑐",
-   "keywords": "cycle next name icon workspace smart",
-   "cmd": "ws=$(hyprctl activeworkspace -j | jq -r .id); bash $HOME/.config/hypr/scripts/smartws.sh cycle \"$ws\" >/dev/null",
-   "verb": "Cycle"
-  },
-  {
-   "id": "win.fullscreen",
-   "label": "Fullscreen window",
-   "hint": "True fullscreen for the focused window",
-   "cat": "window",
-   "icon": "󰊓",
-   "keywords": "fullscreen maximize window focus",
-   "cmd": "hyprctl dispatch fullscreen 0 >/dev/null",
-   "keys": "Super Shift D",
-   "verb": "Toggle"
-  },
-  {
-   "id": "win.maximize",
-   "label": "Maximize window",
-   "hint": "Fill the workspace, keep the bar",
-   "cat": "window",
-   "icon": "󰖯",
-   "keywords": "maximize window big fill",
-   "cmd": "hyprctl dispatch fullscreen 1 >/dev/null",
-   "keys": "Super D",
-   "verb": "Toggle"
-  },
-  {
-   "id": "win.float",
-   "label": "Float window",
-   "hint": "Toggle floating for the focused window",
-   "cat": "window",
-   "icon": "󰖲",
-   "keywords": "float floating tile tiling window",
-   "cmd": "hyprctl dispatch togglefloating >/dev/null",
-   "keys": "Super Shift F",
-   "verb": "Toggle"
-  },
-  {
-   "id": "win.pin",
-   "label": "Pin window",
-   "hint": "Keep a floating window on every workspace",
-   "cat": "window",
-   "icon": "󰐃",
-   "keywords": "pin sticky every workspace window float",
-   "cmd": "hyprctl dispatch pin >/dev/null",
-   "verb": "Toggle"
-  },
-  {
-   "id": "win.move",
-   "label": "Move window to workspace",
-   "hint": "Send the focused window elsewhere",
-   "cat": "window",
-   "icon": "󰓡",
-   "keywords": "move send window workspace number",
-   "cmd": "bash $HOME/.config/hypr/scripts/qs_manager.sh \"$1\" move",
-   "param": {
-    "kind": "number",
-    "min": 1,
-    "max": 10,
-    "required": true
-   },
-   "keys": "Super Shift 1-0",
-   "verb": "Move"
-  },
-  {
-   "id": "win.magic",
-   "label": "Send window to scratch",
-   "hint": "Hide it on the magic workspace",
-   "cat": "window",
-   "icon": "󰁨",
-   "keywords": "scratch magic special hide stash window",
-   "cmd": "hyprctl dispatch movetoworkspacesilent special:magic >/dev/null",
-   "keys": "Super Alt S",
-   "verb": "Send"
-  },
-  {
-   "id": "win.kill",
-   "label": "Close window",
-   "hint": "Close the focused window",
-   "cat": "window",
-   "icon": "󰅖",
-   "keywords": "close kill quit window",
-   "cmd": "hyprctl dispatch killactive >/dev/null",
-   "keys": "Super Q",
-   "verb": "Close"
-  },
-  {
-   "id": "eco.never",
-   "label": "Never throttle this app",
-   "hint": "Eco mode leaves the focused app alone",
-   "cat": "system",
-   "icon": "󰌪",
-   "keywords": "eco exempt never throttle freeze app whitelist",
-   "cmd": "python3 \"$HOME/.config/hypr/scripts/quickshell/palette/palette_index.py\" eco never",
-   "verb": "Exempt"
-  },
-  {
-   "id": "eco.throttle",
-   "label": "Throttle this app in the background",
-   "hint": "Cap its CPU when unfocused",
-   "cat": "system",
-   "icon": "󰌪",
-   "keywords": "eco throttle cpu limit background app slow",
-   "cmd": "python3 \"$HOME/.config/hypr/scripts/quickshell/palette/palette_index.py\" eco throttle",
-   "verb": "Throttle"
-  },
-  {
-   "id": "eco.freeze",
-   "label": "Freeze this app when hidden",
-   "hint": "Pause it on other workspaces",
-   "cat": "system",
-   "icon": "󰜗",
-   "keywords": "eco freeze pause suspend background hidden app",
-   "cmd": "python3 \"$HOME/.config/hypr/scripts/quickshell/palette/palette_index.py\" eco freeze",
-   "verb": "Freeze"
-  },
-  {
-   "id": "eco.auto",
-   "label": "Reset eco rule for this app",
-   "hint": "Drop the override for the focused app",
-   "cat": "system",
-   "icon": "󰌪",
-   "keywords": "eco reset default rule app clear",
-   "cmd": "python3 \"$HOME/.config/hypr/scripts/quickshell/palette/palette_index.py\" eco auto",
-   "verb": "Reset"
-  }
- ]
+  "actions": [
+    {
+      "id": "media.playpause",
+      "label": "Play or pause",
+      "hint": "Toggle whatever is playing",
+      "cat": "media",
+      "icon": "󰐎",
+      "keywords": "music spotify resume stop toggle",
+      "cmd": "bash $HOME/.config/hypr/scripts/media_control.sh play-pause",
+      "keys": "Super Space",
+      "verb": "Play / pause",
+      "ctx": {
+        "media_playing": 3,
+        "media_paused": 3
+      }
+    },
+    {
+      "id": "media.next",
+      "label": "Next track",
+      "hint": "Skip to the next song",
+      "cat": "media",
+      "icon": "󰒭",
+      "keywords": "music skip spotify forward",
+      "cmd": "bash $HOME/.config/hypr/scripts/media_control.sh next",
+      "keys": "Super .",
+      "verb": "Skip",
+      "ctx": {
+        "media_playing": 3
+      }
+    },
+    {
+      "id": "media.prev",
+      "label": "Previous track",
+      "hint": "Go back one song",
+      "cat": "media",
+      "icon": "󰒮",
+      "keywords": "music back spotify rewind",
+      "cmd": "bash $HOME/.config/hypr/scripts/media_control.sh previous",
+      "keys": "Super ,",
+      "verb": "Go back",
+      "ctx": {
+        "media_playing": 1
+      }
+    },
+    {
+      "id": "media.seekback",
+      "label": "Seek back 10 seconds",
+      "hint": "Rewind the current track",
+      "cat": "media",
+      "icon": "󰑟",
+      "keywords": "rewind back seek skip music",
+      "cmd": "bash $HOME/.config/hypr/scripts/media_seek.sh back",
+      "keys": "Super Brightness-",
+      "verb": "Seek"
+    },
+    {
+      "id": "media.seekfwd",
+      "label": "Seek forward 10 seconds",
+      "hint": "Jump ahead in the current track",
+      "cat": "media",
+      "icon": "󰈑",
+      "keywords": "forward ahead seek skip music",
+      "cmd": "bash $HOME/.config/hypr/scripts/media_seek.sh forward",
+      "keys": "Super Brightness+",
+      "verb": "Seek"
+    },
+    {
+      "id": "audio.volume",
+      "label": "Set volume",
+      "hint": "Output volume, 0 to 150",
+      "cat": "audio",
+      "icon": "󰕾",
+      "keywords": "sound loud quiet audio level",
+      "cmd": "wpctl set-volume @DEFAULT_AUDIO_SINK@ \"$1%\"; pamixer --get-volume > /tmp/qs_volume_osd",
+      "param": {
+        "kind": "number",
+        "unit": "%",
+        "min": 0,
+        "max": 150,
+        "required": true
+      },
+      "verb": "Set volume",
+      "close": false
+    },
+    {
+      "id": "audio.mute",
+      "label": "Mute sound",
+      "hint": "Mute or unmute the speakers",
+      "cat": "audio",
+      "icon": "󰖁",
+      "keywords": "toggle audio silence speakers unmute",
+      "cmd": "bash $HOME/.config/hypr/scripts/volume_step.sh mute-toggle",
+      "keys": "Super Ctrl M",
+      "state": "mute",
+      "verb": "Toggle",
+      "ctx": {
+        "media_playing": 1,
+        "muted": 3
+      },
+      "close": false
+    },
+    {
+      "id": "audio.mic",
+      "label": "Mute microphone",
+      "hint": "Mute or unmute the default mic",
+      "cat": "audio",
+      "icon": "󰍭",
+      "keywords": "toggle mic input unmute",
+      "cmd": "bash $HOME/.config/hypr/scripts/mic_mute_toggle.sh",
+      "keys": "Super Alt M",
+      "state": "mic",
+      "verb": "Toggle",
+      "ctx": {
+        "mic_off": 2
+      },
+      "close": false
+    },
+    {
+      "id": "audio.muteall",
+      "label": "Mute everything now",
+      "hint": "Hard mute, not a toggle",
+      "cat": "audio",
+      "icon": "󰖁",
+      "keywords": "emergency panic mute silence quiet sound",
+      "cmd": "wpctl set-mute @DEFAULT_AUDIO_SINK@ 1",
+      "verb": "Mute",
+      "ctx": {
+        "media_playing": 1
+      },
+      "close": false
+    },
+    {
+      "id": "sys.brightness",
+      "label": "Set brightness",
+      "hint": "Screen brightness in percent",
+      "cat": "system",
+      "icon": "󰃠",
+      "keywords": "screen backlight dim bright",
+      "cmd": "brightnessctl set \"$1%\" >/dev/null; brightnessctl -m | cut -d, -f4 | tr -d % > /tmp/qs_brightness_osd",
+      "param": {
+        "kind": "number",
+        "unit": "%",
+        "min": 1,
+        "max": 100,
+        "required": true
+      },
+      "verb": "Set brightness",
+      "close": false
+    },
+    {
+      "id": "sys.nightlight",
+      "label": "Night light",
+      "hint": "Warm the screen colours",
+      "cat": "system",
+      "icon": "󰖔",
+      "keywords": "toggle wlsunset warm blue light evening",
+      "cmd": "bash $HOME/.config/hypr/scripts/toggle_night_light.sh",
+      "keys": "Super Shift G",
+      "state": "nightlight",
+      "verb": "Toggle",
+      "ctx": {
+        "evening": 3,
+        "night": 3,
+        "nightlight_off": 1
+      },
+      "close": false
+    },
+    {
+      "id": "sys.idle",
+      "label": "Idle lock",
+      "hint": "Auto-lock and sleep when idle",
+      "cat": "system",
+      "icon": "󰒲",
+      "keywords": "toggle hypridle idle inhibit caffeine",
+      "cmd": "bash $HOME/.config/hypr/scripts/toggle_hypridle.sh",
+      "keys": "Super Shift I",
+      "state": "idle",
+      "verb": "Toggle",
+      "ctx": {
+        "media_playing": 1
+      },
+      "close": false
+    },
+    {
+      "id": "sys.wakelock",
+      "label": "Keep awake with lid closed",
+      "hint": "Block lid-close suspend",
+      "cat": "system",
+      "icon": "󰅶",
+      "keywords": "toggle wakelock caffeine lid inhibit",
+      "cmd": "bash $HOME/.config/hypr/scripts/toggle_wakelock.sh",
+      "keys": "Super Alt K",
+      "state": "wakelock",
+      "verb": "Toggle",
+      "ctx": {
+        "recording": 2
+      },
+      "close": false
+    },
+    {
+      "id": "sys.brightcurve",
+      "label": "Brightness curve",
+      "hint": "Follow the time-of-day brightness curve",
+      "cat": "system",
+      "icon": "󰃠",
+      "keywords": "toggle auto brightness schedule",
+      "cmd": "bash $HOME/.config/hypr/scripts/toggle_brightness_curve.sh",
+      "keys": "Super Alt B",
+      "verb": "Toggle",
+      "close": false
+    },
+    {
+      "id": "sys.dnd",
+      "label": "Do not disturb",
+      "hint": "Silence notification popups",
+      "cat": "system",
+      "icon": "󰂛",
+      "keywords": "toggle dnd notifications quiet silence focus",
+      "cmd": "swaync-client -d >/dev/null",
+      "state": "dnd",
+      "verb": "Toggle",
+      "ctx": {
+        "recording": 3,
+        "event_soon": 1
+      },
+      "close": false
+    },
+    {
+      "id": "sys.kblayout",
+      "label": "Switch keyboard layout",
+      "hint": "Cycle between us and cz",
+      "cat": "system",
+      "icon": "󰌌",
+      "keywords": "keyboard language czech english input",
+      "cmd": "bash $HOME/.config/hypr/scripts/switch_kb_layout.sh",
+      "keys": "Super Shift Space",
+      "verb": "Switch",
+      "close": false
+    },
+    {
+      "id": "sys.pp.performance",
+      "label": "Performance power profile",
+      "hint": "Full speed, more fan",
+      "cat": "system",
+      "icon": "󰓅",
+      "keywords": "power profile fast turbo",
+      "cmd": "powerprofilesctl set performance",
+      "verb": "Switch",
+      "ctx": {
+        "plugged": 1,
+        "cpu_hot": 1
+      },
+      "close": false
+    },
+    {
+      "id": "sys.pp.balanced",
+      "label": "Balanced power profile",
+      "hint": "The everyday default",
+      "cat": "system",
+      "icon": "󰓅",
+      "keywords": "power profile normal default",
+      "cmd": "powerprofilesctl set balanced",
+      "verb": "Switch",
+      "close": false
+    },
+    {
+      "id": "sys.pp.saver",
+      "label": "Power saver profile",
+      "hint": "Stretch the battery",
+      "cat": "system",
+      "icon": "󰌪",
+      "keywords": "power profile battery save low",
+      "cmd": "powerprofilesctl set power-saver",
+      "verb": "Switch",
+      "ctx": {
+        "battery_low": 4,
+        "battery_mid": 2
+      },
+      "close": false
+    },
+    {
+      "id": "sys.powersave",
+      "label": "Emergency power save",
+      "hint": "Throttle everything to survive on battery",
+      "cat": "system",
+      "icon": "󰂃",
+      "keywords": "battery low eco survive",
+      "cmd": "bash $HOME/.config/hypr/scripts/quickshell/claude/resident_actions.sh emergency_power_save",
+      "verb": "Save power",
+      "ctx": {
+        "battery_low": 5
+      },
+      "close": false
+    },
+    {
+      "id": "sys.powerrestore",
+      "label": "Leave power save",
+      "hint": "Undo emergency power save",
+      "cat": "system",
+      "icon": "󰁹",
+      "keywords": "battery restore normal eco",
+      "cmd": "bash $HOME/.config/hypr/scripts/quickshell/claude/resident_actions.sh restore_eco",
+      "verb": "Restore",
+      "close": false
+    },
+    {
+      "id": "sys.picker",
+      "label": "Pick a colour",
+      "hint": "Copy any on-screen colour as hex",
+      "cat": "system",
+      "icon": "󰈊",
+      "keywords": "color colour eyedropper hyprpicker hex",
+      "cmd": "sleep 0.4; hyprpicker -a",
+      "keys": "Super Shift C",
+      "verb": "Pick"
+    },
+    {
+      "id": "sys.orphans",
+      "label": "Clean up leaked processes",
+      "hint": "Kill orphaned watcher loops",
+      "cat": "system",
+      "icon": "󰃢",
+      "keywords": "orphans leak slow load reaper kill cleanup",
+      "cmd": "bash $HOME/.config/hypr/scripts/kill_orphans.sh >/dev/null",
+      "verb": "Clean up",
+      "ctx": {
+        "shell_hot": 5,
+        "cpu_hot": 1
+      }
+    },
+    {
+      "id": "sys.journal",
+      "label": "Vacuum the user journal",
+      "hint": "Trim journald logs to 100 MB",
+      "cat": "system",
+      "icon": "󰃢",
+      "keywords": "disk logs space cleanup",
+      "cmd": "bash $HOME/.config/hypr/scripts/quickshell/claude/resident_actions.sh vacuum_user_journal",
+      "verb": "Vacuum"
+    },
+    {
+      "id": "sys.restartbar",
+      "label": "Restart the top bar",
+      "hint": "Reload TopBar.qml",
+      "cat": "system",
+      "icon": "󰜉",
+      "keywords": "quickshell reload bar refresh",
+      "cmd": "setsid -f bash $HOME/.config/hypr/scripts/quickshell/claude/qsdev.sh bar >/dev/null 2>&1",
+      "verb": "Restart",
+      "ctx": {
+        "shell_hot": 2
+      }
+    },
+    {
+      "id": "sys.restartshell",
+      "label": "Restart the shell",
+      "hint": "Reload every popup widget",
+      "cat": "system",
+      "icon": "󰜉",
+      "keywords": "quickshell reload main widgets refresh",
+      "cmd": "sleep 0.4; setsid -f bash $HOME/.config/hypr/scripts/quickshell/claude/qsdev.sh main >/dev/null 2>&1",
+      "verb": "Restart"
+    },
+    {
+      "id": "sys.clipwipe",
+      "label": "Clear clipboard history",
+      "hint": "Forget everything you copied",
+      "cat": "system",
+      "icon": "󰅌",
+      "keywords": "clipboard cliphist wipe clear history forget privacy",
+      "cmd": "cliphist wipe",
+      "danger": true,
+      "verb": "Clear"
+    },
+    {
+      "id": "dev.lockpreview",
+      "label": "Preview the lock screen",
+      "hint": "Doesn't lock. Password is test",
+      "cat": "system",
+      "icon": "󰌾",
+      "keywords": "lock screen test preview dev design",
+      "cmd": "bash $HOME/.config/hypr/scripts/lock_test.sh >/dev/null 2>&1",
+      "verb": "Preview"
+    },
+    {
+      "id": "dev.screenshots",
+      "label": "Retake doc screenshots",
+      "hint": "Opens each popup and captures it",
+      "cat": "system",
+      "icon": "󰄀",
+      "keywords": "docs readme screenshots capture grim dev",
+      "cmd": "bash $HOME/.config/hypr/scripts/docs/capture.sh >/dev/null 2>&1",
+      "verb": "Capture"
+    },
+    {
+      "id": "capture.region",
+      "label": "Screenshot a region",
+      "hint": "Drag to select, saved and copied",
+      "cat": "capture",
+      "icon": "󰹑",
+      "keywords": "screenshot capture snip grab",
+      "cmd": "sleep 0.45; $HOME/.config/hypr/scripts/screenshot.sh",
+      "keys": "Super Shift S",
+      "verb": "Capture"
+    },
+    {
+      "id": "capture.full",
+      "label": "Screenshot the whole screen",
+      "hint": "Everything, right now",
+      "cat": "capture",
+      "icon": "󰄀",
+      "keywords": "screenshot capture full screen",
+      "cmd": "sleep 0.45; $HOME/.config/hypr/scripts/screenshot.sh --full",
+      "keys": "Super Print",
+      "verb": "Capture"
+    },
+    {
+      "id": "capture.freeze",
+      "label": "Screenshot frozen",
+      "hint": "Freeze the screen, then select",
+      "cat": "capture",
+      "icon": "󰹑",
+      "keywords": "screenshot capture freeze",
+      "cmd": "sleep 0.45; $HOME/.config/hypr/scripts/screenshot.sh --freeze",
+      "keys": "Super Ctrl S",
+      "verb": "Capture"
+    },
+    {
+      "id": "capture.edit",
+      "label": "Screenshot and annotate",
+      "hint": "Region, then open the editor",
+      "cat": "capture",
+      "icon": "󰏫",
+      "keywords": "screenshot edit annotate draw swappy markup",
+      "cmd": "bash $HOME/.config/hypr/scripts/screenshot.sh --edit",
+      "keys": "Shift Print",
+      "verb": "Capture"
+    },
+    {
+      "id": "capture.ask",
+      "label": "Ask Claude about the screen",
+      "hint": "Select a region and ask about it",
+      "cat": "capture",
+      "icon": "󰚩",
+      "keywords": "screenshot claude question explain",
+      "cmd": "sleep 0.45; bash $HOME/.config/hypr/scripts/quickshell/claude/screenshot_ask.sh",
+      "keys": "Super Shift Z",
+      "verb": "Select"
+    },
+    {
+      "id": "capture.answer",
+      "label": "Screenshot answer",
+      "hint": "Claude answers what's in a region, as a card",
+      "cat": "capture",
+      "icon": "󰚩",
+      "keywords": "screenshot answer solve claude explain card",
+      "cmd": "bash $HOME/.config/hypr/scripts/quickshell/claude/screenshot_answer.sh",
+      "keys": "Super Ctrl Z",
+      "verb": "Capture"
+    },
+    {
+      "id": "capture.shotask",
+      "label": "Ask about a region",
+      "hint": "Pick a region, then type a question",
+      "cat": "capture",
+      "icon": "󰚩",
+      "keywords": "screenshot ask claude region question",
+      "cmd": "bash $HOME/.config/hypr/scripts/quickshell/claude/shot_ask.sh",
+      "keys": "Super Alt Z",
+      "verb": "Capture"
+    },
+    {
+      "id": "capture.recfull",
+      "label": "Record the screen",
+      "hint": "Start or stop a full-screen recording",
+      "cat": "capture",
+      "icon": "󰑊",
+      "keywords": "record video capture screencast",
+      "cmd": "sleep 0.45; $HOME/.config/hypr/scripts/screenrec-toggle.sh full",
+      "keys": "Super Alt R",
+      "verb": "Record",
+      "ctx": {
+        "recording": 5
+      }
+    },
+    {
+      "id": "capture.recregion",
+      "label": "Record a region",
+      "hint": "Start or stop a region recording",
+      "cat": "capture",
+      "icon": "󰑊",
+      "keywords": "record video capture region",
+      "cmd": "sleep 0.45; $HOME/.config/hypr/scripts/screenrec-toggle.sh region",
+      "keys": "Super Alt Shift R",
+      "verb": "Record",
+      "ctx": {
+        "recording": 4
+      }
+    },
+    {
+      "id": "power.lock",
+      "label": "Lock screen",
+      "hint": "Lock the session",
+      "cat": "power",
+      "icon": "󰌾",
+      "keywords": "lock away secure",
+      "cmd": "sleep 0.3; bash $HOME/.config/hypr/scripts/lock.sh",
+      "keys": "Super L",
+      "verb": "Lock",
+      "ctx": {
+        "evening": 1,
+        "night": 1
+      }
+    },
+    {
+      "id": "power.suspend",
+      "label": "Sleep",
+      "hint": "Lock, then suspend",
+      "cat": "power",
+      "icon": "󰒲",
+      "keywords": "suspend sleep standby",
+      "cmd": "sleep 0.3; bash $HOME/.config/hypr/scripts/lock.sh & sleep 1; systemctl suspend",
+      "verb": "Sleep",
+      "ctx": {
+        "night": 2,
+        "battery_low": 1
+      }
+    },
+    {
+      "id": "power.reboot",
+      "label": "Restart the computer",
+      "hint": "Reboot now",
+      "cat": "power",
+      "icon": "󰜉",
+      "keywords": "reboot restart",
+      "cmd": "systemctl reboot",
+      "danger": true,
+      "verb": "Restart"
+    },
+    {
+      "id": "power.shutdown",
+      "label": "Shut down",
+      "hint": "Power off now",
+      "cat": "power",
+      "icon": "󰐥",
+      "keywords": "shutdown poweroff turn off",
+      "cmd": "systemctl poweroff -i",
+      "danger": true,
+      "verb": "Shut down",
+      "ctx": {
+        "night": 1
+      }
+    },
+    {
+      "id": "power.logout",
+      "label": "Log out",
+      "hint": "Exit Hyprland",
+      "cat": "power",
+      "icon": "󰍃",
+      "keywords": "logout exit quit hyprland session",
+      "cmd": "hyprctl dispatch exit",
+      "danger": true,
+      "verb": "Log out"
+    },
+    {
+      "id": "claude.ask",
+      "label": "Ask Claude",
+      "hint": "Open the chat, prefilled with what you type",
+      "cat": "claude",
+      "icon": "󰚩",
+      "keywords": "chat ai assistant question help",
+      "cmd": "if [ -n \"$1\" ]; then printf \"claude:%s\" \"$1\" > /tmp/qs_widget_state; else bash $HOME/.config/hypr/scripts/qs_manager.sh open claudeask; fi",
+      "param": {
+        "kind": "text",
+        "required": false
+      },
+      "keys": "Super `",
+      "verb": "Ask"
+    },
+    {
+      "id": "claude.tell",
+      "label": "Quick tell",
+      "hint": "One line to Claude, no window",
+      "cat": "claude",
+      "icon": "󰭻",
+      "keywords": "message claude note quick",
+      "cmd": "bash $HOME/.config/hypr/scripts/qs_manager.sh open quicktell",
+      "keys": "Super G",
+      "verb": "Open"
+    },
+    {
+      "id": "claude.voice",
+      "label": "Talk to Claude",
+      "hint": "Speak instead of typing",
+      "cat": "claude",
+      "icon": "󰍬",
+      "keywords": "voice speak microphone claude",
+      "cmd": "bash $HOME/.config/hypr/scripts/qs_manager.sh open quicktell voice",
+      "keys": "Super Alt G",
+      "verb": "Listen"
+    },
+    {
+      "id": "claude.scratch",
+      "label": "Scratchpad",
+      "hint": "Jot something down",
+      "cat": "claude",
+      "icon": "󰎞",
+      "keywords": "note notes jot write",
+      "cmd": "sleep 0.3; bash $HOME/.config/hypr/scripts/scratchpad.sh",
+      "keys": "Super P",
+      "verb": "Open"
+    },
+    {
+      "id": "claude.brief",
+      "label": "Brief me now",
+      "hint": "Weather, agenda, battery and nudges as a card",
+      "cat": "claude",
+      "icon": "󰎕",
+      "keywords": "brief summary morning afternoon night today overview",
+      "cmd": "h=$(date +%H); p=morning; [ \"$h\" -ge 12 ] && p=afternoon; [ \"$h\" -ge 18 ] && p=night; python3 $HOME/.config/hypr/scripts/quickshell/claude/resident_extras.py --test-brief-card \"$p\" >/dev/null 2>&1",
+      "verb": "Brief me",
+      "ctx": {
+        "morning": 3,
+        "afternoon": 1
+      }
+    },
+    {
+      "id": "claude.wrapped",
+      "label": "Weekly wrapped",
+      "hint": "Your listening this week, as a card",
+      "cat": "claude",
+      "icon": "󰄨",
+      "keywords": "wrapped music stats week listening spotify recap",
+      "cmd": "python3 $HOME/.config/hypr/scripts/quickshell/claude/resident_extras.py --test-wrapped week >/dev/null 2>&1",
+      "verb": "Show"
+    },
+    {
+      "id": "claude.wrappedmonth",
+      "label": "Monthly wrapped",
+      "hint": "Your listening this month, as a card",
+      "cat": "claude",
+      "icon": "󰄨",
+      "keywords": "wrapped music stats month listening spotify recap",
+      "cmd": "python3 $HOME/.config/hypr/scripts/quickshell/claude/resident_extras.py --test-wrapped month >/dev/null 2>&1",
+      "verb": "Show"
+    },
+    {
+      "id": "claude.batteryhealth",
+      "label": "Battery health",
+      "hint": "Cycles, capacity and wear, as a card",
+      "cat": "claude",
+      "icon": "󰁹",
+      "keywords": "battery health wear cycles capacity",
+      "cmd": "python3 $HOME/.config/hypr/scripts/quickshell/claude/resident_extras.py --test-batteryhealth >/dev/null 2>&1",
+      "verb": "Show"
+    },
+    {
+      "id": "claude.account",
+      "label": "Switch Claude account",
+      "hint": "Cycle to the next account",
+      "cat": "claude",
+      "icon": "󰀙",
+      "keywords": "anthropic account switch cycle api key",
+      "cmd": "bash $HOME/.config/hypr/scripts/anthropic_acct.sh cycle >/dev/null",
+      "keys": "Super Alt A",
+      "verb": "Switch"
+    },
+    {
+      "id": "mail.open",
+      "label": "Open Mira",
+      "hint": "Your mail, all accounts",
+      "cat": "mail",
+      "icon": "󰇮",
+      "keywords": "mail email gmail inbox mira",
+      "cmd": "bash $HOME/.config/hypr/scripts/mira_toggle.sh",
+      "keys": "Super Shift Y",
+      "verb": "Open",
+      "ctx": {
+        "unread_mail": 1,
+        "morning": 1
+      }
+    },
+    {
+      "id": "mail.search",
+      "label": "Search mail",
+      "hint": "Gmail search across every account",
+      "cat": "mail",
+      "icon": "󰍉",
+      "keywords": "email gmail find inbox mira lookup",
+      "cmd": "bash $HOME/.config/hypr/scripts/mira_toggle.sh search \"$1\"",
+      "param": {
+        "kind": "text",
+        "required": true,
+        "hint": "words, from:, subject:"
+      },
+      "live": "mail",
+      "verb": "Search"
+    },
+    {
+      "id": "spotify.search",
+      "label": "Search Spotify",
+      "hint": "Tracks, artists, albums and playlists",
+      "cat": "spotify",
+      "icon": "󰓇",
+      "keywords": "spotify music song track album artist playlist play find listen",
+      "cmd": "python3 \"$HOME/.config/hypr/scripts/quickshell/palette/sources.py\" playtop \"$1\" >/dev/null",
+      "param": {
+        "kind": "text",
+        "required": true,
+        "hint": "a song, artist or playlist"
+      },
+      "live": "spotify",
+      "verb": "Play top hit"
+    },
+    {
+      "id": "web.open",
+      "label": "Open a web page",
+      "hint": "A URL, or anything else to search the web",
+      "cat": "web",
+      "icon": "󰖟",
+      "keywords": "browser url link website site go visit search google vivaldi web",
+      "cmd": "python3 \"$HOME/.config/hypr/scripts/quickshell/palette/sources.py\" open \"$1\" >/dev/null",
+      "param": {
+        "kind": "text",
+        "required": true,
+        "hint": "a URL or a search"
+      },
+      "verb": "Open"
+    },
+    {
+      "id": "wall.random",
+      "label": "Random wallpaper",
+      "hint": "Pick one and recolour everything",
+      "cat": "wallpaper",
+      "icon": "󰒝",
+      "keywords": "set wallpaper shuffle background theme matugen",
+      "cmd": "bash $HOME/.config/hypr/scripts/quickshell/wallpaper/set_wallpaper.sh random >/dev/null 2>&1",
+      "verb": "Shuffle"
+    },
+    {
+      "id": "wall.set",
+      "label": "Set wallpaper",
+      "hint": "By file name, or random",
+      "cat": "wallpaper",
+      "icon": "󰋩",
+      "keywords": "background change theme",
+      "cmd": "bash $HOME/.config/hypr/scripts/quickshell/wallpaper/set_wallpaper.sh \"${1:-random}\" >/dev/null 2>&1",
+      "param": {
+        "kind": "text",
+        "required": false,
+        "hint": "file name"
+      },
+      "verb": "Set"
+    },
+    {
+      "id": "timer.start",
+      "label": "Start a timer",
+      "hint": "Countdown in the top bar",
+      "cat": "timer",
+      "icon": "󱎫",
+      "keywords": "timer countdown focus pomodoro minutes start",
+      "cmd": "echo stop > /tmp/qs_timer_cmd; sleep 0.35; echo \"set $1\" > /tmp/qs_timer_cmd; sleep 0.35; echo start > /tmp/qs_timer_cmd",
+      "param": {
+        "kind": "number",
+        "unit": "min",
+        "min": 1,
+        "max": 1439,
+        "default": 25,
+        "required": false
+      },
+      "verb": "Start",
+      "ctx": {
+        "timer_idle": 1
+      },
+      "close": false
+    },
+    {
+      "id": "timer.5",
+      "label": "Short break, 5 min",
+      "hint": "Start a 5-minute timer",
+      "cat": "timer",
+      "icon": "󰔛",
+      "keywords": "timer countdown focus pomodoro start 5",
+      "cmd": "echo stop > /tmp/qs_timer_cmd; sleep 0.35; echo \"set $1\" > /tmp/qs_timer_cmd; sleep 0.35; echo start > /tmp/qs_timer_cmd",
+      "arg": "5",
+      "verb": "Start"
+    },
+    {
+      "id": "timer.15",
+      "label": "Quarter hour, 15 min",
+      "hint": "Start a 15-minute timer",
+      "cat": "timer",
+      "icon": "󰔛",
+      "keywords": "timer countdown focus pomodoro start 15",
+      "cmd": "echo stop > /tmp/qs_timer_cmd; sleep 0.35; echo \"set $1\" > /tmp/qs_timer_cmd; sleep 0.35; echo start > /tmp/qs_timer_cmd",
+      "arg": "15",
+      "verb": "Start"
+    },
+    {
+      "id": "timer.25",
+      "label": "Focus session, 25 min",
+      "hint": "Start a 25-minute timer",
+      "cat": "timer",
+      "icon": "󰔛",
+      "keywords": "timer countdown focus pomodoro start 25",
+      "cmd": "echo stop > /tmp/qs_timer_cmd; sleep 0.35; echo \"set $1\" > /tmp/qs_timer_cmd; sleep 0.35; echo start > /tmp/qs_timer_cmd",
+      "arg": "25",
+      "verb": "Start",
+      "ctx": {
+        "timer_idle": 1,
+        "morning": 1,
+        "afternoon": 1
+      }
+    },
+    {
+      "id": "timer.44",
+      "label": "Class hour, 44 min",
+      "hint": "Start a 44-minute timer",
+      "cat": "timer",
+      "icon": "󰔛",
+      "keywords": "timer countdown focus pomodoro start 44",
+      "cmd": "echo stop > /tmp/qs_timer_cmd; sleep 0.35; echo \"set $1\" > /tmp/qs_timer_cmd; sleep 0.35; echo start > /tmp/qs_timer_cmd",
+      "arg": "44",
+      "verb": "Start"
+    },
+    {
+      "id": "timer.50",
+      "label": "Deep work, 50 min",
+      "hint": "Start a 50-minute timer",
+      "cat": "timer",
+      "icon": "󰔛",
+      "keywords": "timer countdown focus pomodoro start 50",
+      "cmd": "echo stop > /tmp/qs_timer_cmd; sleep 0.35; echo \"set $1\" > /tmp/qs_timer_cmd; sleep 0.35; echo start > /tmp/qs_timer_cmd",
+      "arg": "50",
+      "verb": "Start"
+    },
+    {
+      "id": "timer.pause",
+      "label": "Pause the timer",
+      "hint": "Hold the countdown",
+      "cat": "timer",
+      "icon": "󰏤",
+      "keywords": "timer hold",
+      "cmd": "echo pause > /tmp/qs_timer_cmd",
+      "verb": "Pause",
+      "ctx": {
+        "timer_running": 4
+      }
+    },
+    {
+      "id": "timer.resume",
+      "label": "Resume the timer",
+      "hint": "Carry on counting down",
+      "cat": "timer",
+      "icon": "󰐊",
+      "keywords": "timer continue",
+      "cmd": "echo resume > /tmp/qs_timer_cmd",
+      "verb": "Resume",
+      "ctx": {
+        "timer_paused": 4
+      }
+    },
+    {
+      "id": "timer.stop",
+      "label": "Stop the timer",
+      "hint": "Cancel the countdown",
+      "cat": "timer",
+      "icon": "󰓛",
+      "keywords": "timer cancel reset",
+      "cmd": "echo stop > /tmp/qs_timer_cmd",
+      "verb": "Stop",
+      "ctx": {
+        "timer_running": 2,
+        "timer_paused": 3
+      }
+    },
+    {
+      "id": "layout.save",
+      "label": "Save workspace layout",
+      "hint": "Snapshot every window's place",
+      "cat": "layout",
+      "icon": "󰆓",
+      "keywords": "smart workspaces windows snapshot",
+      "cmd": "bash $HOME/.config/hypr/scripts/smartws.sh save \"${1:-layout-$(date +%m%d-%H%M)}\" >/dev/null",
+      "param": {
+        "kind": "text",
+        "required": false,
+        "hint": "layout name"
+      },
+      "verb": "Save"
+    },
+    {
+      "id": "ws.go",
+      "label": "Go to workspace",
+      "hint": "Switch to a workspace by number",
+      "cat": "workspace",
+      "icon": "󰕰",
+      "keywords": "workspace switch go jump number desktop",
+      "cmd": "bash $HOME/.config/hypr/scripts/qs_manager.sh \"$1\"",
+      "param": {
+        "kind": "number",
+        "min": 1,
+        "max": 10,
+        "required": true
+      },
+      "keys": "Super 1-0",
+      "verb": "Go"
+    },
+    {
+      "id": "ws.rename",
+      "label": "Rename this workspace",
+      "hint": "Name it yourself instead of the smart name",
+      "cat": "workspace",
+      "icon": "󰑕",
+      "keywords": "rename name label title workspace smart",
+      "cmd": "ws=$(hyprctl activeworkspace -j | jq -r .id); bash $HOME/.config/hypr/scripts/smartws.sh rename \"$ws\" \"$1\" >/dev/null",
+      "param": {
+        "kind": "text",
+        "required": true,
+        "hint": "a name"
+      },
+      "verb": "Rename"
+    },
+    {
+      "id": "ws.autoname",
+      "label": "Auto-name this workspace",
+      "hint": "Go back to the smart name",
+      "cat": "workspace",
+      "icon": "󰑐",
+      "keywords": "reset auto smart name workspace undo rename",
+      "cmd": "ws=$(hyprctl activeworkspace -j | jq -r .id); bash $HOME/.config/hypr/scripts/smartws.sh rename \"$ws\" auto >/dev/null",
+      "verb": "Reset"
+    },
+    {
+      "id": "ws.cycle",
+      "label": "Cycle workspace name",
+      "hint": "Try the next smart name and icon",
+      "cat": "workspace",
+      "icon": "󰑐",
+      "keywords": "cycle next name icon workspace smart",
+      "cmd": "ws=$(hyprctl activeworkspace -j | jq -r .id); bash $HOME/.config/hypr/scripts/smartws.sh cycle \"$ws\" >/dev/null",
+      "verb": "Cycle"
+    },
+    {
+      "id": "win.fullscreen",
+      "label": "Fullscreen window",
+      "hint": "True fullscreen for the focused window",
+      "cat": "window",
+      "icon": "󰊓",
+      "keywords": "fullscreen maximize window focus",
+      "cmd": "hyprctl dispatch fullscreen 0 >/dev/null",
+      "keys": "Super Shift D",
+      "verb": "Toggle"
+    },
+    {
+      "id": "win.maximize",
+      "label": "Maximize window",
+      "hint": "Fill the workspace, keep the bar",
+      "cat": "window",
+      "icon": "󰖯",
+      "keywords": "maximize window big fill",
+      "cmd": "hyprctl dispatch fullscreen 1 >/dev/null",
+      "keys": "Super D",
+      "verb": "Toggle"
+    },
+    {
+      "id": "win.float",
+      "label": "Float window",
+      "hint": "Toggle floating for the focused window",
+      "cat": "window",
+      "icon": "󰖲",
+      "keywords": "float floating tile tiling window",
+      "cmd": "hyprctl dispatch togglefloating >/dev/null",
+      "keys": "Super Shift F",
+      "verb": "Toggle"
+    },
+    {
+      "id": "win.pin",
+      "label": "Pin window",
+      "hint": "Keep a floating window on every workspace",
+      "cat": "window",
+      "icon": "󰐃",
+      "keywords": "pin sticky every workspace window float",
+      "cmd": "hyprctl dispatch pin >/dev/null",
+      "verb": "Toggle"
+    },
+    {
+      "id": "win.move",
+      "label": "Move window to workspace",
+      "hint": "Send the focused window elsewhere",
+      "cat": "window",
+      "icon": "󰓡",
+      "keywords": "move send window workspace number",
+      "cmd": "bash $HOME/.config/hypr/scripts/qs_manager.sh \"$1\" move",
+      "param": {
+        "kind": "number",
+        "min": 1,
+        "max": 10,
+        "required": true
+      },
+      "keys": "Super Shift 1-0",
+      "verb": "Move"
+    },
+    {
+      "id": "win.magic",
+      "label": "Send window to scratch",
+      "hint": "Hide it on the magic workspace",
+      "cat": "window",
+      "icon": "󰁨",
+      "keywords": "scratch magic special hide stash window",
+      "cmd": "hyprctl dispatch movetoworkspacesilent special:magic >/dev/null",
+      "keys": "Super Alt S",
+      "verb": "Send"
+    },
+    {
+      "id": "win.kill",
+      "label": "Close window",
+      "hint": "Close the focused window",
+      "cat": "window",
+      "icon": "󰅖",
+      "keywords": "close kill quit window",
+      "cmd": "hyprctl dispatch killactive >/dev/null",
+      "keys": "Super Q",
+      "verb": "Close"
+    },
+    {
+      "id": "eco.never",
+      "label": "Never throttle this app",
+      "hint": "Eco mode leaves the focused app alone",
+      "cat": "system",
+      "icon": "󰌪",
+      "keywords": "eco exempt never throttle freeze app whitelist",
+      "cmd": "python3 \"$HOME/.config/hypr/scripts/quickshell/palette/palette_index.py\" eco never",
+      "verb": "Exempt",
+      "close": false
+    },
+    {
+      "id": "eco.throttle",
+      "label": "Throttle this app in the background",
+      "hint": "Cap its CPU when unfocused",
+      "cat": "system",
+      "icon": "󰌪",
+      "keywords": "eco throttle cpu limit background app slow",
+      "cmd": "python3 \"$HOME/.config/hypr/scripts/quickshell/palette/palette_index.py\" eco throttle",
+      "verb": "Throttle",
+      "ctx": {
+        "cpu_hot": 2
+      },
+      "close": false
+    },
+    {
+      "id": "eco.freeze",
+      "label": "Freeze this app when hidden",
+      "hint": "Pause it on other workspaces",
+      "cat": "system",
+      "icon": "󰜗",
+      "keywords": "eco freeze pause suspend background hidden app",
+      "cmd": "python3 \"$HOME/.config/hypr/scripts/quickshell/palette/palette_index.py\" eco freeze",
+      "verb": "Freeze",
+      "close": false
+    },
+    {
+      "id": "eco.auto",
+      "label": "Reset eco rule for this app",
+      "hint": "Drop the override for the focused app",
+      "cat": "system",
+      "icon": "󰌪",
+      "keywords": "eco reset default rule app clear",
+      "cmd": "python3 \"$HOME/.config/hypr/scripts/quickshell/palette/palette_index.py\" eco auto",
+      "verb": "Reset",
+      "close": false
+    },
+    {
+      "id": "audio.up",
+      "label": "Volume up",
+      "hint": "One step louder",
+      "cat": "audio",
+      "icon": "󰝝",
+      "keywords": "louder raise increase sound volume turn up",
+      "cmd": "bash $HOME/.config/hypr/scripts/volume_step.sh raise",
+      "keys": "Vol+",
+      "close": false,
+      "verb": "Raise"
+    },
+    {
+      "id": "audio.down",
+      "label": "Volume down",
+      "hint": "One step quieter",
+      "cat": "audio",
+      "icon": "󰝞",
+      "keywords": "quieter lower decrease sound volume turn down",
+      "cmd": "bash $HOME/.config/hypr/scripts/volume_step.sh lower",
+      "keys": "Vol-",
+      "close": false,
+      "verb": "Lower"
+    },
+    {
+      "id": "audio.spotifyup",
+      "label": "Spotify louder",
+      "hint": "Raise only Spotify, not the system",
+      "cat": "audio",
+      "icon": "󰓇",
+      "keywords": "spotify music app volume raise louder",
+      "cmd": "bash $HOME/.config/hypr/scripts/spotify_volume.sh raise",
+      "keys": "Super Vol+",
+      "close": false,
+      "verb": "Raise",
+      "ctx": {
+        "media_playing": 1
+      }
+    },
+    {
+      "id": "audio.spotifydown",
+      "label": "Spotify quieter",
+      "hint": "Lower only Spotify, not the system",
+      "cat": "audio",
+      "icon": "󰓇",
+      "keywords": "spotify music app volume lower quieter",
+      "cmd": "bash $HOME/.config/hypr/scripts/spotify_volume.sh lower",
+      "keys": "Super Vol-",
+      "close": false,
+      "verb": "Lower",
+      "ctx": {
+        "media_playing": 1
+      }
+    },
+    {
+      "id": "media.shuffle",
+      "label": "Shuffle",
+      "hint": "Toggle shuffle in Spotify",
+      "cat": "media",
+      "icon": "󰒟",
+      "keywords": "shuffle random music spotify order",
+      "cmd": "playerctl --player=spotify shuffle Toggle",
+      "verb": "Toggle",
+      "ctx": {
+        "media_playing": 1
+      },
+      "close": false
+    },
+    {
+      "id": "media.loop",
+      "label": "Repeat mode",
+      "hint": "Cycle off, playlist, track",
+      "cat": "media",
+      "icon": "󰑖",
+      "keywords": "repeat loop music spotify track playlist",
+      "cmd": "l=$(playerctl --player=spotify loop 2>/dev/null); case \"$l\" in None) n=Playlist ;; Playlist) n=Track ;; *) n=None ;; esac; playerctl --player=spotify loop \"$n\"",
+      "verb": "Cycle",
+      "close": false
+    },
+    {
+      "id": "media.copy",
+      "label": "Copy what's playing",
+      "hint": "Artist and title to the clipboard",
+      "cat": "media",
+      "icon": "󰆏",
+      "keywords": "copy song track name share now playing music clipboard",
+      "cmd": "playerctl --player=spotify metadata --format '{{artist}} - {{title}}' | wl-copy",
+      "verb": "Copy",
+      "ctx": {
+        "media_playing": 1
+      }
+    },
+    {
+      "id": "sys.brightup",
+      "label": "Brighter screen",
+      "hint": "One step brighter",
+      "cat": "system",
+      "icon": "󰃠",
+      "keywords": "brightness raise increase backlight screen brighter",
+      "cmd": "bash $HOME/.config/hypr/scripts/brightness_step.sh raise",
+      "keys": "Brightness+",
+      "close": false,
+      "verb": "Raise"
+    },
+    {
+      "id": "sys.brightdown",
+      "label": "Dimmer screen",
+      "hint": "One step dimmer",
+      "cat": "system",
+      "icon": "󰃞",
+      "keywords": "brightness lower decrease backlight screen dim darker",
+      "cmd": "bash $HOME/.config/hypr/scripts/brightness_step.sh lower",
+      "keys": "Brightness-",
+      "close": false,
+      "verb": "Lower",
+      "ctx": {
+        "night": 1,
+        "battery_low": 1
+      }
+    },
+    {
+      "id": "sys.wifi",
+      "label": "Wi-Fi",
+      "hint": "Turn the wireless radio on or off",
+      "cat": "system",
+      "icon": "󰖩",
+      "keywords": "toggle wifi wireless network internet radio airplane",
+      "cmd": "bash $HOME/.config/hypr/scripts/quickshell/leader/leader_do.sh wifi",
+      "state": "wifi",
+      "verb": "Toggle",
+      "ctx": {
+        "wifi_off": 2
+      },
+      "close": false
+    },
+    {
+      "id": "sys.bt",
+      "label": "Bluetooth",
+      "hint": "Power the adapter on or off",
+      "cat": "system",
+      "icon": "󰂯",
+      "keywords": "toggle bluetooth bt adapter headphones radio",
+      "cmd": "bash $HOME/.config/hypr/scripts/quickshell/leader/leader_do.sh bt",
+      "state": "bt",
+      "verb": "Toggle",
+      "ctx": {
+        "battery_low": 1
+      },
+      "close": false
+    },
+    {
+      "id": "sys.hyprreload",
+      "label": "Reload Hyprland config",
+      "hint": "Re-read hyprland.conf",
+      "cat": "system",
+      "icon": "󰑐",
+      "keywords": "hyprland reload config refresh hyprctl",
+      "cmd": "hyprctl reload >/dev/null",
+      "verb": "Reload"
+    },
+    {
+      "id": "sys.reaper",
+      "label": "Start the leak reaper",
+      "hint": "Background orphan cleanup, if it isn't running",
+      "cat": "system",
+      "icon": "󰃢",
+      "keywords": "leak reaper orphans cleanup daemon start slow",
+      "cmd": "bash $HOME/.config/hypr/scripts/quickshell/claude/resident_actions.sh start_leak_reaper >/dev/null",
+      "verb": "Start",
+      "ctx": {
+        "shell_hot": 2
+      }
+    },
+    {
+      "id": "sys.update",
+      "label": "Update the system",
+      "hint": "Run arch-update in a terminal",
+      "cat": "system",
+      "icon": "󰚰",
+      "keywords": "update upgrade packages pacman arch-update",
+      "cmd": "kitty -e arch-update",
+      "verb": "Update",
+      "ctx": {
+        "plugged": 1
+      }
+    },
+    {
+      "id": "claude.quiet",
+      "label": "Claude quiet mode",
+      "hint": "Hold back nudges and cards",
+      "cat": "claude",
+      "icon": "󰂠",
+      "keywords": "toggle quiet silence claude resident nudges hush",
+      "cmd": "bash $HOME/.config/hypr/scripts/quickshell/leader/leader_do.sh quiet",
+      "state": "quiet",
+      "verb": "Toggle",
+      "ctx": {
+        "event_soon": 1,
+        "recording": 2
+      },
+      "close": false
+    },
+    {
+      "id": "claude.kandor",
+      "label": "Wake word",
+      "hint": "Listen for \"yo kandor\"",
+      "cat": "claude",
+      "icon": "󰗋",
+      "keywords": "toggle kandor wake word voice listen hotword",
+      "cmd": "bash $HOME/.config/hypr/scripts/quickshell/claude/voice/kandor_toggle.sh >/dev/null",
+      "keys": "Super Alt W",
+      "state": "kandor",
+      "verb": "Toggle",
+      "close": false
+    },
+    {
+      "id": "claude.fixes",
+      "label": "Check the machine for problems",
+      "hint": "Disk, hogs, failed units, updates, as cards",
+      "cat": "claude",
+      "icon": "󰓙",
+      "keywords": "check health problems diagnose disk memory hog failed units fix scan",
+      "cmd": "python3 $HOME/.config/hypr/scripts/quickshell/claude/resident_extras.py --test-fixes >/dev/null 2>&1",
+      "verb": "Check",
+      "ctx": {
+        "cpu_hot": 2,
+        "mem_high": 3,
+        "shell_hot": 1
+      }
+    },
+    {
+      "id": "capture.fulledit",
+      "label": "Screenshot the whole screen and annotate",
+      "hint": "Everything, then open the editor",
+      "cat": "capture",
+      "icon": "󱇣",
+      "keywords": "screenshot full screen edit annotate draw swappy markup",
+      "cmd": "sleep 0.45; $HOME/.config/hypr/scripts/screenshot.sh --full --edit",
+      "keys": "Super Shift Print",
+      "verb": "Capture"
+    },
+    {
+      "id": "ws.scratch",
+      "label": "Show scratch workspace",
+      "hint": "Peek at the magic workspace",
+      "cat": "workspace",
+      "icon": "󰈈",
+      "keywords": "scratch magic special show toggle hidden stash terminal",
+      "cmd": "hyprctl dispatch togglespecialworkspace magic >/dev/null",
+      "keys": "Super S",
+      "verb": "Toggle"
+    },
+    {
+      "id": "ws.empty",
+      "label": "Go to an empty workspace",
+      "hint": "First free workspace",
+      "cat": "workspace",
+      "icon": "󰜄",
+      "keywords": "empty new free workspace blank fresh",
+      "cmd": "hyprctl dispatch workspace empty >/dev/null",
+      "verb": "Go"
+    },
+    {
+      "id": "ws.openapp",
+      "label": "Open an app on a workspace",
+      "hint": "vivaldi on 3, kitty on a new workspace",
+      "cat": "workspace",
+      "icon": "󰜄",
+      "keywords": "launch start run app new empty fresh workspace desktop put spawn",
+      "cmd": "python3 \"$HOME/.config/hypr/scripts/quickshell/palette/sources.py\" openws \"$1\" >/dev/null",
+      "param": {
+        "kind": "text",
+        "required": true,
+        "hint": "app on N / on a new workspace"
+      },
+      "verb": "Open"
+    },
+    {
+      "id": "win.toempty",
+      "label": "Move window to an empty workspace",
+      "hint": "Give the focused window its own space",
+      "cat": "window",
+      "icon": "󰶭",
+      "keywords": "move send window empty new free workspace",
+      "cmd": "hyprctl dispatch movetoworkspace empty >/dev/null",
+      "verb": "Move"
+    },
+    {
+      "id": "win.center",
+      "label": "Center window",
+      "hint": "Center the focused floating window",
+      "cat": "window",
+      "icon": "󰋱",
+      "keywords": "center middle float window position",
+      "cmd": "hyprctl dispatch centerwindow >/dev/null",
+      "verb": "Center"
+    },
+    {
+      "id": "win.split",
+      "label": "Flip split direction",
+      "hint": "Swap side-by-side and stacked",
+      "cat": "window",
+      "icon": "󰤼",
+      "keywords": "split toggle dwindle vertical horizontal tiling window rotate",
+      "cmd": "hyprctl dispatch togglesplit >/dev/null",
+      "verb": "Flip"
+    }
+  ]
 }

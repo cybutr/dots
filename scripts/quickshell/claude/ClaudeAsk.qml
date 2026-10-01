@@ -24,7 +24,7 @@ Item {
     Process {
         id: thinkStyleWatcher
         running: true
-        command: ["/home/czeddaru/.config/hypr/scripts/quickshell/lifeline.sh", "while [ ! -f ~/.config/hypr/settings.json ]; do sleep 1; done; inotifywait -m -e close_write,modify ~/.config/hypr/settings.json 2>/dev/null"]
+        command: ["/home/czeddaru/.config/hypr/scripts/quickshell/lifeline.sh", "while [ ! -f ~/.config/hypr/settings.json ]; do sleep 1; done; exec inotifywait -m -e close_write,modify ~/.config/hypr/settings.json 2>/dev/null"]
         stdout: SplitParser { splitMarker: "\n"; onRead: (data) => { thinkStyleReader.running = false; thinkStyleReader.running = true; } }
     }
 

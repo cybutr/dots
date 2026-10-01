@@ -1,6 +1,8 @@
 # Remote Access Plan: Phone → VPS → Laptop, plus Windows Status Feed
 
-Status: **design only, nothing provisioned.** Written 2026-09-30. Carry it out in a later session once the open questions (§7) are answered.
+Status as of 2026-10-01: Phase 1 (mesh) and Phase 6 (qs-remote Tier A) are live — laptop/VPS/phone joined, `qs_remote.py` running behind `tailscale serve`, a mobile page at `/m` confirmed working end to end from the real phone. Phase 3 (fleet hub) exists on the VPS but is minimal. Phases 2, 4, 5, 7 are in progress as of this session. §7's open questions are still mostly unanswered — answer them before Phase 8.
+
+See §8 below for the native Android app, file relay, and Kahoot-photo-answer plan added 2026-10-01 — not started, scoped only.
 
 ---
 
@@ -162,6 +164,58 @@ Each phase depends on the one before it unless noted.
 6. **`qs-remote` Tier A (≈half to one day, needs Phase 1 only; can run in parallel with 3–5).** A0 + A1 allowlist, `tailscale serve`, PWA, audit log, desktop cards.
 7. **Resident producers (needs Phase 5).** Idle-Windows, VPS disk and container-down cards.
 8. **Later, optional:** A2 via `cap_gate`, phone push heartbeat, Oracle boxes as fleet devices, Headscale migration, Windows Tier A.
+
+---
+
+## 8. Native Android app, file relay, Kahoot-photo-answer (added 2026-10-01, plan only)
+
+Confirmed available on this machine: Android SDK at `~/Android/Sdk` (platforms 35/36, build-tools, cmdline-tools, platform-tools/adb present), Java 26 (`java`/`javac`). No `gradle`/`kotlinc` on PATH — use the Gradle wrapper (`./gradlew`, bootstraps itself, no global install needed) and Kotlin via the Android Gradle Plugin rather than installing `kotlinc` separately.
+
+### 8.1 Scope decision
+
+User explicitly chose **native Android app** over a PWA, understanding it's a bigger lift than extending the existing `/m` mobile page — dev toolchain, APK build/sign, sideload (no Play Store mentioned). Project should live as its own repo, same pattern as `~/apps/mira` (a separate app directory, not inside `~/.config/hypr`), e.g. `~/apps/fleet-app/` or similar name TBD.
+
+Core screens, mapped to what already exists server-side:
+- **Dashboard**: live system/music state (`qs_remote.py`'s `/state`), fleet view (VPS `/fleet` once Phase 5 lands) — all devices, online/stale/offline.
+- **Controls**: the existing Tier-A actuator list (media, volume, mute, wallpaper, night light, brightness, lock, notify/show_card) — same allowlist as `/m`, just a real UI instead of button-links.
+- **File/photo send**: see §8.2.
+- **Kahoot-answer capture**: see §8.3.
+
+Auth: reuse the existing bearer token (`~/.local/state/qs-remote/token`) for laptop calls; a separate per-device token for the VPS fleet hub's `/ingest`/relay endpoints once those exist (Phase 2/5 territory, already flagged to the hardening/fleet agents).
+
+### 8.2 File/photo relay via VPS ("all directions" — phone↔laptop, through basecamp)
+
+Don't peer-to-peer this (NAT/background-app complexity on Android for receiving unsolicited connections) — push through the VPS fleet hub as a relay/drop, consistent with the doc's existing "push to a hub, not direct polling" philosophy (§3).
+
+Proposed shape, extending the existing `fleet` FastAPI container (`/opt/services/fleet/app/app/main.py`):
+- `POST /relay/{device}` — multipart upload, same per-device bearer token model as `/ingest/{device}`, stores to local disk on the VPS (short retention, e.g. 24-48h, this is a relay not permanent storage) keyed by a generated drop id.
+- `GET /relay/{device}` — list pending drops for a device (polled by whichever side is the receiver, or pushed via the same fleet-watch poll cadence already being built for Phase 5).
+- `GET /relay/{device}/{drop_id}` — fetch the actual file.
+- Laptop side: `qs_remote.py` gets a new `POST /action/receive_file` style endpoint, or (simpler) `fleet_watch.py` (being built right now for Phase 5) also polls `/relay/laptop` on its existing 15s cadence and saves drops to a watched directory, firing a resident card ("New file from phone: photo.jpg — Open / Save").
+- Phone app side: a share-sheet target ("Share to Fleet") plus an explicit in-app file picker, both POST to `/relay/laptop`.
+
+Security: same tier-A-style allowlist thinking — cap file size (a few MB, this is for photos/small files not bulk transfer), scan nothing fancy needed since it's bearer-token-gated and tailnet-only, but do rate-limit uploads per device same as the existing `ACT_PER_MIN`/`READ_PER_MIN` pattern in `qs_remote.py`.
+
+### 8.3 Kahoot-answer capture (confirmed design: reuse shot_answer + named prompts)
+
+This is NOT new capability — it's the existing `SUPER+CTRL+Z` screenshot-answer pipeline (`claude/shot_answer.py`, vision-based, already supports named/switchable prompts via `claude/shot_prompts.py` built earlier this session for the GeoGuessr use case) with a new input path and a new saved prompt.
+
+Flow:
+1. User has Kahoot open on the laptop screen (the actual quiz, in a browser).
+2. Phone app camera captures a photo of the question + answer choices (as shown on a shared screen, projector, or someone else's device — whatever the real viewing setup is).
+3. Photo uploads via the same relay path as §8.2 (`POST /relay/laptop`, or a dedicated `POST /action/kahoot_answer` on `qs_remote.py` directly, skipping the generic relay for lower latency since this is explicitly latency-sensitive).
+4. Laptop-side handler runs the photo through `shot_answer.py`'s existing vision pipeline with `shot_prompts.py activate kahoot` (new saved prompt: "This is a Kahoot question with multiple choice answers. Identify the question and answer options from the image, determine the correct answer, respond with ONLY the correct answer text, as fast and concisely as possible" — tune wording later, speed matters more than explanation here unlike the GeoGuessr prompt).
+5. Answer routes back to the phone fast — NOT via the Stage dock (that's for desktop narration, wrong device) — either as a direct HTTP response to the app's upload call (simplest, lowest latency, no polling needed) or a push-style follow-up if the vision call takes a few seconds and the app wants to show a spinner then result.
+
+Latency matters here more than any other feature in this plan — Kahoot's answer window is short. Test real round-trip time (photo upload → vision inference → response) before assuming it's fast enough to be useful; if Haiku-tier vision is too slow, that's a real constraint to flag back to the user rather than silently shipping something too slow to use.
+
+### 8.4 Suggested build order (not started — sequence for whenever this gets picked up)
+
+1. VPS relay endpoints (§8.2) — small, server-only, no app needed yet to test (curl-testable).
+2. Kahoot prompt + direct `qs_remote` endpoint (§8.3) — also curl-testable before any app exists, reuses everything already built.
+3. Android app shell (auth, dashboard reading `/state`, Tier-A controls) — the actual multi-session native-app build effort.
+4. Android app: file send (share-sheet + picker) wired to §8.2.
+5. Android app: Kahoot capture screen (camera → §8.3 endpoint → fast result display) wired last, once the backend latency is already validated from step 2.
 
 ---
 

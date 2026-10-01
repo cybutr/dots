@@ -502,6 +502,26 @@ def t_workspace_status(_):
                      "'Authorize Google' button (action fn open_url to reauth_url).")}
 
 
+def t_fleet_status(args):
+    try:
+        with open("/tmp/qs_fleet.json") as f:
+            d = json.load(f)
+    except (OSError, ValueError):
+        return {"ok": False, "error": "no fleet data (fleet_watch.py not running?)"}
+    now = time.time()
+    want = (args.get("device") or "").strip().lower()
+    devs = []
+    for dv in d.get("devices") or []:
+        if want and want not in (dv.get("name") or "").lower():
+            continue
+        seen = dv.get("last_seen")
+        devs.append(dict(dv, age_s=int(now - seen) if seen else None))
+    return {"ok": bool(d.get("ok")), "tailnet": d.get("tailnet"), "error": d.get("error") or "",
+            "updated_s_ago": int(now - (d.get("ts") or now)),
+            "hub_last_ok_s_ago": int(now - d["last_ok"]) if d.get("last_ok") else None,
+            "devices": devs}
+
+
 def _brightness_osd_sync():
     cur = subprocess.run(["brightnessctl", "-m"], capture_output=True, text=True, timeout=5).stdout.strip()
     pct = cur.split(",")[3].rstrip("%") if cur.count(",") >= 3 else "0"
@@ -2239,6 +2259,14 @@ TOOLS = [
      "description": "Live machine state: battery (percent/status), audio volume/mute, mic on/off, wifi, bluetooth, keyboard layout, CPU%, load, memory, temperature, top process, uptime.",
      "inputSchema": {"type": "object", "properties": {}},
      "fn": t_system},
+    {"name": "fleet_status",
+     "description": "Status of the user's other machines (Windows PC, VPS/basecamp, this laptop, phone) from the tailnet fleet hub: "
+                     "per device state online/stale/offline, age_s since last report, cpu/ram/disk %, uptime_s, idle_s, foreground app, "
+                     "and docker containers up/down where reported. Use for questions like 'is the Windows box on'. "
+                     "If ok is false the hub was unreachable (see error) and states may be outdated.",
+     "inputSchema": {"type": "object", "properties": {
+         "device": {"type": "string", "description": "optional name filter, e.g. windows, vps, laptop"}}},
+     "fn": t_fleet_status},
     {"name": "list_events",
      "description": "Today's calendar: header summary, timed events (with mins_until), all-day items, and currently active events.",
      "inputSchema": {"type": "object", "properties": {}},
@@ -2887,7 +2915,7 @@ TOOLS = [
     {"name": "widget_ipc",
      "description": "Send a command to a quickshell widget via IPC (no mouse simulation needed). "
                      "cmd='widget:<name>' opens/switches to that widget (battery|volume|notifications|calendar|music|network|monitors|focustime|guide|wallpaper|workspaces|power|hidden). "
-                     "cmd='guide_tab:<n>' switches the guide to tab index n (0=overview,1=settings,2=resources,3=about,4=keybinds). "
+                     "cmd='guide_tab:<n>' switches the guide to tab index n (0=system,1=settings,2=music stats,3=resources,4=modules,5=keybinds,6=matugen,7=weather,8=startup,9=mailbox,10=resident). "
                      "cmd='claude:<prompt>' sends a claude: IPC command (e.g. 'claude:volume:set to 50%'). "
                      "For raw writes: pass file (must be in allowlist) + value.",
      "inputSchema": {"type": "object", "properties": {

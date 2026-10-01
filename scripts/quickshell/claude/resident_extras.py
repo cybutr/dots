@@ -1832,6 +1832,133 @@ def tick_tailscale_key(state, force=False):
     )
 
 
+FLEET_FILE = "/tmp/qs_fleet.json"
+FLEET_FRESH_SECS = 600
+FLEET_WINDOWS_IDLE_DAYS = 3
+FLEET_VPS_DISK_PCT = 90
+FLEET_VPS_DISK_PCT_SEVERE = 95
+BASECAMP_URL = "https://basecamp.czeddaru.dev"
+
+
+def _fleet():
+    """None unless the hub answered recently — never nag off a frozen snapshot
+    (tailnet down, watcher dead), the ages in it keep counting regardless."""
+    d = _load(FLEET_FILE, {})
+    if not isinstance(d, dict) or time.time() - (d.get("last_ok") or 0) > FLEET_FRESH_SECS:
+        return None
+    return d
+
+
+def _fleet_device(d, *names, os_hint=None):
+    devs = d.get("devices") or []
+    for dv in devs:
+        if (dv.get("name") or "").lower() in names:
+            return dv
+    for dv in devs if os_hint else []:
+        if os_hint in (dv.get("os") or "").lower():
+            return dv
+    return None
+
+
+def _show_fleet_action():
+    cmd = ("python3 -c " + _q("import sys; sys.path.insert(0, " + repr(HERE) + "); import resident_card; "
+                              "resident_card.pill_flag('fleet', open_card=True, ttl_secs=20)"))
+    return {"label": "Show fleet", "cmd": cmd}
+
+
+def _daily_gate(state, key, sig, force):
+    today = datetime.now().strftime("%Y-%m-%d")
+    if not force and state.get(key) == [today, sig]:
+        return False
+    state[key] = [today, sig]
+    return True
+
+
+def tick_fleet_windows_idle(state, force=False):
+    if not force and not _nudge_on("residentFleetNudges"):
+        return None
+    d = _fleet()
+    dv = _fleet_device(d, "windows", os_hint="windows") if d else None
+    if not dv or dv.get("state") == "offline":
+        state.pop("fleet_windows_idle_day", None)
+        return None
+    days = (dv.get("idle_s") or 0) / 86400
+    if days < FLEET_WINDOWS_IDLE_DAYS and not force:
+        state.pop("fleet_windows_idle_day", None)
+        return None
+    if not _daily_gate(state, "fleet_windows_idle_day", "idle", force):
+        return None
+    body = f"No input for {days:.0f} days but it's still reporting in."
+    if dv.get("foreground"):
+        body += f"\nForeground: {dv['foreground']}"
+    resident_card.pill_flag("fleet", urgency="low")
+    return resident_card.emit(
+        f"Windows PC idle {days:.0f}d: still on?", body, "computer", "low", None,
+        [{"label": "Open basecamp", "cmd": "xdg-open " + BASECAMP_URL}, _show_fleet_action()],
+        "resident", "fleet-windows-idle",
+    )
+
+
+def tick_fleet_vps_disk(state, force=False):
+    if not force and not _nudge_on("residentFleetNudges"):
+        return None
+    d = _fleet()
+    dv = _fleet_device(d, "vps", "basecamp") if d else None
+    pct = (dv or {}).get("disk_pct")
+    if pct is None or (pct < FLEET_VPS_DISK_PCT and not force):
+        state.pop("fleet_vps_disk_day", None)
+        return None
+    severe = pct >= FLEET_VPS_DISK_PCT_SEVERE
+    if not _daily_gate(state, "fleet_vps_disk_day", "severe" if severe else "warn", force):
+        return None
+    worst = max(dv.get("disks") or [{}], key=lambda x: x.get("used_pct") or 0)
+    body = f"{worst.get('drive') or 'disk'} at {pct:.0f}%"
+    if worst.get("free_gb") is not None:
+        body += f", {worst['free_gb']:.1f} GB free"
+    resident_card.pill_flag("fleet", urgency="high" if severe else "normal")
+    return resident_card.emit(
+        f"VPS disk {pct:.0f}%", body, "drive-harddisk", "high" if severe else "normal", 0 if severe else None,
+        [{"label": "Open Portainer", "cmd": "xdg-open https://portainer.basecamp.czeddaru.dev"}, _show_fleet_action()],
+        "resident", "fleet-vps-disk",
+    )
+
+
+def tick_fleet_containers(state, force=False):
+    """Only containers seen up at least once count as 'known' — a stopped
+    one-off or a never-started service shouldn't page anyone."""
+    if not force and not _nudge_on("residentFleetNudges"):
+        return None
+    d = _fleet()
+    if not d:
+        return None
+    known = set(state.get("fleet_known_ctrs") or [])
+    down = []
+    for dv in d.get("devices") or []:
+        if dv.get("state") == "offline":
+            continue
+        for c in dv.get("containers") or []:
+            key = f"{dv.get('name')}/{c.get('name')}"
+            if c.get("up"):
+                known.add(key)
+            elif key in known or force:
+                down.append(key)
+    state["fleet_known_ctrs"] = sorted(known)[-200:]
+    if not down:
+        state.pop("fleet_ctr_day", None)
+        return None
+    down.sort()
+    if not _daily_gate(state, "fleet_ctr_day", ",".join(down), force):
+        return None
+    names = [k.split("/", 1)[1] for k in down]
+    title = f"{names[0]} container down" if len(names) == 1 else f"{len(names)} containers down"
+    resident_card.pill_flag("fleet", urgency="high", style="border")
+    return resident_card.emit(
+        title, "\n".join("• " + k for k in down), "dialog-warning", "high", 0,
+        [{"label": "Open Portainer", "cmd": "xdg-open https://portainer.basecamp.czeddaru.dev"}, _show_fleet_action()],
+        "resident", "fleet-containers",
+    )
+
+
 def tick(ctx, state):
     try:
         tick_catchup(ctx, state)
@@ -1878,6 +2005,11 @@ def tick(ctx, state):
         tick_tailscale_key(state)
     except Exception:
         pass
+    for fn in (tick_fleet_windows_idle, tick_fleet_vps_disk, tick_fleet_containers):
+        try:
+            fn(state)
+        except Exception:
+            pass
 
 
 def main():
@@ -1918,6 +2050,9 @@ def main():
         print(json.dumps(tick_battery_health(state, force=True), ensure_ascii=False))
     elif "--test-uptimeguilt" in args:
         print(json.dumps(tick_uptime_guilt(state, force=True), ensure_ascii=False))
+    elif "--test-fleet" in args:
+        for fn in (tick_fleet_windows_idle, tick_fleet_vps_disk, tick_fleet_containers):
+            print(fn.__name__, json.dumps(fn(state, force=True), ensure_ascii=False))
     elif "--test-focusdone" in args:
         i = args.index("--test-focusdone")
         mins = float(args[i + 1]) if i + 1 < len(args) and args[i + 1].replace(".", "", 1).isdigit() else 25
@@ -1962,7 +2097,7 @@ def main():
     else:
         print("usage: resident_extras.py --test-brief | --test-catchup | --test-fixes | "
               "--test-low-battery | --test-layout | --test-startup-drift | --test-nowplaying | --test-calendar | "
-              "--test-batteryhealth | --test-uptimeguilt | --test-focusdone [mins] | "
+              "--test-batteryhealth | --test-uptimeguilt | --test-fleet | --test-focusdone [mins] | "
               "--test-brief-card morning|afternoon|night | --list-muted | "
               "--unmute <category> | --stats")
 

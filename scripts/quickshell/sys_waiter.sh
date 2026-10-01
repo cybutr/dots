@@ -20,7 +20,7 @@ trap 'for j in $(jobs -p); do kill -TERM -- "-$j" 2>/dev/null; done; wait 2>/dev
 ( nmcli monitor 2>/dev/null | grep --line-buffered -E "connected|disconnected|unavailable|enabled|disabled" | head -n 1 || sleep infinity ) &
 
 # 3. Bluetooth 
-( dbus-monitor --system "type='signal',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.Device1'" 2>/dev/null | grep --line-buffered "interface" | head -n 1 || sleep infinity ) &
+( dbus-monitor --system "type='signal',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.Device1'" 2>/dev/null | grep --line-buffered 'string "Connected"' | head -n 1 || sleep infinity ) &
 
 # 4. Battery
 ( udevadm monitor --subsystem-match=power_supply 2>/dev/null | grep --line-buffered "change" | head -n 1 || sleep infinity ) &

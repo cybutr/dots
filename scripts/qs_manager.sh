@@ -117,7 +117,14 @@ handle_wallpaper_prep() {
 
 handle_network_prep() {
     echo "" > "$BT_SCAN_LOG"
-    { echo "scan on"; sleep infinity; } | stdbuf -oL bluetoothctl > "$BT_SCAN_LOG" 2>&1 &
+    [ -f "$BT_PID_FILE" ] && kill $(cat "$BT_PID_FILE") 2>/dev/null
+    {
+        echo "scan on"
+        sleep 4
+        while read -r w < /tmp/qs_active_widget && [ "$w" == "network" ]; do sleep 2; done
+        echo "scan off"
+        sleep 1
+    } | stdbuf -oL bluetoothctl > "$BT_SCAN_LOG" 2>&1 &
     echo $! > "$BT_PID_FILE"
     (nmcli device wifi rescan) &
 }
@@ -143,11 +150,12 @@ MEDIA_OSD_PATH="$HOME/.config/hypr/scripts/quickshell/MediaOsd.qml"
 NIGHT_LIGHT_OSD_PATH="$HOME/.config/hypr/scripts/quickshell/NightLightOsd.qml"
 AMBIENT_GLOW_PATH="$HOME/.config/hypr/scripts/quickshell/AmbientGlow.qml"
 
+QS_PROCS=""
 watchdog_ensure_one() {
-    local pattern="$1"
+    local name="$1"
     local path="$2"
     local pids
-    mapfile -t pids < <(pgrep -f "$pattern" 2>/dev/null | sort -n)
+    mapfile -t pids < <(awk -v n="/$name" '$2 == "quickshell" && $3 == "-p" && NF == 4 && substr($4, length($4) - length(n) + 1) == n { print $1 }' <<< "$QS_PROCS" | sort -n)
     local count=${#pids[@]}
     if [ "$count" -eq 0 ]; then
         quickshell -p "$path" >/dev/null 2>&1 &
@@ -161,23 +169,24 @@ watchdog_ensure_one() {
 }
 
 run_watchdog() {
-    watchdog_ensure_one "quickshell.*Main\.qml" "$MAIN_QML_PATH"
-    watchdog_ensure_one "quickshell.*TopBar\.qml" "$BAR_QML_PATH"
-    watchdog_ensure_one "quickshell.*BatteryAlarm\.qml" "$ALARM_QML_PATH"
-    watchdog_ensure_one "quickshell.*AmbientGlow\.qml" "$AMBIENT_GLOW_PATH"
-    watchdog_ensure_one "quickshell.*ScratchpadHost\.qml" "$SCRATCHPAD_HOST_PATH"
-    watchdog_ensure_one "quickshell.*KbOsd\.qml" "$KB_OSD_PATH"
-    watchdog_ensure_one "quickshell.*AcctOsd\.qml" "$ACCT_OSD_PATH"
-    watchdog_ensure_one "quickshell.*IdleOsd\.qml" "$IDLE_OSD_PATH"
-    watchdog_ensure_one "quickshell.*WakeLockOsd\.qml" "$WAKELOCK_OSD_PATH"
-    watchdog_ensure_one "quickshell.*BrightnessCurveOsd\.qml" "$BRIGHTNESS_CURVE_OSD_PATH"
-    watchdog_ensure_one "quickshell.*/VolumeOsd\.qml" "$VOLUME_OSD_PATH"
-    watchdog_ensure_one "quickshell.*CapsOsd\.qml" "$CAPS_OSD_PATH"
-    watchdog_ensure_one "quickshell.*MicOsd\.qml" "$MIC_OSD_PATH"
-    watchdog_ensure_one "quickshell.*BrightnessOsd\.qml" "$BRIGHTNESS_OSD_PATH"
-    watchdog_ensure_one "quickshell.*SpotifyVolumeOsd\.qml" "$SPOTIFY_VOLUME_OSD_PATH"
-    watchdog_ensure_one "quickshell.*MediaOsd\.qml" "$MEDIA_OSD_PATH"
-    watchdog_ensure_one "quickshell.*NightLightOsd\.qml" "$NIGHT_LIGHT_OSD_PATH"
+    QS_PROCS=$(pgrep -ax quickshell 2>/dev/null)
+    watchdog_ensure_one "Main.qml" "$MAIN_QML_PATH"
+    watchdog_ensure_one "TopBar.qml" "$BAR_QML_PATH"
+    watchdog_ensure_one "BatteryAlarm.qml" "$ALARM_QML_PATH"
+    watchdog_ensure_one "AmbientGlow.qml" "$AMBIENT_GLOW_PATH"
+    watchdog_ensure_one "ScratchpadHost.qml" "$SCRATCHPAD_HOST_PATH"
+    watchdog_ensure_one "KbOsd.qml" "$KB_OSD_PATH"
+    watchdog_ensure_one "AcctOsd.qml" "$ACCT_OSD_PATH"
+    watchdog_ensure_one "IdleOsd.qml" "$IDLE_OSD_PATH"
+    watchdog_ensure_one "WakeLockOsd.qml" "$WAKELOCK_OSD_PATH"
+    watchdog_ensure_one "BrightnessCurveOsd.qml" "$BRIGHTNESS_CURVE_OSD_PATH"
+    watchdog_ensure_one "VolumeOsd.qml" "$VOLUME_OSD_PATH"
+    watchdog_ensure_one "CapsOsd.qml" "$CAPS_OSD_PATH"
+    watchdog_ensure_one "MicOsd.qml" "$MIC_OSD_PATH"
+    watchdog_ensure_one "BrightnessOsd.qml" "$BRIGHTNESS_OSD_PATH"
+    watchdog_ensure_one "SpotifyVolumeOsd.qml" "$SPOTIFY_VOLUME_OSD_PATH"
+    watchdog_ensure_one "MediaOsd.qml" "$MEDIA_OSD_PATH"
+    watchdog_ensure_one "NightLightOsd.qml" "$NIGHT_LIGHT_OSD_PATH"
 }
 
 # The full watchdog is 17 pgrep scans (seconds under load) — only run it inline when
@@ -194,7 +203,18 @@ deferred_watchdog() {
         disown
     fi
 }
-if pgrep -f "quickshell.*Main\.qml" >/dev/null 2>&1; then
+MAIN_PID_CACHE="${XDG_RUNTIME_DIR:-/tmp}/qs_main_pid"
+main_alive() {
+    local pid
+    pid=$(cat "$MAIN_PID_CACHE" 2>/dev/null)
+    if [ -n "$pid" ] && [ "$(tr '\0' ' ' < "/proc/$pid/cmdline" 2>/dev/null)" == "quickshell -p $MAIN_QML_PATH " ]; then
+        return 0
+    fi
+    pid=$(pgrep -fx "quickshell -p $MAIN_QML_PATH" 2>/dev/null | head -n1)
+    [ -n "$pid" ] || return 1
+    echo "$pid" > "$MAIN_PID_CACHE"
+}
+if main_alive; then
     trap deferred_watchdog EXIT
 else
     run_watchdog
