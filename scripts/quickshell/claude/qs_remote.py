@@ -569,6 +569,90 @@ def answer_photo(data, media_type, mode="fast"):
             "option": opt, "color": KAHOOT_COLORS.get(opt), "confidence": conf if conf in ("high", "medium", "low") else "medium"}
 
 
+KAHOOT_HOSTS = ("kahoot.it",)
+KAHOOT_TILES = {4: ["red triangle", "blue diamond", "yellow circle", "green square"],
+                2: ["blue diamond", "red triangle"]}
+KAHOOT_FIND = """(() => {
+  const want = 'answer-' + %d, text = %s;
+  const norm = s => (s || '').toLowerCase().replace(/\\s+/g, ' ').trim();
+  const tiles = [...document.querySelectorAll('[data-functional-selector^="answer-"]')]
+    .filter(e => /^answer-[0-9]$/.test(e.getAttribute('data-functional-selector')));
+  if (!tiles.length) return {error: 'no answer buttons on the page'};
+  if (tiles.some(e => e.tagName !== 'BUTTON')) return {error: 'multi-select question, not clicking'};
+  let pick = tiles.find(e => e.getAttribute('data-functional-selector') === want);
+  const byText = text ? tiles.filter(e => norm(e.innerText) === text) : [];
+  if (byText.length === 1) pick = byText[0];
+  if (!pick) return {error: 'no tile for that answer on the page'};
+  if (pick.disabled) return {error: 'the question already closed'};
+  const r = pick.getBoundingClientRect();
+  if (r.width < 4 || r.height < 4) return {error: 'the answer button is hidden'};
+  const x = r.left + r.width / 2, y = r.top + r.height / 2;
+  const hit = document.elementFromPoint(x, y);
+  if (!hit || !pick.contains(hit)) return {error: 'something is covering the answer button'};
+  return {x, y, count: tiles.length, tile: tiles.indexOf(pick),
+          sel: pick.getAttribute('data-functional-selector'), label: (pick.innerText || '').trim().slice(0, 120)};
+})()"""
+
+
+def _cdp_value(resp):
+    res = (resp or {}).get("result") or {}
+    return None if res.get("exceptionDetails") else (res.get("result") or {}).get("value")
+
+
+def kahoot_click(option, answer="", hosts=KAHOOT_HOSTS):
+    if option not in KAHOOT_COLORS:
+        return {"ok": False, "error": "no tile to click"}
+    try:
+        tabs = json.loads(qs._cdp("/json/list"))
+    except Exception:
+        return {"ok": False, "error": "Vivaldi isn't reachable over CDP on :9222"}
+    pages = [t for t in tabs if t.get("type") == "page" and t.get("webSocketDebuggerUrl")
+             and (urlsplit(t.get("url", "")).hostname or "") in hosts]
+    if not pages:
+        return {"ok": False, "error": "no Kahoot tab open in Vivaldi"}
+    text = " ".join(str(answer).lower().split())
+    expr = KAHOOT_FIND % (option - 1, json.dumps(text))
+    ready, errors = [], []
+    for t in pages:
+        try:
+            v = _cdp_value(qs._cdp_ws_send(t["webSocketDebuggerUrl"], [
+                {"method": "Runtime.evaluate", "params": {"expression": expr, "returnByValue": True}}], timeout=4)[0])
+        except Exception:
+            continue
+        if isinstance(v, dict) and "x" in v:
+            ready.append((t, v))
+        elif isinstance(v, dict) and v.get("error"):
+            errors.append(v["error"])
+    if len(ready) > 1:
+        return {"ok": False, "error": "more than one Kahoot question is open"}
+    if not ready:
+        return {"ok": False, "error": errors[0] if errors else "couldn't find the answer buttons"}
+    tab, v = ready[0]
+    at = {"x": v["x"], "y": v["y"]}
+    press = {**at, "type": "mousePressed", "button": "left", "buttons": 1, "clickCount": 1}
+    try:
+        qs._cdp_ws_send(tab["webSocketDebuggerUrl"], [
+            {"method": "Input.dispatchMouseEvent", "params": {**at, "type": "mouseMoved"}},
+            {"method": "Input.dispatchMouseEvent", "params": press},
+            {"method": "Input.dispatchMouseEvent", "params": {**press, "type": "mouseReleased", "buttons": 0}}], timeout=4)
+    except Exception as e:
+        return {"ok": False, "error": f"the click didn't go through ({type(e).__name__})"}
+    names = KAHOOT_TILES.get(v.get("count"), KAHOOT_TILES[4])
+    tile = v.get("tile", 0)
+    return {"ok": True, "tile": tile + 1, "name": names[tile] if 0 <= tile < len(names) else "",
+            "label": v.get("label", ""), "selector": v.get("sel", "")}
+
+
+def kahoot_card(result, click):
+    shown = click.get("label") or result.get("answer") or "?"
+    if click.get("ok"):
+        resident_card.emit(f"Kahoot: clicked '{shown[:60]}'", f"{click.get('name', '')} · {result.get('confidence', '')} confidence".strip(" ·"),
+                           icon="󰄜", urgency="low", hold_secs=8, source="qs-remote", card_id="qs-remote-kahoot")
+    else:
+        resident_card.emit("Kahoot: didn't click", f"{click.get('error', '')}. Answer was '{str(result.get('answer', ''))[:60]}'.",
+                           icon="󰄜", urgency="normal", hold_secs=10, source="qs-remote", card_id="qs-remote-kahoot")
+
+
 # ---------------------------------------------------------------- plumbing
 
 class Limiter:
@@ -915,7 +999,11 @@ class Handler(BaseHTTPRequestHandler):
         started = time.time()
         result = answer_photo(data, ctype, mode)
         result["ms"] = int((time.time() - started) * 1000)
+        if result.get("ok") and self.headers.get("X-Answer-Click") == "1":
+            result["click"] = kahoot_click(result.get("option"), result.get("answer", ""))
+            kahoot_card(result, result["click"])
         audit({"action": "answer", "mode": mode, "ok": result.get("ok"), "ms": result["ms"],
+               "click": (result.get("click") or {}).get("ok"),
                "user": self._who()[0], "ip": self._who()[1]})
         return self._json(200 if result.get("ok") else 502, result)
 
@@ -1277,7 +1365,40 @@ def _pal_rank(actions, q, hist):
             use = min((hist.get(a["id"]) or {}).get("n", 0), 20)
             scored.append((s + PAL_BIAS.get(a.get("cat"), 0) + use * 0.4, a))
     scored.sort(key=lambda x: -x[0])
-    return [a for _, a in scored[:12]]
+    return scored[:12]
+
+
+PAL_WS_VERB = re.compile(r"^(open|launch|start|run|spawn|put|fire up)\s+\S.*\s(on|in|to|onto|into)\s+(a |an |the )?"
+                         r"(new|empty|fresh|free|blank|next|another|clean|workspace|ws|desktop|\d+)\b")
+PAL_WS_TAIL = re.compile(r"\S\s+(on|in|to)\s+(workspace|ws|desktop)\s*\d+$")
+PAL_MULTI = re.compile(r" and |,| then ")
+PAL_FILEISH = re.compile(r"\.(json|py|qml|js|md|txt|sh|conf|log|png|jpe?g|webp|gif|mp4|pdf)$", re.I)
+
+
+def _pal_ws_intent(q):
+    t = q.lower()
+    return not PAL_MULTI.search(t) and bool(PAL_WS_VERB.search(t) or PAL_WS_TAIL.search(t))
+
+
+def _pal_urlish(q):
+    if re.match(r"^[a-z][a-z0-9+.-]*://\S+$", q, re.I):
+        return True
+    if re.search(r"\s", q) or PAL_FILEISH.search(q):
+        return False
+    return bool(re.match(r"^([\w-]+\.)+[a-z]{2,}(:\d+)?([/?#]\S*)?$", q, re.I) or re.match(r"^localhost(:\d+)?(/\S*)?$", q, re.I))
+
+
+def _pal_auto(q, scored):
+    if _pal_ws_intent(q):
+        return "direct"
+    if _pal_urlish(q):
+        return None
+    top = scored[0] if scored else None
+    if top and top[1].get("live"):
+        return None
+    toks = q.split()
+    weak = not top or (not top[1].get("_arg") and top[0] < 6 * len(toks))
+    return "claude" if PAL_MULTI.search(q.lower()) or (weak and len(toks) >= (3 if top else 2)) else None
 
 
 def _pal_item(p, a, states):
@@ -1301,15 +1422,22 @@ def palette_query(q, ask):
     every = p.index_actions()
     actions = [a for a in every if _pal_phone_ok(a)]
     hist = p.load_json(p.HISTORY, {})
-    out = {"ok": True, "items": [], "route": None, "recent": False}
-    if not q.strip():
+    out = {"ok": True, "items": [], "route": None, "recent": False, "auto": None}
+    qt = q.strip()
+    if not qt:
         by_id = {a["id"]: a for a in actions}
         recent = sorted((i for i in hist if i in by_id and not i.startswith(PAL_TRANSIENT)), key=lambda i: -hist[i].get("t", 0))[:8]
         suggest = [i for i in (p.load_json(p.CACHE, {}).get("suggest") or []) if i in by_id and i not in recent]
         ranked = [by_id[i] for i in (recent + suggest)[:10]]
         out["recent"] = True
     else:
-        ranked = _pal_rank(actions, q, hist)
+        scored = _pal_rank(actions, q, hist)
+        out["auto"] = _pal_auto(qt, scored)
+        ranked = [a for _, a in scored]
+        by_id = {a["id"]: a for a in actions}
+        lead = by_id.get("ws.openapp" if _pal_ws_intent(qt) else "web.open" if _pal_urlish(qt) else "")
+        if lead:
+            ranked = [{**lead, "_arg": qt}] + [a for a in ranked if a["id"] != lead["id"]][:11]
     states = p.live_states() if any(a.get("stateKey") for a in ranked) else {}
     out["items"] = [_pal_item(p, a, states) for a in ranked]
     if ask and len(q.strip()) >= 3:
@@ -1475,6 +1603,145 @@ def _do_get(self):
 
 
 Handler.do_GET = _do_get
+
+
+# ---------------------------------------------------------------- controls: timer, clipboard, maintenance
+
+SCRIPTS = os.path.join(HOME, ".config/hypr/scripts")
+CURVE_OFF = "/tmp/qs_brightness_curve_disabled"
+WAKELOCK_PID = "/tmp/qs_wakelock.pid"
+TIMER_FILE = "/tmp/qs_timer.json"
+TIMER_CMD = "/tmp/qs_timer_cmd"
+PERF_FILE = "/tmp/qs_perf.json"
+CLIP_MAX = 64 * 1024
+MAINTENANCE = {
+    "orphans": (["bash", os.path.join(SCRIPTS, "kill_orphans.sh")], False),
+    "journal": (["bash", os.path.join(BASE, "resident_actions.sh"), "vacuum_user_journal"], False),
+    "reload": (["hyprctl", "reload"], False),
+    "restart_bar": (["bash", os.path.join(BASE, "qsdev.sh"), "bar"], True),
+    "restart_shell": (["bash", os.path.join(BASE, "qsdev.sh"), "main"], True),
+    "clip_wipe": (["cliphist", "wipe"], True),
+}
+
+
+def _detached(cmd):
+    subprocess.Popen(cmd, start_new_session=True, stdout=subprocess.DEVNULL,
+                     stderr=subprocess.DEVNULL, stdin=subprocess.DEVNULL)
+
+
+def _wakelock_on():
+    try:
+        with open(WAKELOCK_PID) as f:
+            os.kill(int(f.read().strip()), 0)
+        return True
+    except (OSError, ValueError):
+        return False
+
+
+def _timer():
+    t = _read_json(TIMER_FILE, {})
+    if not isinstance(t, dict) or t.get("state") not in ("running", "paused"):
+        return {"state": "idle", "remaining": 0, "duration": int((t or {}).get("durationSecs") or 0) if isinstance(t, dict) else 0}
+    rem = max(0, int((t.get("endTs") or 0) / 1000 - time.time())) if t["state"] == "running" else int(t.get("remainingSecs") or 0)
+    return {"state": t["state"], "remaining": rem, "duration": int(t.get("durationSecs") or 0)}
+
+
+def _perf():
+    p = _read_json(PERF_FILE, {})
+    if not isinstance(p, dict) or time.time() - (p.get("ts") or 0) > 60:
+        return {}
+    return {"cpu": round(float(p.get("cpu_pct") or 0)), "orphans": int(p.get("orphans") or 0)}
+
+
+_snapshot_controls = snapshot
+
+
+def snapshot():
+    s = _snapshot_controls()
+    s["toggles"].update(auto_brightness=not os.path.exists(CURVE_OFF), lid_awake=_wakelock_on())
+    s["timer"] = _timer()
+    s["perf"] = _perf()
+    return s
+
+
+def a_brightness_curve(args):
+    on = bool(args.get("on", os.path.exists(CURVE_OFF)))
+    if on == os.path.exists(CURVE_OFF):
+        return _ok(qs._sh(["bash", os.path.join(SCRIPTS, "toggle_brightness_curve.sh")]))
+    return {"ok": True}
+
+
+def a_lid_awake(args):
+    on = bool(args.get("on", not _wakelock_on()))
+    if on != _wakelock_on():
+        _detached(["bash", os.path.join(SCRIPTS, "toggle_wakelock.sh")])
+    return {"ok": True}
+
+
+def a_timer(args):
+    cmd = str(args.get("cmd", ""))
+    if cmd == "start":
+        mins = _int(args.get("minutes"))
+        if mins is None or not 1 <= mins <= 1439:
+            return {"ok": False, "error": "minutes must be 1-1439"}
+        _detached(["bash", "-c", 'echo stop > "$1"; sleep 0.35; echo "set $2" > "$1"; sleep 0.35; echo start > "$1"',
+                   "_", TIMER_CMD, str(mins)])
+        return {"ok": True}
+    if cmd not in ("pause", "resume", "stop"):
+        return {"ok": False, "error": "cmd must be start, pause, resume or stop"}
+    with open(TIMER_CMD, "w") as f:
+        f.write(cmd + "\n")
+    return {"ok": True}
+
+
+def a_clipboard(args):
+    action = str(args.get("action", ""))
+    if action == "get":
+        r = subprocess.run(["wl-paste", "-n", "-t", "text"], capture_output=True, timeout=5)
+        if r.returncode != 0 or not r.stdout:
+            return {"ok": False, "error": "nothing to copy: the laptop's clipboard is empty or not text"}
+        text = r.stdout[:CLIP_MAX].decode("utf-8", "replace")
+        return {"ok": True, "text": text}
+    if action == "set":
+        text = str(args.get("text", ""))[:CLIP_MAX]
+        args["text"] = f"<{len(text)} chars>"
+        if not text:
+            return {"ok": False, "error": "nothing to paste"}
+        subprocess.run(["wl-copy"], input=text, text=True, timeout=5)
+        return {"ok": True}
+    return {"ok": False, "error": "action must be get or set"}
+
+
+def a_maintenance(args):
+    task = MAINTENANCE.get(str(args.get("task", "")))
+    if not task:
+        return {"ok": False, "error": "task must be " + ", ".join(MAINTENANCE)}
+    cmd, risky = task
+    if risky and args.get("confirm") is not True:
+        return {"ok": False, "error": "confirm first"}
+    _detached(cmd)
+    return {"ok": True}
+
+
+for _name, _fn in (("brightness_curve", a_brightness_curve), ("lid_awake", a_lid_awake), ("timer", a_timer),
+                   ("clipboard", a_clipboard), ("maintenance", a_maintenance)):
+    ACTIONS.setdefault(_name, _fn)
+
+_describe_controls = describe
+
+
+def describe(name, args):
+    on = "on" if args.get("on") else "off"
+    task = {"orphans": "cleaned up leaked processes", "journal": "vacuumed the journal", "reload": "reloaded Hyprland",
+            "restart_bar": "restarted the bar", "restart_shell": "restarted the shell", "clip_wipe": "cleared clipboard history"}
+    extra = {
+        "brightness_curve": "auto brightness " + on,
+        "lid_awake": "stay on with lid closed " + on,
+        "timer": f"timer {args.get('minutes')} min" if args.get("cmd") == "start" else f"timer {args.get('cmd', '')}",
+        "clipboard": "clipboard sent to the phone" if args.get("action") == "get" else "pasted to the clipboard",
+        "maintenance": task.get(str(args.get("task", "")), "maintenance"),
+    }
+    return extra.get(name) or _describe_controls(name, args)
 
 
 if __name__ == "__main__":

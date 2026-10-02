@@ -16,7 +16,6 @@ import ipaddress
 import json
 import os
 import re
-import select
 import socket
 import subprocess
 import sys
@@ -30,14 +29,19 @@ CONNECT_TIMEOUT = 20
 BITRATE = 6000
 GOP = 120
 KEYFRAME_GAP = 3
+STARTUP_MS = 4000
 WATCH_SECS = 2
 SDP_MAX = 32 * 1024
 # Both ends are always on the tailnet, so only tailnet addresses are gathered
 # or accepted: no STUN/TURN, nothing about the session leaves the tailnet.
 TAILNET = (ipaddress.ip_network("100.64.0.0/10"), ipaddress.ip_network("fd7a:115c:a1e0::/48"))
 ENCODERS = ("va", "x264", "nvenc")
-AUTO = ("va", "x264")
-RTP_CAPS = "application/x-rtp,media=video,encoding-name=H264,payload=96,clock-rate=90000"
+AUTO = ("va", "nvenc", "x264")
+# Constrained baseline 4.1. libwebrtc assumes 3.1 when the offer names no
+# level, which is too low for 1080p.
+PROFILE_LEVEL = "42e029"
+RTP_CAPS = ("application/x-rtp,media=video,encoding-name=H264,payload=96,clock-rate=90000,"
+            f"packetization-mode=(string)1,profile-level-id=(string){PROFILE_LEVEL}")
 CLIENT_TYPES = {"start", "answer", "ice", "stop"}
 WORKER_TYPES = {"offer", "ice", "info", "state", "bye"}
 
@@ -66,6 +70,29 @@ def tailnet_ips():
     except (OSError, ValueError, subprocess.TimeoutExpired):
         return []
     return [a["local"] for link in links for a in link.get("addr_info") or [] if tailnet_ok(a.get("local", ""))]
+
+
+def pin_to_tailnet(webrtcbin, Nice):
+    """Restricts webrtcbin's ICE agent to the tailnet addresses; returns False
+    if there are none."""
+    import ctypes
+    ice = webrtcbin.get_property("ice-agent")
+    # webrtcbin never sinks its ICE object, so the first property read sinks
+    # webrtcbin's own reference into the Python wrapper; give it back or the
+    # agent is freed under webrtcbin as soon as the wrapper is collected.
+    gobject = ctypes.CDLL("libgobject-2.0.so.0")
+    gobject.g_object_ref.argtypes = [ctypes.c_void_p]
+    gobject.g_object_ref.restype = ctypes.c_void_p
+    gobject.g_object_ref(hash(ice))
+    ice.set_property("ice-tcp", False)
+    agent = ice.get_property("agent")
+    added = 0
+    for ip in tailnet_ips():
+        a = Nice.Address()
+        if a.set_from_string(ip):
+            agent.add_local_address(a)
+            added += 1
+    return added > 0
 
 
 def monitors():
@@ -101,7 +128,9 @@ def intel_render_node():
 
 
 def recorder_args(kind, kbps):
-    common = ["-b", "0", "-p", f"g={GOP}", "-p", f"b={kbps}k"]
+    # Pinned to match PROFILE_LEVEL in the SDP. Left alone, x264 and NVENC
+    # derive 6.2 from wf-recorder's microsecond timebase.
+    common = ["-b", "0", "-p", f"g={GOP}", "-p", f"b={kbps}k", "-p", "level=4.1"]
     if kind == "va":
         node = intel_render_node()
         if not node:
@@ -112,8 +141,8 @@ def recorder_args(kind, kbps):
         return ["-c", "libx264", "-x", "yuv420p", "-p", "preset=ultrafast", "-p", "tune=zerolatency",
                 "-p", "profile=baseline"] + common
     if kind == "nvenc":
-        # Opt-in only: NVENC wakes the dGPU, which otherwise sleeps for battery,
-        # and the iGPU's VA encoder does the same job zero-copy.
+        # Only when VA fails: NVENC wakes the dGPU, which otherwise sleeps for
+        # battery, while the iGPU's VA encoder does the same job zero-copy.
         return ["-c", "h264_nvenc", "-x", "yuv420p", "-p", "preset=p1", "-p", "tune=ull", "-p", "zerolatency=1",
                 "-p", "profile=baseline", "-p", "rc=cbr"] + common
     return None
@@ -275,13 +304,14 @@ class Worker:
         self.loop = GLib.MainLoop()
         self.out_mu = threading.Lock()
         self.rec = None
-        self.rec_mu = threading.Lock()
         self.pipe = self.webrtc = None
         self.mon = self.geom = None
         self.kind = None
+        self.order = []
         self.kbps = BITRATE
+        self.captured = 0
         self.frames = 0
-        self.answered = self.connected = self.ended = False
+        self.capturing = self.answered = self.connected = self.ended = False
         self.last_key = 0.0
 
     def emit(self, obj):
@@ -296,7 +326,7 @@ class Worker:
         if self.ended:
             return False
         self.ended = True
-        log(f"end: {reason} ({self.frames} frames)")
+        log(f"end: {reason} ({self.frames} frames, {self.kind or 'no'} encoder)")
         self.emit({"t": "bye", "reason": reason, "frames": self.frames})
         self.GLib.idle_add(self.loop.quit)
         return False
@@ -311,27 +341,7 @@ class Worker:
                                + ["-m", "h264", "-f", f"pipe:{self.wfd}"],
                                pass_fds=(self.wfd,), env=recorder_env(), stdin=subprocess.DEVNULL,
                                stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True)
-        size = None
-        deadline = time.monotonic() + 5
-        while time.monotonic() < deadline and size is None:
-            if not select.select([rec.stderr], [], [], 0.5)[0]:
-                if rec.poll() is not None:
-                    break
-                continue
-            line = rec.stderr.readline()
-            if not line:
-                break
-            m = re.search(r"Stream #0:0: Video: .*?(\d{2,5})x(\d{2,5})", line)
-            if m:
-                size = (int(m.group(1)), int(m.group(2)))
-        if size is None:
-            self.kill(rec)
-            log(f"encoder {kind} didn't start")
-            return None
-        threading.Thread(target=self.drain, args=(rec,), daemon=True).start()
-        if size != self.geom[:2]:
-            self.kill(rec)
-            raise RuntimeError(f"capture is {size[0]}x{size[1]} but the screen is {self.geom[0]}x{self.geom[1]}")
+        threading.Thread(target=self.drain, args=(rec, kind), daemon=True).start()
         return rec
 
     @staticmethod
@@ -344,76 +354,102 @@ class Worker:
                 rec.kill()
 
     @staticmethod
-    def drain(rec):
+    def drain(rec, kind):
         for line in rec.stderr:
-            if "rror" in line:
-                log("wf-recorder:", line.strip()[:200])
+            if "rror" in line or "ailed" in line:
+                log(f"wf-recorder ({kind}):", line.strip()[:200])
 
-    def start_capture(self):
-        order = AUTO if self.encoder_pref == "auto" else (self.encoder_pref,)
-        for kind in order:
+    def try_next(self):
+        while self.order and not self.ended:
+            kind = self.order.pop(0)
             rec = self.spawn_recorder(kind)
             if rec is not None:
                 self.rec, self.kind = rec, kind
-                self.emit({"t": "info", "output": self.mon["name"], "width": self.geom[0], "height": self.geom[1],
-                           "transform": self.geom[2], "rotation": 0, "encoder": kind, "codec": "H264"})
+                self.watch_start(rec)
+                return False
+        self.end("no working encoder")
+        return False
+
+    def captured_size(self):
+        caps = self.pipe.get_by_name("buf").get_static_pad("sink").get_current_caps()
+        s = caps.get_structure(0) if caps is not None else None
+        if s is None:
+            return None
+        ok_w, w = s.get_int("width")
+        ok_h, h = s.get_int("height")
+        return (w, h) if ok_w and ok_h else None
+
+    def watch_start(self, rec):
+        self.GLib.timeout_add(200, self.check_start, rec, self.captured, time.monotonic() + STARTUP_MS / 1000)
+
+    def check_start(self, rec, before, deadline):
+        if self.ended or rec is not self.rec:
+            return False
+        if self.captured <= before:
+            if time.monotonic() < deadline and rec.poll() is None:
                 return True
+            log(f"encoder {self.kind} produced nothing")
+            self.kill(rec)
+            self.rec = None
+            if self.capturing:
+                return self.end("capture stopped")
+            return self.try_next()
+        size = self.captured_size()
+        if size != self.geom[:2]:
+            got = f"{size[0]}x{size[1]}" if size else "an unknown size"
+            return self.end(f"capture is {got} but the screen is {self.geom[0]}x{self.geom[1]}")
+        if not self.capturing:
+            self.capturing = True
+            self.emit({"t": "info", "output": self.mon["name"], "width": self.geom[0], "height": self.geom[1],
+                       "transform": self.geom[2], "rotation": 0, "encoder": self.kind, "codec": "H264"})
         return False
 
     def keyframe(self):
         """webrtcbin asks for a keyframe on PLI/FIR; wf-recorder can't be told to
         make one, but a fresh recorder always opens with one."""
         now = time.monotonic()
-        if not self.connected or now - self.last_key < KEYFRAME_GAP:
+        if not self.connected or not self.capturing or self.ended or now - self.last_key < KEYFRAME_GAP:
             return False
         self.last_key = now
-        with self.rec_mu:
-            old = self.rec
-            if old is not None:
-                self.kill(old)
-            try:
-                self.rec = self.spawn_recorder(self.kind)
-            except RuntimeError as e:
-                return self.end(str(e))
+        if self.rec is not None:
+            self.kill(self.rec)
+        self.rec = self.spawn_recorder(self.kind)
         if self.rec is None:
-            self.end("capture stopped")
+            return self.end("capture stopped")
+        self.watch_start(self.rec)
         return False
 
     def watch(self):
         m = pick_monitor(self.mon["name"])
         if m is None or geometry(m) != self.geom:
             return self.end("display changed")
-        with self.rec_mu:
-            if self.connected and self.rec is not None and self.rec.poll() is not None:
-                return self.end("capture stopped")
+        if self.capturing and self.rec is not None and self.rec.poll() is not None:
+            return self.end("capture stopped")
         return not self.ended
 
     # -- pipeline
     def build(self):
         Gst, GstWebRTC = self.Gst, self.GstWebRTC
         r, self.wfd = os.pipe()
+        # webrtcbin holds buffers back until the peer connects; the leaky queue
+        # sheds them instead of letting the pipe fill and stall wf-recorder,
+        # and the restart on connect brings a fresh keyframe anyway.
         self.pipe = Gst.parse_launch(
-            f"fdsrc name=src fd={r} blocksize=1048576 do-timestamp=true ! "
+            f"fdsrc fd={r} blocksize=1048576 do-timestamp=true ! "
             f"h264parse config-interval=-1 ! video/x-h264,stream-format=byte-stream,alignment=au ! "
+            f"queue name=buf leaky=downstream max-size-buffers=30 max-size-bytes=0 max-size-time=0 ! "
             f"rtph264pay name=pay config-interval=-1 aggregate-mode=zero-latency ! {RTP_CAPS} ! "
             f"webrtcbin name=webrtc bundle-policy=max-bundle")
         self.webrtc = self.pipe.get_by_name("webrtc")
-        ice = self.webrtc.get_property("ice-agent")
-        ice.set_property("ice-tcp", False)
-        ips = tailnet_ips()
-        if not ips:
+        if not pin_to_tailnet(self.webrtc, self.Nice):
             raise RuntimeError("no tailnet address on this laptop")
-        agent = ice.get_property("agent")
-        for ip in ips:
-            a = self.Nice.Address()
-            if a.set_from_string(ip):
-                agent.add_local_address(a)
         tr = self.webrtc.emit("get-transceiver", 0)
         tr.set_property("direction", GstWebRTC.WebRTCRTPTransceiverDirection.SENDONLY)
         tr.set_property("do-nack", True)
         self.webrtc.connect("on-negotiation-needed", self.on_negotiation)
         self.webrtc.connect("on-ice-candidate", self.on_ice)
         self.webrtc.connect("notify::connection-state", self.on_state)
+        self.pipe.get_by_name("buf").get_static_pad("sink").add_probe(Gst.PadProbeType.BUFFER, self.on_captured)
         pay = self.pipe.get_by_name("pay")
         pay.get_static_pad("sink").add_probe(Gst.PadProbeType.BUFFER, self.on_frame)
         pay.get_static_pad("sink").add_probe(Gst.PadProbeType.EVENT_UPSTREAM, self.on_upstream)
@@ -421,8 +457,13 @@ class Worker:
         bus.add_signal_watch()
         bus.connect("message::error", self.on_error)
 
+    def on_captured(self, pad, info):
+        self.captured += 1
+        return self.Gst.PadProbeReturn.OK
+
     def on_frame(self, pad, info):
-        self.frames += 1
+        if self.connected:
+            self.frames += 1
         return self.Gst.PadProbeReturn.OK
 
     def on_upstream(self, pad, info):
@@ -437,6 +478,7 @@ class Worker:
         element.emit("create-offer", None, self.Gst.Promise.new_with_change_func(self.on_offer, element, None))
 
     def on_offer(self, promise, element, _):
+        # The reply owns the offer; keep it referenced until webrtcbin has its copy.
         reply = promise.get_reply()
         offer = reply.get_value("offer") if reply else None
         if offer is None:
@@ -521,16 +563,10 @@ class Worker:
         except Exception as e:
             log(f"setup failed: {type(e).__name__}: {e}")
             return self.end(str(e)[:160] if isinstance(e, RuntimeError) else "setup failed")
-        self.pipe.set_state(self.Gst.State.PLAYING)
-        try:
-            ok = self.start_capture()
-        except RuntimeError as e:
-            ok = not self.end(str(e))
-        if not ok:
-            self.end("no working encoder")
-            self.shutdown()
-            return
+        self.order = list(AUTO if self.encoder_pref == "auto" else (self.encoder_pref,))
         threading.Thread(target=self.stdin_reader, daemon=True).start()
+        self.pipe.set_state(self.Gst.State.PLAYING)
+        self.GLib.idle_add(self.try_next)
         self.GLib.timeout_add_seconds(WATCH_SECS, self.watch)
         self.GLib.timeout_add_seconds(ANSWER_TIMEOUT, self.deadline, "answered", "no answer")
         self.GLib.timeout_add_seconds(ANSWER_TIMEOUT + CONNECT_TIMEOUT, self.deadline, "connected", "couldn't connect")
@@ -540,9 +576,8 @@ class Worker:
             self.shutdown()
 
     def shutdown(self):
-        with self.rec_mu:
-            if self.rec is not None:
-                self.kill(self.rec)
+        if self.rec is not None:
+            self.kill(self.rec)
         if self.pipe is not None:
             self.pipe.set_state(self.Gst.State.NULL)
 

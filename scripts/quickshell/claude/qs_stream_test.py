@@ -25,7 +25,7 @@ from gi.repository import GLib, Gst, GstSdp, GstWebRTC, Nice  # noqa: E402
 from websockets.sync.client import connect  # noqa: E402
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from qs_stream import candidate_ok, geometry, pick_monitor, tailnet_ips  # noqa: E402
+from qs_stream import candidate_ok, geometry, pick_monitor, pin_to_tailnet  # noqa: E402
 
 TOKEN_FILE = os.path.expanduser("~/.local/state/qs-remote/token")
 
@@ -42,6 +42,7 @@ class Client:
         self.info = {}
         self.bye = None
         self.states = []
+        self.cands = []
         self.sample = None
         self.snap = None
         self.send_mu = threading.Lock()
@@ -49,12 +50,7 @@ class Client:
         self.webrtc = Gst.ElementFactory.make("webrtcbin")
         self.webrtc.set_property("bundle-policy", GstWebRTC.WebRTCBundlePolicy.MAX_BUNDLE)
         self.pipe.add(self.webrtc)
-        ice = self.webrtc.get_property("ice-agent")
-        ice.set_property("ice-tcp", False)
-        for ip in tailnet_ips():
-            a = Nice.Address()
-            if a.set_from_string(ip):
-                ice.get_property("agent").add_local_address(a)
+        pin_to_tailnet(self.webrtc, Nice)
         self.webrtc.connect("on-ice-candidate", self.on_ice)
         self.webrtc.connect("pad-added", self.on_pad)
         self.webrtc.connect("notify::connection-state",
@@ -99,11 +95,13 @@ class Client:
             self.info = m
             print("info:", json.dumps(m), flush=True)
         elif t == "offer":
+            self.cands += [ln for ln in m["sdp"].splitlines() if ln.startswith("a=candidate")]
             ok, sdp = GstSdp.SDPMessage.new_from_text(m["sdp"])
             offer = GstWebRTC.WebRTCSessionDescription.new(GstWebRTC.WebRTCSDPType.OFFER, sdp)
             self.webrtc.emit("set-remote-description", offer, Gst.Promise.new_with_change_func(self.on_remote, None))
         elif t == "ice":
             if m.get("candidate"):
+                self.cands.append(m["candidate"])
                 self.webrtc.emit("add-ice-candidate", m.get("sdpMLineIndex", 0), m["candidate"])
         elif t == "state":
             print("laptop state:", m.get("state"), flush=True)
@@ -117,7 +115,13 @@ class Client:
         self.webrtc.emit("create-answer", None, Gst.Promise.new_with_change_func(self.on_answer, None))
 
     def on_answer(self, promise, _):
-        answer = promise.get_reply().get_value("answer")
+        # The reply owns the answer; keep it referenced until webrtcbin has its copy.
+        reply = promise.get_reply()
+        answer = reply.get_value("answer") if reply else None
+        if answer is None:
+            print("couldn't create an answer", flush=True)
+            GLib.idle_add(self.loop.quit)
+            return
         self.webrtc.emit("set-local-description", answer, Gst.Promise.new())
         self.send({"t": "answer", "sdp": answer.sdp.as_text()})
 
@@ -192,9 +196,11 @@ def main():
     secs = time.monotonic() - c.first_at if c.first_at else 0
     print(f"\nframes received: {c.frames} over {secs:.1f}s; sizes seen: {sorted(c.sizes)}")
     print(f"connection states: {' > '.join(dict.fromkeys(c.states))}")
+    tailnet = bool(c.cands) and all(candidate_ok(x) for x in c.cands)
+    print(f"laptop ICE candidates: {len(c.cands)}, {'all on the tailnet' if tailnet else 'NOT all on the tailnet'}")
     mon = pick_monitor(c.info.get("output"))
     want = geometry(mon)[:2] if mon else None
-    passed = c.frames > 0 and len(c.sizes) == 1 and next(iter(c.sizes)) == want
+    passed = tailnet and c.frames > 0 and len(c.sizes) == 1 and next(iter(c.sizes)) == want
     print(f"screen is {want}, transform {mon.get('transform') if mon else '?'}; size check {'ok' if passed else 'FAILED'}")
     if c.sample is not None and c.snap:
         ref_size, scores = orientation(c.sample, c.snap, a.save)
