@@ -42,7 +42,7 @@ AUTO = ("va", "nvenc", "x264")
 PROFILE_LEVEL = "42e029"
 RTP_CAPS = ("application/x-rtp,media=video,encoding-name=H264,payload=96,clock-rate=90000,"
             f"packetization-mode=(string)1,profile-level-id=(string){PROFILE_LEVEL}")
-CLIENT_TYPES = {"start", "answer", "ice", "stop"}
+CLIENT_TYPES = {"start", "answer", "ice", "stop", "quality"}
 WORKER_TYPES = {"offer", "ice", "info", "state", "bye"}
 
 
@@ -127,10 +127,12 @@ def intel_render_node():
     return None
 
 
-def recorder_args(kind, kbps):
+def recorder_args(kind, kbps, fps=None):
     # Pinned to match PROFILE_LEVEL in the SDP. Left alone, x264 and NVENC
     # derive 6.2 from wf-recorder's microsecond timebase.
     common = ["-b", "0", "-p", f"g={GOP}", "-p", f"b={kbps}k", "-p", "level=4.1"]
+    if fps:
+        common += ["-r", str(fps)]
     if kind == "va":
         node = intel_render_node()
         if not node:
@@ -274,8 +276,17 @@ def _clean(m):
         out = {"t": t}
         if isinstance(m.get("output"), str) and re.match(r"^[A-Za-z0-9_-]{1,32}$", m["output"]):
             out["output"] = m["output"]
-        if isinstance(m.get("bitrate"), (int, float)):
+        if _num(m.get("bitrate")):
             out["bitrate"] = int(max(500, min(20000, m["bitrate"])))
+        if _num(m.get("fps")):
+            out["fps"] = int(max(5, min(60, m["fps"])))
+        return out
+    if t == "quality":
+        if not _num(m.get("bitrate")):
+            return None
+        out = {"t": t, "bitrate": int(max(500, min(20000, m["bitrate"])))}
+        if _num(m.get("fps")):
+            out["fps"] = int(max(5, min(60, m["fps"])))
         return out
     if t == "answer":
         sdp = m.get("sdp")
@@ -286,6 +297,10 @@ def _clean(m):
             return None
         return {"t": t, "candidate": cand, "sdpMLineIndex": idx}
     return {"t": t}
+
+
+def _num(v):
+    return isinstance(v, (int, float)) and not isinstance(v, bool) and v == v
 
 
 # ---------------------------------------------------------------- worker (own process; GStreamer lives here)
@@ -309,6 +324,7 @@ class Worker:
         self.kind = None
         self.order = []
         self.kbps = BITRATE
+        self.fps = None
         self.captured = 0
         self.frames = 0
         self.capturing = self.answered = self.connected = self.ended = False
@@ -334,7 +350,7 @@ class Worker:
     # -- capture: wf-recorder writes H.264 into a pipe this process owns, so it
     # can be restarted (for a keyframe) without the pipeline noticing.
     def spawn_recorder(self, kind):
-        args = recorder_args(kind, self.kbps)
+        args = recorder_args(kind, self.kbps, self.fps)
         if args is None:
             return None
         rec = subprocess.Popen(["setpriv", "--pdeathsig", "TERM", "wf-recorder", "-y", "-o", self.mon["name"]] + args
@@ -517,9 +533,22 @@ class Worker:
         elif t == "ice":
             if m["candidate"] and candidate_ok(m["candidate"]):
                 self.webrtc.emit("add-ice-candidate", m["sdpMLineIndex"], m["candidate"])
+        elif t == "quality":
+            self.requality(int(m["bitrate"]), m.get("fps"))
         elif t == "stop":
             self.end("stopped")
         return False
+
+    def requality(self, kbps, fps=None):
+        """The phone shrank or grew the video. A fresh recorder at the new rate;
+        the phone settles before asking, so a resize costs one restart.
+        No fps means as fast as the screen changes."""
+        if kbps == self.kbps and fps == self.fps:
+            return
+        self.kbps, self.fps = kbps, fps
+        log(f"bitrate -> {kbps} kbit/s, {fps or 'full'} fps")
+        self.last_key = 0.0
+        self.keyframe()
 
     def on_error(self, bus, msg):
         err, dbg = msg.parse_error()
@@ -558,6 +587,7 @@ class Worker:
             return self.end("no such screen")
         self.geom = geometry(self.mon)
         self.kbps = int(start.get("bitrate") or BITRATE)
+        self.fps = start.get("fps")
         try:
             self.build()
         except Exception as e:

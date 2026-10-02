@@ -10,8 +10,10 @@ so keybinds behave the same whatever layout is active.
 Nothing typed is ever logged: the audit trail gets one line per session.
 """
 import base64
+import glob
 import hashlib
 import json
+import math
 import os
 import queue
 import re
@@ -58,6 +60,85 @@ GESTURES = {
     "ws_left": ["hyprctl", "dispatch", "workspace", "-1"],
     "special": ["hyprctl", "dispatch", "togglespecialworkspace", "magic"],
 }
+
+
+def _hypr(cmd):
+    """One request to Hyprland's control socket, the same thing hyprctl does without the process."""
+    run = os.environ.get("XDG_RUNTIME_DIR") or f"/run/user/{os.getuid()}"
+    sig = os.environ.get("HYPRLAND_INSTANCE_SIGNATURE")
+    paths = [os.path.join(run, "hypr", sig, ".socket.sock")] if sig else []
+    paths += sorted(glob.glob(os.path.join(run, "hypr", "*", ".socket.sock")), key=_mtime, reverse=True)
+    for path in dict.fromkeys(paths):
+        try:
+            with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as s:
+                s.settimeout(1)
+                s.connect(path)
+                s.sendall(cmd.encode())
+                out = b""
+                while True:
+                    chunk = s.recv(65536)
+                    if not chunk:
+                        return out.decode(errors="replace")
+                    out += chunk
+        except OSError:
+            continue
+    argv = ["hyprctl", "-j", cmd[2:]] if cmd.startswith("j/") else ["hyprctl"] + cmd.split()
+    try:
+        return subprocess.run(argv, capture_output=True, text=True, timeout=2).stdout
+    except (OSError, subprocess.TimeoutExpired):
+        return ""
+
+
+def _mtime(p):
+    try:
+        return os.path.getmtime(p)
+    except OSError:
+        return 0
+
+
+def screen_point(mon, nx, ny):
+    """A fraction of a monitor as the stream shows it to Hyprland's layout coordinates.
+    The stream is the monitor as displayed: odd transforms swap width and height,
+    and layout space is pixels divided by scale."""
+    w, h = int(mon["width"]), int(mon["height"])
+    if int(mon.get("transform") or 0) % 2:
+        w, h = h, w
+    scale = float(mon.get("scale") or 1) or 1.0
+    lw, lh = w / scale, h / scale
+    nx, ny = min(max(float(nx), 0.0), 1.0), min(max(float(ny), 0.0), 1.0)
+    x = math.floor(float(mon["x"]) + min(nx * lw, lw - 1))
+    y = math.floor(float(mon["y"]) + min(ny * lh, lh - 1))
+    return x, y
+
+
+class Screens:
+    """hyprctl monitors, cached briefly: a drag asks many times a second."""
+
+    TTL = 2.0
+
+    def __init__(self):
+        self.mu = threading.Lock()
+        self.at = 0.0
+        self.mons = []
+
+    def find(self, name=None):
+        with self.mu:
+            if time.monotonic() - self.at > self.TTL or not self.mons:
+                try:
+                    mons = json.loads(_hypr("j/monitors") or "[]")
+                except ValueError:
+                    mons = []
+                self.mons = [m for m in mons if isinstance(m, dict) and not m.get("disabled")]
+                self.at = time.monotonic()
+            mons = self.mons
+        if name:
+            hit = next((m for m in mons if m.get("name") == name), None)
+            if hit is not None:
+                return hit
+        return next((m for m in mons if m.get("focused")), mons[0] if mons else None)
+
+
+SCREENS = Screens()
 
 
 def _socket_path():
@@ -162,6 +243,14 @@ class Injector:
         dx, dy = _clamp(dx, 2000), _clamp(dy, 2000)
         if dx or dy:
             self._emit([(EV_REL, REL_X, dx), (EV_REL, REL_Y, dy)])
+
+    def point(self, nx, ny, output=None):
+        """Puts the pointer where the phone touched its video of the screen."""
+        mon = SCREENS.find(output)
+        if mon is None:
+            return False
+        x, y = screen_point(mon, nx, ny)
+        return _hypr(f"dispatch movecursor {x} {y}").strip() == "ok"
 
     def scroll(self, dy, dx=0):
         """dy/dx in hi-res units (120 = one notch); positive dy scrolls content up."""
@@ -312,7 +401,7 @@ def serve(handler, allowed):
     sock = handler.connection
     sock.settimeout(IDLE_TIMEOUT)
     f = handler.rfile
-    hello = {"t": "hello", "inject": INJECTOR.available(),
+    hello = {"t": "hello", "inject": INJECTOR.available(), "absolute": True,
              "wtype": bool(shutil.which("wtype")), "keys": sorted(KEYS)}
     write_frame(sock, 0x1, json.dumps(hello).encode())
     counts = {}
@@ -351,6 +440,13 @@ def handle(m):
     if t == "m":
         INJECTOR.move(m.get("dx", 0), m.get("dy", 0))
         return "move"
+    if t == "at":
+        x, y, o = m.get("x"), m.get("y"), m.get("o")
+        if not all(isinstance(v, (int, float)) and math.isfinite(v) for v in (x, y)):
+            return None
+        o = o if isinstance(o, str) and re.match(r"^[A-Za-z0-9_-]{1,32}$", o) else None
+        INJECTOR.point(x, y, o)
+        return "point"
     if t == "s":
         INJECTOR.scroll(m.get("dy", 0), m.get("dx", 0))
         return "scroll"
