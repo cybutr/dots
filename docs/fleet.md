@@ -23,7 +23,7 @@ flowchart LR
 
 ## Set up once
 
-The touchpad needs ydotoold running: `sudo systemctl enable --now ydotool`. Typing works best with `wtype` installed (`sudo pacman -S wtype`), which handles any keyboard layout and Unicode.
+The touchpad needs ydotoold running. On Arch it is a user service: `systemctl --user enable --now ydotool` (skip it if `pgrep ydotoold` already shows one). Typing works best with `wtype` installed (`sudo pacman -S wtype`), which handles any keyboard layout and Unicode.
 
 1. Expose qs-remote on the tailnet: `tailscale serve --bg 8790`.
 2. Give the phone a hub token. Add `phone:<token>` to the hub's `FLEET_DEVICE_TOKENS`, and add `FLEET_TOKEN_PHONE=<token>` to `~/.local/state/fleet/tokens.env`. To generate one: `python3 -c 'import secrets; print(secrets.token_urlsafe(32))'`.
