@@ -365,15 +365,14 @@
     {
       "id": "fleet.send",
       "label": "Send a file to the phone",
-      "hint": "Through basecamp; shows up in the Fleet app",
+      "hint": "Through basecamp; shows up in the Fleet app. Leave the path empty to pick files",
       "cat": "device",
       "icon": "󰕒",
       "keywords": "send file phone fleet relay transfer share upload",
       "cmd": "python3 \"$HOME/.config/hypr/scripts/quickshell/claude/fleet_send.py\" \"$1\"",
       "param": {
         "kind": "text",
-        "required": true,
-        "hint": "path to a file"
+        "hint": "a path, or nothing to pick"
       },
       "verb": "Send"
     },

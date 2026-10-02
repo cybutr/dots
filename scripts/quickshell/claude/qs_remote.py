@@ -114,13 +114,32 @@ def _int(v, default=None):
 
 # ---------------------------------------------------------------- state
 
+MUSIC_HOLD = 60
+MUSIC_STOP_GRACE = 5
+_music_last = {"track": None, "ts": 0.0}
+_music_mu = threading.Lock()
+
+
 def _music():
     try:
         m = qs.t_music({})
     except Exception:
-        m = {}
-    if not isinstance(m, dict):
-        m = {}
+        m = None
+    fresh = _music_read(m) if isinstance(m, dict) and m.get("status") else None
+    now = time.time()
+    with _music_mu:
+        last, age = _music_last["track"], now - _music_last["ts"]
+        if fresh and fresh["status"] != "stopped":
+            _music_last.update(track=fresh, ts=now)
+            return fresh
+        held = last is not None and age < (MUSIC_STOP_GRACE if fresh else MUSIC_HOLD)
+        if held:
+            return dict(last)
+        _music_last.update(track=None, ts=now)
+    return fresh or _music_read({})
+
+
+def _music_read(m):
     art = m.get("artUrl") or ""
     status = (m.get("status") or "Stopped").lower()
     return {
@@ -361,7 +380,26 @@ def a_open_widget(args):
 
 
 def a_wifi(args):
+    # Every call here came in over the tailnet; if Wi-Fi carries the only
+    # route out, switching it off strands the phone with no way to undo it.
+    if not args.get("on") and _run(["nmcli", "radio", "wifi"]) != "disabled" and not _other_uplink():
+        return {"ok": False, "error": "refusing: Wi-Fi is your only path back to this laptop"}
     return _ok(qs._sh(["nmcli", "radio", "wifi", "on" if args.get("on") else "off"]))
+
+
+def _other_uplink():
+    wifi = {ln.split(":")[0] for ln in _run(["nmcli", "-t", "-f", "DEVICE,TYPE", "device"]).splitlines()
+            if ln.split(":")[-1] in ("wifi", "wifi-p2p")}
+    for fam in ("-4", "-6"):
+        try:
+            routes = json.loads(_run(["ip", "-j", fam, "route", "show", "default"]) or "[]")
+        except ValueError:
+            routes = []
+        for r in routes:
+            dev = r.get("dev") or ""
+            if dev and dev not in wifi and not dev.startswith(("tailscale", "lo")):
+                return True
+    return False
 
 
 def a_bluetooth(args):
@@ -407,7 +445,7 @@ def a_screenshot(_):
     r = qs._sh(["grim", path], timeout=10)
     if not r.get("ok") or not os.path.exists(path):
         return {"ok": False, "error": "couldn't take the screenshot"}
-    subprocess.Popen([sys.executable, os.path.join(BASE, "fleet_send.py"), path, "--to", "phone"],
+    subprocess.Popen([sys.executable, os.path.join(BASE, "fleet_send.py"), path, "--to", "phone", "--quiet"],
                      start_new_session=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     return {"ok": True}
 
@@ -444,7 +482,6 @@ ACTIONS = {
 }
 # Names the first version of the API used.
 LEGACY = {"media_control": "media", "set_volume": "volume", "toggle_mute": "mute", "set_wallpaper": "wallpaper"}
-SILENT = {"notify", "show_card", "volume", "brightness", "workspace", "bind"}
 
 
 def describe(name, args):
@@ -467,6 +504,9 @@ def describe(name, args):
         "kb_layout": lambda: "switched keyboard layout",
         "screen": lambda: "screen " + ("on" if args.get("on", True) else "off"),
         "screenshot": lambda: "screenshot sent to the phone",
+        "notify": lambda: f"notification: {str(args.get('title', 'Phone'))[:60]}",
+        "show_card": lambda: f"card: {str(args.get('title', ''))[:60]}",
+        "bind": lambda: f"keybind {args.get('combo', '')}".strip(),
     }.get(name, lambda: name.replace("_", " "))()
 
 
@@ -551,7 +591,7 @@ class Limiter:
 _audit_mu = threading.Lock()
 
 
-def audit(entry):
+def audit(entry, extra=None):
     entry = {"ts": time.strftime("%Y-%m-%dT%H:%M:%S"), **entry}
     with _audit_mu:
         try:
@@ -561,6 +601,103 @@ def audit(entry):
                 f.write(json.dumps(entry, ensure_ascii=False) + "\n")
         except OSError:
             pass
+    history_note({**entry, **(extra or {})})
+
+
+# ---------------------------------------------------------------- history
+# What the phone did, display-ready for the Guide. The audit log stays the
+# record; this is a small rolling view of it that also catches slider drags.
+
+HISTORY = "/tmp/qs_remote_history.json"
+HISTORY_MAX = 80
+HISTORY_MERGE = 20
+MERGE_ANY = LIVE | {"workspace"}
+_hist = deque(maxlen=HISTORY_MAX)
+_hist_mu = threading.Lock()
+_peers = {"at": 0.0, "map": {}}
+
+
+def _device(ip):
+    now = time.time()
+    if now - _peers["at"] > 300:
+        try:
+            st = json.loads(_run(["tailscale", "status", "--json"], timeout=5) or "{}")
+        except ValueError:
+            st = {}
+        m = {}
+        for p in [st.get("Self") or {}, *(st.get("Peer") or {}).values()]:
+            for a in p.get("TailscaleIPs") or []:
+                m[a] = p.get("HostName") or ""
+        _peers.update(at=now, map=m)
+    return _peers["map"].get(ip) or ""
+
+
+def _span(secs):
+    secs = int(secs or 0)
+    return f"{secs // 60}m {secs % 60}s" if secs >= 60 else f"{secs}s"
+
+
+def _history_desc(e):
+    a = e.get("action") or ""
+    if e.get("denied"):
+        return f"blocked a request ({e['denied']})"
+    if a == "input_session":
+        return f"touchpad & keyboard · {_span(e.get('secs'))}"
+    if a == "answer":
+        return f"quiz answer ({e.get('mode', 'fast')})"
+    try:
+        return describe(a, e.get("args") or {})
+    except Exception:
+        return a.replace("_", " ")
+
+
+def history_note(e, ts=None, write=True):
+    ts = ts or time.time()
+    row = {"ts": int(ts), "time": time.strftime("%H:%M", time.localtime(ts)),
+           "day": time.strftime("%Y-%m-%d", time.localtime(ts)),
+           "action": "denied" if e.get("denied") else (e.get("action") or ""),
+           "desc": _history_desc(e), "ok": bool(e.get("ok", not e.get("denied"))),
+           "error": str(e.get("error") or ""), "device": _device(e.get("ip", "")) or e.get("user") or e.get("ip", ""),
+           "user": e.get("user", ""), "count": 1}
+    with _hist_mu:
+        last = _hist[-1] if _hist else None
+        if (last and last["action"] == row["action"] and last["device"] == row["device"]
+                and last["ok"] == row["ok"] and row["ts"] - last["ts"] <= HISTORY_MERGE
+                and (row["action"] in MERGE_ANY or last["desc"] == row["desc"])):
+            row["count"] = last["count"] + 1
+            _hist.pop()
+        _hist.append(row)
+        if write:
+            _history_write()
+
+
+def _history_write():
+    try:
+        tmp = HISTORY + ".tmp"
+        with open(tmp, "w") as f:
+            json.dump({"updated": int(time.time()), "entries": list(reversed(_hist))}, f, ensure_ascii=False)
+        os.replace(tmp, HISTORY)
+    except OSError:
+        pass
+
+
+def history_seed():
+    lines = []
+    for path in (AUDIT + ".1", AUDIT):
+        try:
+            with open(path) as f:
+                lines += f.read().splitlines()
+        except OSError:
+            pass
+    for ln in lines[-HISTORY_MAX * 3:]:
+        try:
+            e = json.loads(ln)
+            ts = time.mktime(time.strptime(e["ts"], "%Y-%m-%dT%H:%M:%S"))
+        except (ValueError, KeyError, TypeError):
+            continue
+        history_note(e, ts, write=False)
+    with _hist_mu:
+        _history_write()
 
 
 def run_action(name, args, who):
@@ -572,14 +709,11 @@ def run_action(name, args, who):
         log(f"{name} failed: {type(e).__name__}: {e}")
         result = {"ok": False, "error": "action failed"}
     ok = bool(result.get("ok"))
-    if not (ok and name in LIVE):  # a dragged slider would flood the log
-        audit({"action": name, "args": args, "ok": ok, "user": who[0], "ip": who[1]})
-    if ok and name not in SILENT:
-        try:
-            resident_card.emit("Phone", describe(name, args), icon="󰄜", urgency="low",
-                               hold_secs=6, source="qs-remote")
-        except Exception:
-            pass
+    entry = {"action": name, "args": args, "ok": ok, "user": who[0], "ip": who[1]}
+    if ok and name in LIVE:  # a dragged slider would flood the log
+        history_note(entry)
+    else:
+        audit(entry, None if ok else {"error": result.get("error", "")})
     return result
 
 
@@ -919,12 +1053,428 @@ def main():
     except OSError:
         log("already running")
         return
+    history_seed()
     srv = Server((HOST, PORT), Handler)
     srv.daemon_threads = True
     srv.token = load_token()
     srv.limiter = Limiter()
     log(f"listening on {HOST}:{PORT}")
     srv.serve_forever()
+
+
+# ---------------------------------------------------------------- control center extras
+
+SPECIAL_WS = "magic"
+QUIET_FILE = os.path.join(BASE, "resident_quiet.json")
+KANDOR_PID = "/tmp/qs_wake_daemon.pid"
+KANDOR_TOGGLE = os.path.join(BASE, "voice", "kandor_toggle.sh")
+ECO_STATE = "/tmp/qs_eco_state.json"
+PALETTE_PY = os.path.join(os.path.dirname(BASE), "palette", "palette_index.py")
+
+
+def _read_json(path, default):
+    try:
+        with open(path) as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return default
+
+
+def _special_open():
+    mons = _json_run(["hyprctl", "monitors", "-j"]) or []
+    focused = next((m for m in mons if isinstance(m, dict) and m.get("focused")), {})
+    return bool((focused.get("specialWorkspace") or {}).get("name"))
+
+
+def _kandor_on():
+    try:
+        with open(KANDOR_PID) as f:
+            os.kill(int(f.read().strip()), 0)
+        return True
+    except (OSError, ValueError):
+        return False
+
+
+def _quiet_on():
+    q = _read_json(QUIET_FILE, {})
+    return isinstance(q, dict) and q.get("quiet") is True
+
+
+def _eco_on():
+    return settings().get("ecoModeEnabled", True) is not False
+
+
+_snapshot_core = snapshot
+
+
+def snapshot():
+    s = _snapshot_core()
+    eco = _read_json(ECO_STATE, [])
+    s["toggles"].update(special=_special_open(), eco=_eco_on(), quiet=_quiet_on(), kandor=_kandor_on())
+    s["eco_active"] = len(eco) if isinstance(eco, list) else 0
+    return s
+
+
+def a_toggle_special_workspace(args):
+    if "on" in args and bool(args.get("on")) == _special_open():
+        return {"ok": True}
+    return _ok(qs._sh(["hyprctl", "dispatch", "togglespecialworkspace", SPECIAL_WS], timeout=5))
+
+
+def a_eco(args):
+    on = bool(args.get("on", not _eco_on()))
+    return _ok(qs._sh([sys.executable, PALETTE_PY, "set", "ecoModeEnabled", "true" if on else "false"], timeout=5))
+
+
+def a_quiet(args):
+    on = bool(args.get("on", not _quiet_on()))
+    if on != _quiet_on():
+        tmp = QUIET_FILE + ".tmp"
+        with open(tmp, "w") as f:
+            f.write(json.dumps({"quiet": on}) + "\n")
+        os.replace(tmp, QUIET_FILE)
+    return {"ok": True}
+
+
+def a_kandor(args):
+    on = bool(args.get("on", not _kandor_on()))
+    if on != _kandor_on():
+        subprocess.Popen(["bash", KANDOR_TOGGLE], start_new_session=True,
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, stdin=subprocess.DEVNULL)
+    return {"ok": True}
+
+
+for _name, _fn in (("toggle_special_workspace", a_toggle_special_workspace), ("eco", a_eco),
+                   ("quiet", a_quiet), ("kandor", a_kandor)):
+    ACTIONS.setdefault(_name, _fn)
+
+_describe_core = describe
+
+
+def describe(name, args):
+    on = "on" if args.get("on") else "off"
+    extra = {
+        "toggle_special_workspace": ("scratchpad " + ("shown" if args.get("on") else "hidden")) if "on" in args else "toggled the scratchpad",
+        "eco": "eco mode " + on,
+        "quiet": "Claude quiet " + on,
+        "kandor": "wake word " + on,
+        "palette": f"palette: {str(args.get('label') or args.get('id') or '')[:60]}",
+    }
+    return extra.get(name) or _describe_core(name, args)
+
+
+PHONE_TEXT_OK = {"claude.ask", "spotify.search", "web.open", "ws.openapp", "ws.rename", "mail.search"}
+PHONE_BLOCKED = ("setting.qsRemote", "fleet.")
+PAL_BIAS = {"power": 3, "system": 2, "audio": 2, "media": 2, "widget": 2, "mail": 2, "timer": 2, "claude": 1,
+            "capture": 1, "wallpaper": 1, "layout": 1, "window": 2, "workspace": 1, "device": 2, "project": 2,
+            "app": 0, "setting": -2}
+PAL_TRANSIENT = ("mailhit.", "window.", "tab.", "spotifyhit.", "route.")
+PAL_STALE = 300
+ROUTE_ERRORS = {"short": "Type a few more words", "no-client": "No Claude key on the laptop",
+                "no-reply": "Claude didn't answer", "no-match": "Claude couldn't map that to anything on the laptop"}
+_pal = {"mod": None, "mtime": 0.0, "building": False}
+_pal_mu = threading.Lock()
+
+
+def _palette():
+    m = os.path.getmtime(PALETTE_PY)
+    with _pal_mu:
+        if _pal["mod"] is None or m != _pal["mtime"]:
+            spec = importlib.util.spec_from_file_location("palette_index", PALETTE_PY)
+            mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mod)
+            _pal.update(mod=mod, mtime=m)
+        return _pal["mod"]
+
+
+def _pal_refresh(p):
+    try:
+        age = time.time() - os.path.getmtime(p.CACHE)
+    except OSError:
+        age = PAL_STALE + 1
+    with _pal_mu:
+        if age < PAL_STALE or _pal["building"]:
+            return
+        _pal["building"] = True
+
+    def work():
+        try:
+            p.write_atomic(p.CACHE, p.build())
+        except Exception as e:
+            log(f"palette index rebuild failed: {type(e).__name__}: {e}")
+        finally:
+            _pal["building"] = False
+    threading.Thread(target=work, daemon=True).start()
+
+
+def _pal_phone_ok(a):
+    if not a or a["id"].startswith(PHONE_BLOCKED):
+        return False
+    return (a.get("param") or {}).get("kind") != "text" or a["id"] in PHONE_TEXT_OK
+
+
+def _pal_fresh(a, states):
+    a = dict(a)
+    key = a.get("stateKey")
+    if key and key in states:
+        a["state"] = states[key]
+    sid = a["id"][8:] if a["id"].startswith("setting.") else ""
+    if sid and "." not in sid and a.get("state") in ("on", "off"):
+        v = settings().get(sid)
+        if isinstance(v, bool):
+            a.update(state="on" if v else "off", arg="false" if v else "true")
+    return a
+
+
+def _pal_needs(p, a):
+    if not a.get("param"):
+        return False
+    r = p.resolve_step(a, {"arg": ""}, {})
+    return r is None or r.get("args") == [""]
+
+
+def _pal_score(a, toks):
+    label = a["label"].lower()
+    words = re.findall(r"[a-z0-9]+", label)
+    kws = re.findall(r"[a-z0-9]+", (a.get("keywords") or "").lower() + " " + (a.get("cat") or ""))
+    hint = (a.get("hint") or "").lower()
+    total = 0
+    for t in toks:
+        if label.startswith(t):
+            total += 12
+        elif any(w.startswith(t) for w in words):
+            total += 9
+        elif t in label:
+            total += 6
+        elif any(w.startswith(t) for w in kws):
+            total += 4
+        elif len(t) > 3 and t in hint:
+            total += 2
+        else:
+            return 0
+    return total
+
+
+def _pal_rank(actions, q, hist):
+    raw = q.strip()
+    toks = raw.lower().split()
+    tail = toks[-1] if len(toks) > 1 and re.match(r"^[+-]?\d+(\.\d+)?%?$", toks[-1]) else ""
+    scored = []
+    for a in actions:
+        p = a.get("param") or {}
+        if p and raw.lower().startswith(a["label"].lower() + " "):
+            arg = raw[len(a["label"]) + 1:].strip()
+            if arg:
+                scored.append((1000 + len(a["label"]), {**a, "_arg": arg}))
+                continue
+        if tail and p.get("kind") == "number":
+            s = _pal_score(a, toks[:-1])
+            if s:
+                scored.append((500 + s + PAL_BIAS.get(a.get("cat"), 0), {**a, "_arg": tail}))
+                continue
+        s = _pal_score(a, toks)
+        if s:
+            use = min((hist.get(a["id"]) or {}).get("n", 0), 20)
+            scored.append((s + PAL_BIAS.get(a.get("cat"), 0) + use * 0.4, a))
+    scored.sort(key=lambda x: -x[0])
+    return [a for _, a in scored[:12]]
+
+
+def _pal_item(p, a, states):
+    a = _pal_fresh(a, states)
+    item = {"id": a["id"], "label": a["label"], "hint": a.get("hint", ""), "cat": a.get("cat", ""),
+            "danger": bool(a.get("danger")), "keys": a.get("keys", "")}
+    if a.get("state") in ("on", "off"):
+        item["state"] = a["state"]
+    param = a.get("param")
+    if param:
+        item["param"] = {k: param[k] for k in ("kind", "min", "max", "unit", "required") if k in param}
+        item["needs"] = _pal_needs(p, a)
+    if a.get("_arg"):
+        item["arg"] = a["_arg"]
+    return item
+
+
+def palette_query(q, ask):
+    p = _palette()
+    _pal_refresh(p)
+    every = p.index_actions()
+    actions = [a for a in every if _pal_phone_ok(a)]
+    hist = p.load_json(p.HISTORY, {})
+    out = {"ok": True, "items": [], "route": None, "recent": False}
+    if not q.strip():
+        by_id = {a["id"]: a for a in actions}
+        recent = sorted((i for i in hist if i in by_id and not i.startswith(PAL_TRANSIENT)), key=lambda i: -hist[i].get("t", 0))[:8]
+        suggest = [i for i in (p.load_json(p.CACHE, {}).get("suggest") or []) if i in by_id and i not in recent]
+        ranked = [by_id[i] for i in (recent + suggest)[:10]]
+        out["recent"] = True
+    else:
+        ranked = _pal_rank(actions, q, hist)
+    states = p.live_states() if any(a.get("stateKey") for a in ranked) else {}
+    out["items"] = [_pal_item(p, a, states) for a in ranked]
+    if ask and len(q.strip()) >= 3:
+        r = p.route(q)
+        if not r.get("ok"):
+            out["error"] = ROUTE_ERRORS.get(r.get("error"), "Claude couldn't map that")
+            return out
+        by_id = {a["id"]: a for a in every}
+        steps = r.get("steps") or []
+        blocked = [s.get("label", s.get("id")) for s in steps if not _pal_phone_ok(by_id.get(s.get("id")))]
+        if blocked:
+            out["error"] = "Claude picked something the phone can't run: " + ", ".join(blocked)
+            return out
+        act = r["action"]
+        out["route"] = {"id": act["id"], "label": act["label"], "hint": act.get("hint", ""), "cat": "claude",
+                        "danger": bool(act.get("danger")),
+                        "steps": [s["label"] + (" " + s["show"] if s.get("show") else "") + (" (already)" if s.get("skip") else "")
+                                  for s in steps]}
+    return out
+
+
+def palette_run(body):
+    p = _palette()
+    aid = str(body.get("id") or "")[:200]
+    arg = body.get("arg")
+    arg = None if arg is None else str(arg)[:500]
+    confirm = body.get("confirm") is True
+    by_id = {a["id"]: a for a in p.index_actions()}
+    quiet = {"stdout": subprocess.DEVNULL, "stderr": subprocess.DEVNULL, "stdin": subprocess.DEVNULL, "start_new_session": True}
+    if aid.startswith("route."):
+        d = p.load_json(p.ROUTES, {}).get(aid[6:])
+        if not d or not d.get("steps"):
+            return 422, {"ok": False, "error": "That suggestion expired. Ask again."}
+        acts = [by_id.get(s.get("id")) for s in d["steps"] if isinstance(s, dict)]
+        if not acts or not all(_pal_phone_ok(a) for a in acts):
+            return 422, {"ok": False, "error": "That needs something the phone can't run"}
+        if any(a.get("danger") for a in acts) and not confirm:
+            return 409, {"ok": False, "confirm": True, "error": "confirm first"}
+        subprocess.Popen([sys.executable, PALETTE_PY, "run", aid[6:]], **quiet)
+        return 200, {"ok": True, "label": d.get("label") or "Done"}
+    a = by_id.get(aid)
+    if not _pal_phone_ok(a):
+        return 422, {"ok": False, "error": "That isn't in the laptop's palette any more"}
+    if a.get("danger") and not confirm:
+        return 409, {"ok": False, "confirm": True, "error": "confirm first"}
+    a = _pal_fresh(a, p.live_states() if a.get("stateKey") else {})
+    shown = ""
+    if a.get("param"):
+        r = p.resolve_step(a, {"arg": arg or ""}, {}, live=True)
+        if r is None or r.get("args") == [""]:
+            return 422, {"ok": False, "error": a["label"] + " needs a value"}
+        args, shown = r["args"], r.get("show") or ""
+    else:
+        args = [a.get("arg", "")]
+    p.record_use(aid)
+    subprocess.Popen(["bash", "-c", a["cmd"], "_"] + args, **quiet)
+    return 200, {"ok": True, "label": (a["label"] + " " + shown).strip()}
+
+
+_post_core = Handler.do_POST
+
+
+def _do_post(self):
+    path = urlsplit(self.path).path
+    if path not in ("/api/v1/palette", "/api/v1/palette/run"):
+        return _post_core(self)
+    err = self._gate()
+    if err:
+        return self._json(err[0], {"ok": False, "error": err[1]})
+    who = self._who()
+    if not self._bearer_ok():
+        audit({"path": path[:80], "denied": "auth", "user": who[0], "ip": who[1]})
+        return self._json(401, {"ok": False, "error": "unauthorized"})
+    if not self._input_on():
+        return self._json(503, {"ok": False, "error": "the palette is off: phone touchpad & keyboard is turned off on the laptop"})
+    raw, berr = self._body()
+    if berr:
+        return self._json(*berr)
+    try:
+        body = json.loads(raw or b"{}")
+    except ValueError:
+        return self._json(400, {"ok": False, "error": "invalid json"})
+    if not isinstance(body, dict):
+        return self._json(400, {"ok": False, "error": "object expected"})
+    if path == "/api/v1/palette":
+        ask = body.get("ask") is True
+        if not self._limit("answer" if ask else "read"):
+            return self._json(429, {"ok": False, "error": "rate limited"})
+        try:
+            return self._json(200, palette_query(str(body.get("q") or "")[:200], ask))
+        except Exception as e:
+            log(f"palette query failed: {type(e).__name__}: {e}")
+            return self._json(500, {"ok": False, "error": "the palette failed on the laptop"})
+    if not self._limit("act"):
+        return self._json(429, {"ok": False, "error": "rate limited"})
+    try:
+        code, out = palette_run(body)
+    except Exception as e:
+        log(f"palette run failed: {type(e).__name__}: {e}")
+        code, out = 500, {"ok": False, "error": "the palette failed on the laptop"}
+    if code != 409:
+        audit({"action": "palette", "args": {"id": str(body.get("id") or "")[:80], "label": out.get("label", "")},
+               "ok": bool(out.get("ok")), "user": who[0], "ip": who[1]},
+              None if out.get("ok") else {"error": out.get("error", "")})
+    if out.get("ok"):
+        try:
+            out["state"] = snapshot()
+        except Exception:
+            pass
+    return self._json(code, out)
+
+
+Handler.do_POST = _do_post
+
+
+import qs_stream  # noqa: E402
+
+STREAM_ENCODERS = ("auto", "va", "x264", "nvenc")
+_get_core = Handler.do_GET
+_history_desc_core = _history_desc
+
+
+def _stream_on():
+    s = settings()
+    return s.get("qsRemoteEnabled", True) is not False and s.get("qsRemoteStreamEnabled", True) is not False
+
+
+def _history_desc(e):
+    if e.get("action") == "stream_session" and not e.get("denied"):
+        return f"watched the screen · {_span(e.get('secs'))}"
+    return _history_desc_core(e)
+
+
+def _do_get(self):
+    if urlsplit(self.path).path != "/api/v1/stream":
+        return _get_core(self)
+    err = self._gate()
+    if err:
+        return self._json(err[0], {"ok": False, "error": err[1]})
+    who = self._who()
+    if not self._bearer_ok():
+        audit({"path": "/api/v1/stream", "denied": "auth", "user": who[0], "ip": who[1]})
+        return self._json(401, {"ok": False, "error": "unauthorized"})
+    if not self._limit("act"):
+        return self._json(429, {"ok": False, "error": "rate limited"})
+    if not _stream_on():
+        return self._json(503, {"ok": False, "error": "screen streaming is turned off on the laptop"})
+    key = self.headers.get("Sec-WebSocket-Key", "")
+    if "websocket" not in (self.headers.get("Upgrade") or "").lower() or not key:
+        return self._json(400, {"ok": False, "error": "websocket upgrade expected"})
+    self.send_response(101)
+    self.send_header("Upgrade", "websocket")
+    self.send_header("Connection", "Upgrade")
+    self.send_header("Sec-WebSocket-Accept", remote_input.accept_key(key))
+    self.end_headers()
+    self.wfile.flush()
+    self.close_connection = True
+    enc = str(settings().get("qsRemoteStreamEncoder", "auto"))
+    started = time.time()
+    summary = qs_stream.serve(self, _stream_on, remote_input.read_frame, remote_input.write_frame,
+                              enc if enc in STREAM_ENCODERS else "auto")
+    audit({"action": "stream_session", "secs": int(time.time() - started), **summary, "user": who[0], "ip": who[1]})
+
+
+Handler.do_GET = _do_get
 
 
 if __name__ == "__main__":

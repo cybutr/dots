@@ -13,6 +13,8 @@ import base64
 import hashlib
 import json
 import os
+import queue
+import re
 import shutil
 import socket
 import struct
@@ -54,6 +56,7 @@ GESTURES = {
     "ws_prev": ["hyprctl", "dispatch", "workspace", "e-1"],
     "ws_right": ["hyprctl", "dispatch", "workspace", "+1"],
     "ws_left": ["hyprctl", "dispatch", "workspace", "-1"],
+    "special": ["hyprctl", "dispatch", "togglespecialworkspace", "magic"],
 }
 
 
@@ -74,6 +77,32 @@ class Injector:
         self.path = None
         self.held = set()
         self.acc_x = self.acc_y = 0
+        self.wheel = None
+        self.jobs = queue.Queue()
+        threading.Thread(target=self._typist, daemon=True).start()
+
+    def _typist(self):
+        while True:
+            fn, args = self.jobs.get()
+            try:
+                fn(*args)
+            except Exception:
+                pass
+
+    def later(self, fn, *args):
+        self.jobs.put((fn, args))
+
+    def _wheel_device(self):
+        if self.wheel is None:
+            try:
+                from evdev import UInput, ecodes as e
+                self.wheel = UInput({
+                    e.EV_KEY: [e.BTN_LEFT],
+                    e.EV_REL: [e.REL_X, e.REL_Y, e.REL_HWHEEL, e.REL_WHEEL, e.REL_WHEEL_HI_RES, e.REL_HWHEEL_HI_RES],
+                }, name="qs-remote scroll")
+            except Exception:
+                self.wheel = False
+        return self.wheel or None
 
     def available(self):
         return self._connect() is not None or shutil.which("ydotool") is not None
@@ -154,8 +183,19 @@ class Injector:
             if notches:
                 self.acc_x -= notches * 120
                 ev.append((EV_REL, REL_HWHEEL, notches))
-        if ev:
-            self._emit(ev)
+        if not ev:
+            return
+        with self.mu:
+            dev = self._wheel_device()
+            if dev is not None:
+                try:
+                    for t, c, v in ev:
+                        dev.write(t, c, v)
+                    dev.syn()
+                    return
+                except OSError:
+                    self.wheel = False
+        self._emit(ev)
 
     def button(self, name, state):
         code = BTN.get(name)
@@ -178,17 +218,29 @@ class Injector:
         return True
 
     def type_text(self, text):
-        text = text[:500]
-        if not text:
-            return
+        spaces = self.available()
+        for run in re.split(r"( +)", text[:500]):
+            if not run:
+                continue
+            if run[0] == " " and spaces:
+                for _ in run:
+                    self.key("space")
+                continue
+            cmd = self._type_cmd(run)
+            if cmd is None:
+                return
+            try:
+                subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=10,
+                               env={**os.environ, "YDOTOOL_SOCKET": self.path or f"/run/user/{os.getuid()}/.ydotool_socket"})
+            except subprocess.TimeoutExpired:
+                pass
+
+    def _type_cmd(self, text):
         if shutil.which("wtype") and os.environ.get("WAYLAND_DISPLAY"):
-            cmd = ["wtype", "--", text]
-        elif shutil.which("ydotool"):
-            cmd = ["ydotool", "type", "--", text]
-        else:
-            return
-        subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                         env={**os.environ, "YDOTOOL_SOCKET": self.path or f"/run/user/{os.getuid()}/.ydotool_socket"})
+            return ["wtype", "--", text]
+        if shutil.which("ydotool"):
+            return ["ydotool", "type", "--", text]
+        return None
 
     def release_all(self):
         """A dropped connection must never leave a button or key stuck down."""
@@ -307,10 +359,10 @@ def handle(m):
         return "click"
     if t == "k":
         mods = [str(x) for x in (m.get("mods") or [])][:4]
-        INJECTOR.key(str(m.get("k", "")).lower(), mods)
+        INJECTOR.later(INJECTOR.key, str(m.get("k", "")).lower(), mods)
         return "key"
     if t == "txt":
-        INJECTOR.type_text(str(m.get("s", "")))
+        INJECTOR.later(INJECTOR.type_text, str(m.get("s", "")))
         return "text"
     if t == "g":
         cmd = GESTURES.get(str(m.get("g", "")))

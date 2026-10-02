@@ -150,6 +150,7 @@ FocusScope {
     function previewKind(a) {
         if (!a) return "none"
         let id = a.id
+        if (id === "fleet.send") return "file"
         if (a.cat === "wallpaper" || id === "widget.wallpaper") return "wall"
         if (a.cat === "media" || id === "widget.music") return "media"
         if (id === "audio.volume" || id === "audio.mute" || id === "audio.muteall" || id === "widget.volume") return "volume"
@@ -359,6 +360,7 @@ FocusScope {
     }
     function execute(a, p) {
         if (!p.ok) { nudge.restart(); return }
+        if (a.id === "fleet.send" && root.fileInfo.arg === p.value && /^(missing|dir|big|empty-file)$/.test(root.fileInfo.state || "")) { nudge.restart(); return }
         if (a.danger && root.confirmId !== a.id) { root.confirmId = a.id; confirmReset.restart(); return }
         let args = a.args ? a.args : [p.value !== "" ? p.value : (a.arg || "")]
         if (!root.transient(a)) Quickshell.execDetached(["python3", root.dir + "/palette_index.py", "used", a.id])
@@ -528,6 +530,21 @@ FocusScope {
                 if (i >= 0) root.wall = this.text.slice(i + 7).split("\n")[0].trim()
             }
         }
+    }
+    property var fileInfo: ({})
+    readonly property string fileKey: kind === "file" ? "f:" + (shown === act ? paramInfo.value : "") : ""
+    onFileKeyChanged: if (fileKey !== "") filePeekDelay.restart()
+    Timer {
+        id: filePeekDelay
+        interval: 120
+        onTriggered: {
+            filePeek.command = ["python3", root.home + "/.config/hypr/scripts/quickshell/claude/fleet_send.py", "--peek", root.fileKey.slice(2)]
+            filePeek.pull()
+        }
+    }
+    Pull {
+        id: filePeek
+        stdout: StdioCollector { onStreamFinished: root.fileInfo = root.jsonOr(this.text, {}) || {} }
     }
     Pull {
         id: peekPull
@@ -1519,6 +1536,7 @@ FocusScope {
                             case "art": return artStage
                             case "project": return projectStage
                             case "glyph": return glyphStage
+                            case "file": return fileStage
                             default: return null
                             }
                         }
@@ -2173,6 +2191,85 @@ FocusScope {
                     anchors.verticalCenter: parent.verticalCenter
                     x: parent.isOn ? parent.width - width - root.s(6) : root.s(6)
                     color: parent.isOn ? root.crust : Qt.alpha(root.accent, 0.6)
+                }
+            }
+        }
+    }
+
+    Component {
+        id: fileStage
+        ClippingRectangle {
+            id: fileRoot
+            readonly property var f: root.fileInfo
+            readonly property string st: f.arg === (root.shown === root.act ? root.paramInfo.value : "") ? (f.state || "") : ""
+            readonly property bool img: !!f.image && (st === "ok" || st === "big")
+            readonly property color tone: st === "ok" || st === "empty" || st === "" ? root.accent : root.danger
+            radius: root.s(12)
+            color: Qt.alpha(root.text, 0.05)
+            Image {
+                anchors.fill: parent
+                source: fileRoot.img ? "file://" + fileRoot.f.path : ""
+                sourceSize.width: 720
+                fillMode: Image.PreserveAspectCrop
+                asynchronous: true; smooth: true
+                opacity: status === Image.Ready ? 1 : 0
+                Behavior on opacity { NumberAnimation { duration: 220 } }
+            }
+            Rectangle {
+                visible: !fileRoot.img
+                anchors.centerIn: fileGlyph
+                width: root.s(118); height: width; radius: width / 2
+                color: "transparent"
+                border.width: root.s(2); border.color: Qt.alpha(fileRoot.tone, 0.22)
+            }
+            Text {
+                id: fileGlyph
+                visible: !fileRoot.img
+                anchors.centerIn: parent
+                anchors.verticalCenterOffset: -root.s(10)
+                text: fileRoot.st === "dir" ? root.g(0xF024B) : fileRoot.st === "empty" || fileRoot.st === "" ? (root.shown ? root.shown.icon || "" : "") : root.g(0xF0214)
+                font.family: root.glyphs; font.pixelSize: root.s(54)
+                color: fileRoot.tone
+            }
+            Rectangle {
+                anchors.left: parent.left; anchors.right: parent.right; anchors.bottom: parent.bottom
+                height: root.s(46)
+                gradient: Gradient {
+                    GradientStop { position: 0.0; color: "transparent" }
+                    GradientStop { position: 1.0; color: Qt.alpha(root.crust, 0.88) }
+                }
+            }
+            Text {
+                anchors.left: parent.left; anchors.right: parent.right; anchors.bottom: parent.bottom
+                anchors.margins: root.s(10)
+                text: {
+                    let f = fileRoot.f
+                    switch (fileRoot.st) {
+                    case "ok": case "big": return f.name + "  ·  " + f.human
+                    case "dir": return f.name + " is a folder"
+                    case "missing": return "nothing at " + f.path
+                    case "empty-file": return f.name + " is empty"
+                    default: return "↵ with no path opens a file picker"
+                    }
+                }
+                font.family: root.mono; font.weight: Font.Bold; font.pixelSize: root.s(10)
+                color: root.text
+                elide: Text.ElideMiddle
+            }
+            Tag {
+                anchors.right: parent.right; anchors.top: parent.top; anchors.margins: root.s(8)
+                visible: fileRoot.st !== ""
+                tone: fileRoot.tone
+                strong: fileRoot.img || (fileRoot.st !== "ok" && fileRoot.st !== "empty")
+                label: {
+                    let f = fileRoot.f
+                    switch (fileRoot.st) {
+                    case "big": return "too big · max " + f.maxHuman
+                    case "missing": return "not found"
+                    case "dir": return "folder"
+                    case "empty-file": return "empty"
+                    default: return "max " + (f.maxHuman || "")
+                    }
                 }
             }
         }

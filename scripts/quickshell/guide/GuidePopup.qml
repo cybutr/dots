@@ -746,6 +746,9 @@ Item {
     property string sysLoad: ""
     property string dgpuState: ""
     property var cpuHist: []
+    property var memHist: []
+    property var loadHist: []
+    property int sysCores: 1
     property var pkgVers: ({})
 
     Process {
@@ -789,7 +792,7 @@ Item {
             "cpu=$((tot > 0 ? act * 100 / tot : 0)); mem=$(awk '/MemTotal/ {t=$2} /MemAvailable/ {a=$2} END {print int((t-a)/t*100)}' /proc/meminfo); " +
             "temp=$(cat /sys/class/thermal/thermal_zone*/temp 2>/dev/null | head -n1 || echo 0); up=$(awk '{print int($1/3600)\"h \"int(($1%3600)/60)\"m\"}' /proc/uptime 2>/dev/null || echo '0h 0m'); " +
             "ld=$(cut -d' ' -f1 /proc/loadavg); gpu=$(cat /sys/bus/pci/drivers/nvidia/0000:*/power/runtime_status 2>/dev/null | head -n1); " +
-            "echo \"$cpu|$mem|$((temp / 1000))|$up|$ld|$gpu\""
+            "echo \"$cpu|$mem|$((temp / 1000))|$up|$ld|$gpu|$(nproc)\""
         ]
         stdout: StdioCollector {
             onStreamFinished: {
@@ -804,6 +807,13 @@ Item {
                     let h = root.cpuHist.slice(-29);
                     h.push(root.cpuUsage);
                     root.cpuHist = h;
+                    let mh = root.memHist.slice(-29);
+                    mh.push(root.memUsage);
+                    root.memHist = mh;
+                    root.sysCores = parseInt(parts[6]) || root.sysCores;
+                    let lh = root.loadHist.slice(-29);
+                    lh.push(Math.min(100, (parseFloat(parts[4]) || 0) / root.sysCores * 100));
+                    root.loadHist = lh;
                 }
             }
         }
@@ -1144,7 +1154,7 @@ Item {
         "Every knob in the rice. Apply writes settings.json.",
         "Listening history, tops and vibe.",
         "Live hardware, memory and storage.",
-        "Preview and toggle every popup widget.",
+        "Every popup, shell piece and Claude surface. Fresh shots, one click to open.",
         "Every bind, parsed live from hyprland.conf. Click to run.",
         "Wallpaper-derived palette and app templates.",
         "OpenWeatherMap key and city.",
@@ -1154,6 +1164,46 @@ Item {
     ]
     NumberAnimation { id: gxFlashAnim; target: root; property: "tabFlash"; from: 1; to: 0; duration: 700; easing.type: Easing.OutCubic }
 
+    component GxSpark: Canvas {
+        property var pts: []
+        property color c: root.tabAccent
+        property real fillA: 0.22
+        property real lineA: 0.75
+        property int span: 30
+        onPtsChanged: requestPaint()
+        onCChanged: requestPaint()
+        onWidthChanged: requestPaint()
+        onPaint: {
+            let ctx = getContext("2d")
+            ctx.reset()
+            let n = pts.length
+            if (n < 2) return
+            let step = width / (span - 1)
+            let x0 = width - (n - 1) * step
+            let yOf = v => height - Math.max(0.04, Math.min(1, v / 100)) * height * 0.9
+            ctx.beginPath()
+            ctx.moveTo(x0, height)
+            for (let i = 0; i < n; i++) ctx.lineTo(x0 + i * step, yOf(pts[i]))
+            ctx.lineTo(width, height)
+            ctx.closePath()
+            let g = ctx.createLinearGradient(0, 0, 0, height)
+            g.addColorStop(0, Qt.rgba(c.r, c.g, c.b, fillA))
+            g.addColorStop(1, Qt.rgba(c.r, c.g, c.b, 0))
+            ctx.fillStyle = g
+            ctx.fill()
+            ctx.beginPath()
+            ctx.moveTo(x0, yOf(pts[0]))
+            for (let i = 1; i < n; i++) ctx.lineTo(x0 + i * step, yOf(pts[i]))
+            ctx.lineWidth = root.s(1.5)
+            ctx.lineJoin = "round"
+            ctx.strokeStyle = Qt.rgba(c.r, c.g, c.b, lineA)
+            ctx.stroke()
+            ctx.beginPath()
+            ctx.arc(width - root.s(1.5), yOf(pts[n - 1]), root.s(2), 0, 6.2832)
+            ctx.fillStyle = Qt.rgba(c.r, c.g, c.b, 1)
+            ctx.fill()
+        }
+    }
     component GxCaps: Text {
         font.family: "JetBrains Mono"; font.weight: Font.Black; font.pixelSize: root.s(10); font.letterSpacing: root.s(1.6)
         font.capitalization: Font.AllUppercase
@@ -1278,24 +1328,36 @@ Item {
     ListModel { id: dynamicKeybindsModel }
     ListModel {
         id: modulesDataModel
-        ListElement { title: "Media & EQ"; target: "music"; glyph: 0xF0386; hueName: "pink"; keys: "Super M"; desc: "Spinning vinyl, live BPM, ten-band EQ and saved presets."; shot: "docs:02_music_popup.png"; crop: "13,71,698,698" }
-        ListElement { title: "Calendar & Weather"; target: "calendar"; glyph: 0xF00ED; hueName: "sapphire"; keys: "Super Shift X"; desc: "Month grid, hourly weather orbit and today's agenda."; shot: "docs:03_calendar_popup.png"; crop: "236,70,1449,750" }
-        ListElement { title: "Volume Mixer"; target: "volume"; glyph: 0xF057E; hueName: "mauve"; keys: "Super Shift V"; desc: "Outputs, inputs, per-app streams and sound scenes."; shot: "docs:04_volume_popup.png"; crop: "1420,70,480,760" }
-        ListElement { title: "Battery & Power"; target: "battery"; glyph: 0xF0079; hueName: "green"; keys: "Super B"; desc: "Charge ring, session uptime, power profiles and quick power actions."; shot: "docs:05_battery_popup.png"; crop: "1420,70,480,860" }
-        ListElement { title: "Network Hub"; target: "network"; glyph: 0xF0928; hueName: "blue"; keys: "Super N"; desc: "Wi-Fi and Bluetooth radar with one-click pair and connect."; shot: "docs:06_network_popup.png"; crop: "1000,70,900,700" }
-        ListElement { title: "Wallpaper Picker"; target: "wallpaper"; glyph: 0xF0E09; hueName: "peach"; keys: "Super W"; desc: "Slanted carousel, colour filters and a live matugen theme preview."; shot: "docs:16_wallpaper_picker.png"; crop: "0,240,1920,630" }
-        ListElement { title: "Workspace Overview"; target: "workspaces"; glyph: 0xF0570; hueName: "teal"; keys: "Super Shift W"; desc: "Live thumbnails of every workspace, special ones included."; shot: "docs:17_workspace_overview.png"; crop: "" }
-        ListElement { title: "Claude Ask"; target: "claudeask"; glyph: 0xF06A9; hueName: "yellow"; keys: "Super `"; desc: "Ask Claude anything, with agent widgets pinned around it."; shot: "docs:24_claude_ask.png"; crop: "" }
-        ListElement { title: "Lock Screen"; target: "lock"; glyph: 0xF033E; hueName: "red"; keys: "Super L"; desc: "Parallax backdrop, rolling clock, now playing. Opens a safe preview."; shot: "docs:20_lock_screen.png"; crop: "" }
-        ListElement { title: "FocusTime"; target: "focustime"; glyph: 0xF0954; hueName: "peach"; keys: "Super Shift T"; desc: "Pomodoro timer daemon with session tracking."; shot: "previews/preview_focustime.png"; crop: "" }
-        ListElement { title: "Monitors"; target: "monitors"; glyph: 0xF0379; hueName: "blue"; keys: "Super Shift M"; desc: "Quick display layout and scaling."; shot: "previews/preview_monitors.png"; crop: "" }
-        ListElement { title: "Stewart AI"; target: "stewart"; glyph: 0xF06A9; hueName: "mauve"; keys: ""; desc: "Voice assistant. Reserved, currently disabled."; shot: "previews/preview_stewart.png"; crop: "" }
+        ListElement { group: "Popups"; title: "Media & EQ"; target: "music"; glyph: 0xF0386; hueName: "pink"; keys: "Super M"; desc: "Spinning vinyl, live BPM, ten-band EQ and saved presets."; shot: "docs:02_music_popup.png"; crop: "13,71,698,698"; extra: "assets:card-media.png" }
+        ListElement { group: "Popups"; title: "Calendar & Weather"; target: "calendar"; glyph: 0xF00ED; hueName: "sapphire"; keys: "Super Shift X"; desc: "Month grid, hourly weather orbit and today's agenda."; shot: "docs:03_calendar_popup.png"; crop: "236,70,1449,750"; extra: "assets:card-weather.png|assets:card-agenda.png" }
+        ListElement { group: "Popups"; title: "Volume Mixer"; target: "volume"; glyph: 0xF057E; hueName: "mauve"; keys: "Super Shift V"; desc: "Outputs, inputs, per-app streams and sound scenes."; shot: "docs:04_volume_popup.png"; crop: "1420,70,480,760"; extra: "" }
+        ListElement { group: "Popups"; title: "Battery & Power"; target: "battery"; glyph: 0xF0079; hueName: "green"; keys: "Super B"; desc: "Charge ring, session uptime, power profiles and quick power actions."; shot: "docs:05_battery_popup.png"; crop: "1420,70,480,860"; extra: "" }
+        ListElement { group: "Popups"; title: "Network Hub"; target: "network"; glyph: 0xF0928; hueName: "blue"; keys: "Super N"; desc: "Wi-Fi and Bluetooth radar with one-click pair and connect."; shot: "docs:06_network_popup.png"; crop: "1000,70,900,700"; extra: "" }
+        ListElement { group: "Popups"; title: "Wallpaper Picker"; target: "wallpaper"; glyph: 0xF0E09; hueName: "peach"; keys: "Super W"; desc: "Slanted carousel, colour filters and a live matugen theme preview."; shot: "docs:16_wallpaper_picker.png"; crop: "0,240,1920,630"; extra: "" }
+        ListElement { group: "Popups"; title: "Workspace Overview"; target: "workspaces"; glyph: 0xF0570; hueName: "teal"; keys: "Super Shift W"; desc: "Live thumbnails of every workspace, special ones included."; shot: "docs:17_workspace_overview.png"; crop: ""; extra: "" }
+        ListElement { group: "Popups"; title: "Monitors"; target: "monitors"; glyph: 0xF0379; hueName: "blue"; keys: "Super Shift M"; desc: "Display layout, resolution and scaling with live apply."; shot: "assets:monitors.jpg"; crop: ""; extra: "" }
+        ListElement { group: "Popups"; title: "FocusTime"; target: "focustime"; glyph: 0xF0954; hueName: "peach"; keys: "Super Shift T"; desc: "Screen time per day and per app, with a month heatmap."; shot: "assets:focustime.jpg"; crop: ""; extra: "" }
+        ListElement { group: "Shell"; title: "Top Bar"; target: ""; glyph: 0xF10A9; hueName: "sapphire"; keys: ""; desc: "Pills with hover cards, live backgrounds, stats chips and the timer."; shot: "assets:topbar-v3-left.png"; crop: ""; extra: "assets:topbar-v3-center.png|assets:topbar-v3-right.png|assets:stats-chips.png" }
+        ListElement { group: "Shell"; title: "Scratchpad"; target: "scratchpad"; glyph: 0xF0219; hueName: "teal"; keys: "Super P"; desc: "Floating markdown notes Claude can clean up, expand or quiz you on."; shot: "docs:18_scratchpad.png"; crop: "113,272,700,502"; extra: "" }
+        ListElement { group: "Shell"; title: "Lock Screen"; target: "lock"; glyph: 0xF033E; hueName: "red"; keys: "Super L"; desc: "Parallax backdrop, rolling clock, now playing. Opens a safe preview."; shot: "docs:20_lock_screen.png"; crop: ""; extra: "" }
+        ListElement { group: "Claude"; title: "Claude Ask"; target: "claudeask"; glyph: 0xF06A9; hueName: "yellow"; keys: "Super `"; desc: "Ask Claude anything, with agent widgets pinned around it."; shot: "docs:24_claude_ask.png"; crop: ""; extra: "assets:claude-ask.png|assets:agent-widgets.png|assets:card-resident-shot.png" }
+        ListElement { group: "Claude"; title: "Resident Cards"; target: "rcdemo"; glyph: 0xF0638; hueName: "peach"; keys: ""; desc: "Proactive cards under the clock: wrapped, replays, battery health, nudges."; shot: "assets:rc-wrapped.png"; crop: ""; extra: "assets:rc-song.png|assets:rc-plays.png|assets:rc-battery.png|assets:card-resident-nudge.png" }
+        ListElement { group: "Claude"; title: "Stewart AI"; target: "stewart"; glyph: 0xF06A9; hueName: "mauve"; keys: ""; desc: "Voice assistant. Reserved, currently disabled."; shot: "previews/preview_stewart.png"; crop: ""; extra: "" }
     }
     function moduleShot(p) {
         if (!p) return ""
         if (p.indexOf("docs:") === 0) return "file://" + Quickshell.env("HOME") + "/.config/hypr/docs/images/" + p.slice(5)
+        if (p.indexOf("assets:") === 0) return "file://" + Quickshell.env("HOME") + "/.config/hypr/docs/assets/" + p.slice(7)
         return Qt.resolvedUrl(p)
     }
+    function moduleShots(m) {
+        if (!m) return []
+        let out = [{ src: m.shot, crop: m.crop }]
+        if (m.extra) for (let e of m.extra.split("|")) out.push({ src: e, crop: "" })
+        return out
+    }
+    property int moduleShotIndex: 0
+    onSelectedModuleIndexChanged: moduleShotIndex = 0
     function moduleCrop(c) {
         if (!c) return Qt.rect(0, 0, 0, 0)
         let p = c.split(",").map(Number)
@@ -1304,7 +1366,12 @@ Item {
     function launchModule(i) {
         let m = modulesDataModel.get(i)
         if (!m) return
+        if (m.target === "") return
         if (m.target === "lock") Quickshell.execDetached(["bash", Quickshell.env("HOME") + "/.config/hypr/scripts/lock_test.sh"])
+        else if (m.target === "scratchpad") Quickshell.execDetached(["bash", Quickshell.env("HOME") + "/.config/hypr/scripts/scratchpad.sh"])
+        else if (m.target === "rcdemo") Quickshell.execDetached(["python3", Quickshell.env("HOME") + "/.config/hypr/scripts/quickshell/claude/resident_card.py",
+            "--title", "Resident cards", "--body", "This is what a card from the resident looks like. It drains, then dismisses itself.",
+            "--hold", "8", "--id", "guide-demo", "--source", "guide"])
         else Quickshell.execDetached(["bash", Quickshell.env("HOME") + "/.config/hypr/scripts/qs_manager.sh", "toggle", m.target])
     }
     property bool modulesFullShot: false
@@ -1971,52 +2038,80 @@ Item {
                                     color: root.subtext0
                                     elide: Text.ElideRight
                                 }
-                                Item { width: 1; height: root.s(4) }
-                                Row {
-                                    spacing: root.s(6)
-                                    Repeater {
-                                        model: [
-                                            { g: 0xF0954, v: root.sysUptime === "Loading..." ? "…" : root.sysUptime, h: "sapphire" },
-                                            { g: 0xF035B, v: root.memUsage + "%", h: "mauve" },
-                                            { g: 0xF050F, v: root.sysTemp + "°", h: root.sysTemp >= 80 ? "red" : (root.sysTemp >= 65 ? "peach" : "teal") }
-                                        ]
-                                        delegate: Rectangle {
-                                            id: gxIdChip
-                                            required property var modelData
-                                            required property int index
-                                            readonly property color t: root.hue(modelData.h)
-                                            height: root.s(22)
-                                            width: gxChipRow.implicitWidth + root.s(14)
-                                            radius: root.s(6)
-                                            color: Qt.alpha(t, 0.1)
-                                            border.width: 1
-                                            border.color: Qt.alpha(t, 0.28)
-                                            property real lift: gxIdHover.hovered ? -root.s(2) : 0
-                                            transform: Translate { y: lift }
-                                            Behavior on lift { NumberAnimation { duration: 260 + index * 60; easing.type: Easing.OutBack } }
-                                            Row {
-                                                id: gxChipRow
-                                                anchors.centerIn: parent
-                                                spacing: root.s(5)
-                                                Text {
-                                                    anchors.verticalCenter: parent.verticalCenter
-                                                    text: String.fromCodePoint(modelData.g)
-                                                    font.family: "Iosevka Nerd Font"; font.pixelSize: root.s(11)
-                                                    color: gxIdChip.t
-                                                }
-                                                Text {
-                                                    anchors.verticalCenter: parent.verticalCenter
-                                                    text: modelData.v
-                                                    font.family: "JetBrains Mono"; font.weight: Font.Bold; font.pixelSize: root.s(10)
-                                                    color: root.text
-                                                }
+                            }
+
+                            Row {
+                                id: gxVitals
+                                anchors.left: parent.left; anchors.leftMargin: root.s(14)
+                                anchors.right: parent.right; anchors.rightMargin: root.s(14)
+                                anchors.bottom: gxBuilt.top; anchors.bottomMargin: root.s(8)
+                                height: root.s(28)
+                                spacing: root.s(6)
+                                Repeater {
+                                    model: [
+                                        { k: "up", g: 0xF0954, v: root.sysUptime === "Loading..." ? "…" : root.sysUptime, h: "sapphire", f: -1 },
+                                        { k: "mem", g: 0xF035B, v: root.memUsage + "%", h: "mauve", f: root.memUsage },
+                                        { k: "temp", g: 0xF050F, v: root.sysTemp + "°", h: root.sysTemp >= 80 ? "red" : (root.sysTemp >= 65 ? "peach" : "teal"), f: Math.min(100, root.sysTemp) }
+                                    ]
+                                    delegate: Rectangle {
+                                        id: gxVital
+                                        required property var modelData
+                                        required property int index
+                                        readonly property color t: root.hue(modelData.h)
+                                        readonly property bool spark: modelData.k === "mem"
+                                        height: parent.height
+                                        width: gxVitalRow.implicitWidth + root.s(16) + (spark ? root.s(56) : 0)
+                                        radius: root.s(8)
+                                        color: Qt.alpha(t, gxIdHover.hovered ? 0.12 : 0.08)
+                                        border.width: 1
+                                        border.color: Qt.alpha(t, gxIdHover.hovered ? 0.4 : 0.22)
+                                        clip: true
+                                        property real lift: gxIdHover.hovered ? -root.s(2) : 0
+                                        transform: Translate { y: gxVital.lift }
+                                        Behavior on lift { NumberAnimation { duration: 260 + gxVital.index * 60; easing.type: Easing.OutBack } }
+                                        Behavior on color { ColorAnimation { duration: 200 } }
+                                        Rectangle {
+                                            visible: gxVital.modelData.f >= 0 && !gxVital.spark
+                                            anchors.left: parent.left; anchors.bottom: parent.bottom
+                                            height: root.s(2)
+                                            width: parent.width * Math.max(0, gxVital.modelData.f) / 100
+                                            color: gxVital.t
+                                            opacity: 0.8
+                                            Behavior on width { NumberAnimation { duration: 600; easing.type: Easing.OutCubic } }
+                                        }
+                                        Row {
+                                            id: gxVitalRow
+                                            anchors.left: parent.left; anchors.leftMargin: root.s(8)
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            spacing: root.s(5)
+                                            Text {
+                                                anchors.verticalCenter: parent.verticalCenter
+                                                text: String.fromCodePoint(gxVital.modelData.g)
+                                                font.family: "Iosevka Nerd Font"; font.pixelSize: root.s(12)
+                                                color: gxVital.t
                                             }
+                                            Text {
+                                                anchors.verticalCenter: parent.verticalCenter
+                                                text: gxVital.modelData.v
+                                                font.family: "JetBrains Mono"; font.weight: Font.Bold; font.pixelSize: root.s(11)
+                                                color: root.text
+                                            }
+                                        }
+                                        GxSpark {
+                                            visible: gxVital.spark
+                                            anchors.right: parent.right; anchors.rightMargin: root.s(6)
+                                            anchors.top: parent.top; anchors.topMargin: root.s(4)
+                                            anchors.bottom: parent.bottom; anchors.bottomMargin: root.s(3)
+                                            width: root.s(50)
+                                            pts: visible ? root.memHist : []
+                                            c: gxVital.t
                                         }
                                     }
                                 }
                             }
 
                             Rectangle {
+                                id: gxBuilt
                                 anchors.left: parent.left; anchors.right: parent.right
                                 anchors.bottom: parent.bottom
                                 anchors.margins: root.s(12)
@@ -2099,6 +2194,14 @@ Item {
                                     required property int index
                                     readonly property color t: root.hue(modelData.h)
                                     readonly property bool hot: gxSpecHover.hovered
+                                    readonly property bool awake: modelData.k === "dgpu" && root.dgpuState === "active"
+                                    property real breath: 0
+                                    SequentialAnimation on breath {
+                                        running: gxSpec.awake && gxSysCol.visible
+                                        loops: Animation.Infinite
+                                        NumberAnimation { to: 1; duration: 1600; easing.type: Easing.InOutSine }
+                                        NumberAnimation { to: 0; duration: 1600; easing.type: Easing.InOutSine }
+                                    }
                                     Layout.fillWidth: true
                                     Layout.fillHeight: true
                                     radius: root.s(14)
@@ -2120,43 +2223,47 @@ Item {
                                             GradientStop { position: 1.0; color: Qt.alpha(gxSpec.t, gxSpec.hot ? 0.16 : 0.07) }
                                         }
                                     }
-                                    Canvas {
-                                        id: gxSpark
-                                        visible: gxSpec.modelData.k === "cpu"
+                                    Rectangle {
+                                        id: gxSpecOrb
+                                        x: parent.width - width * 0.62
+                                        y: -height * 0.42
+                                        width: parent.height * 1.1; height: width
+                                        radius: width / 2
+                                        color: Qt.alpha(gxSpec.t, gxSpec.hot ? 0.16 : (gxSpec.awake ? 0.05 + 0.05 * gxSpec.breath : 0.06))
+                                        scale: gxSpec.hot ? 1.18 : 1
+                                        Behavior on scale { NumberAnimation { duration: 520; easing.type: Easing.OutBack } }
+                                        Behavior on color { ColorAnimation { duration: 260 } }
+                                    }
+                                    Rectangle {
+                                        anchors.centerIn: gxSpecOrb
+                                        width: parent.height * 0.62; height: width
+                                        radius: width / 2
+                                        color: Qt.alpha(gxSpec.t, gxSpec.hot ? 0.12 : 0.05)
+                                        Behavior on color { ColorAnimation { duration: 260 } }
+                                    }
+                                    Rectangle {
+                                        anchors.top: parent.top
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                        width: gxSpec.hot ? parent.width - root.s(28) : root.s(36)
+                                        height: root.s(2)
+                                        radius: height / 2
+                                        gradient: Gradient {
+                                            orientation: Gradient.Horizontal
+                                            GradientStop { position: 0.0; color: Qt.alpha(gxSpec.t, 0) }
+                                            GradientStop { position: 0.5; color: gxSpec.t }
+                                            GradientStop { position: 1.0; color: Qt.alpha(gxSpec.t, 0) }
+                                        }
+                                        Behavior on width { NumberAnimation { duration: 420; easing.type: Easing.OutCubic } }
+                                    }
+                                    GxSpark {
+                                        visible: gxSpec.modelData.k === "cpu" || gxSpec.modelData.k === "load"
                                         anchors.left: parent.left; anchors.right: parent.right
                                         anchors.bottom: parent.bottom
                                         height: parent.height * 0.62
-                                        property var pts: visible ? root.cpuHist : []
-                                        property color c: gxSpec.t
-                                        onPtsChanged: requestPaint()
-                                        onCChanged: requestPaint()
-                                        onPaint: {
-                                            let ctx = getContext("2d")
-                                            ctx.reset()
-                                            let n = pts.length
-                                            if (n < 2) return
-                                            let step = width / 29
-                                            let x0 = width - (n - 1) * step
-                                            let yOf = v => height - Math.max(0.04, Math.min(1, v / 100)) * height * 0.9
-                                            ctx.beginPath()
-                                            ctx.moveTo(x0, height)
-                                            for (let i = 0; i < n; i++) ctx.lineTo(x0 + i * step, yOf(pts[i]))
-                                            ctx.lineTo(width, height)
-                                            ctx.closePath()
-                                            let g = ctx.createLinearGradient(0, 0, 0, height)
-                                            g.addColorStop(0, Qt.rgba(c.r, c.g, c.b, 0.22))
-                                            g.addColorStop(1, Qt.rgba(c.r, c.g, c.b, 0))
-                                            ctx.fillStyle = g
-                                            ctx.fill()
-                                            ctx.beginPath()
-                                            for (let i = 0; i < n; i++) {
-                                                if (i === 0) ctx.moveTo(x0, yOf(pts[0]))
-                                                else ctx.lineTo(x0 + i * step, yOf(pts[i]))
-                                            }
-                                            ctx.lineWidth = root.s(1.5)
-                                            ctx.strokeStyle = Qt.rgba(c.r, c.g, c.b, 0.7)
-                                            ctx.stroke()
-                                        }
+                                        pts: !visible ? [] : (gxSpec.modelData.k === "cpu" ? root.cpuHist : root.loadHist)
+                                        c: gxSpec.t
+                                        fillA: gxSpec.hot ? 0.3 : 0.2
+                                        lineA: gxSpec.hot ? 0.95 : 0.7
                                     }
                                     Text {
                                         anchors.right: parent.right; anchors.rightMargin: -root.s(6)
@@ -2166,7 +2273,7 @@ Item {
                                         color: Qt.alpha(gxSpec.t, gxSpec.hot ? 0.2 : 0.09)
                                         rotation: gxSpec.hot ? -10 : 0
                                         scale: gxSpec.hot ? 1.12 : 1
-                                        visible: gxSpec.modelData.k !== "cpu"
+                                        visible: gxSpec.modelData.k !== "cpu" && gxSpec.modelData.k !== "load"
                                         Behavior on color { ColorAnimation { duration: 180 } }
                                         Behavior on rotation { NumberAnimation { duration: 420; easing.type: Easing.OutBack } }
                                         Behavior on scale { NumberAnimation { duration: 420; easing.type: Easing.OutBack } }
@@ -2323,7 +2430,34 @@ Item {
                                     Behavior on opacity { NumberAnimation { duration: 160 } }
                                 }
                                 Rectangle {
+                                    anchors.centerIn: gxPartTile
+                                    width: gxPartTile.width * 1.9; height: width
+                                    radius: width / 2
+                                    color: Qt.alpha(gxPart.t, gxPart.hot ? 0.16 : 0.05)
+                                    scale: gxPart.hot ? 1.15 : 0.85
+                                    Behavior on color { ColorAnimation { duration: 220 } }
+                                    Behavior on scale { NumberAnimation { duration: 420; easing.type: Easing.OutBack } }
+                                }
+                                Rectangle {
+                                    anchors.right: parent.right; anchors.top: parent.top
+                                    width: parent.width * 0.5; height: root.s(1)
+                                    gradient: Gradient {
+                                        orientation: Gradient.Horizontal
+                                        GradientStop { position: 0.0; color: Qt.alpha(gxPart.t, 0) }
+                                        GradientStop { position: 1.0; color: Qt.alpha(gxPart.t, gxPart.hot ? 0.8 : 0.3) }
+                                    }
+                                }
+                                Rectangle {
                                     id: gxPartTile
+                                    property real bob: 0
+                                    SequentialAnimation on bob {
+                                        running: gxPart.hot
+                                        loops: Animation.Infinite
+                                        alwaysRunToEnd: true
+                                        NumberAnimation { to: -root.s(3); duration: 520; easing.type: Easing.InOutSine }
+                                        NumberAnimation { to: 0; duration: 520; easing.type: Easing.InOutSine }
+                                    }
+                                    transform: Translate { y: gxPartTile.bob }
                                     anchors.left: parent.left; anchors.leftMargin: root.s(12)
                                     anchors.verticalCenter: parent.verticalCenter
                                     width: root.s(36); height: width
@@ -2441,6 +2575,16 @@ Item {
                                 Behavior on border.color { ColorAnimation { duration: 160 } }
                                 Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutQuart } }
 
+                                Text {
+                                    anchors.right: parent.right; anchors.rightMargin: -root.s(4)
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: root.tabIcons[gxJump.modelData]
+                                    font.family: "Iosevka Nerd Font"; font.pixelSize: root.s(52)
+                                    color: Qt.alpha(gxJump.t, gxJump.hot ? 0.16 : 0.06)
+                                    rotation: gxJump.hot ? -12 : 0
+                                    Behavior on rotation { NumberAnimation { duration: 420; easing.type: Easing.OutBack } }
+                                    Behavior on color { ColorAnimation { duration: 200 } }
+                                }
                                 Rectangle {
                                     anchors.left: parent.left; anchors.top: parent.top; anchors.bottom: parent.bottom
                                     width: gxJump.hot ? parent.width : 0
@@ -2469,15 +2613,17 @@ Item {
                                     anchors.verticalCenter: parent.verticalCenter
                                     spacing: root.s(2)
                                     Text {
-                                        text: root.tabIcons[gxJump.modelData]
-                                        font.family: "Iosevka Nerd Font"; font.pixelSize: root.s(14)
-                                        color: Qt.alpha(gxJump.t, gxJump.hot ? 1 : 0.8)
+                                        width: parent.width
+                                        text: root.tabNames[gxJump.modelData]
+                                        font.family: "JetBrains Mono"; font.weight: Font.Bold; font.pixelSize: root.s(13)
+                                        color: gxJump.hot ? root.text : root.subtext1
+                                        elide: Text.ElideRight
                                     }
                                     Text {
                                         width: parent.width
-                                        text: root.tabNames[gxJump.modelData]
-                                        font.family: "JetBrains Mono"; font.weight: Font.Bold; font.pixelSize: root.s(12)
-                                        color: gxJump.hot ? root.text : root.subtext1
+                                        text: root.tabBlurbs[gxJump.modelData] || ""
+                                        font.family: "JetBrains Mono"; font.pixelSize: root.s(9)
+                                        color: Qt.alpha(gxJump.hot ? gxJump.t : root.subtext0, 0.85)
                                         elide: Text.ElideRight
                                     }
                                 }
@@ -10446,9 +10592,11 @@ Item {
                         id: gxStage
                         readonly property var mod: modulesDataModel.get(root.selectedModuleIndex)
                         readonly property color t: root.hue(mod ? mod.hueName : "blue")
-                        readonly property string src: mod ? root.moduleShot(mod.shot) : ""
-                        readonly property bool fresh: mod ? mod.shot.indexOf("docs:") === 0 : false
-                        readonly property bool cropped: mod ? (mod.crop !== "" && !root.modulesFullShot) : false
+                        readonly property var shots: root.moduleShots(mod)
+                        readonly property var cur: shots[Math.min(root.moduleShotIndex, shots.length - 1)] || ({ src: "", crop: "" })
+                        readonly property string src: root.moduleShot(cur.src)
+                        readonly property bool fresh: cur.src.indexOf("previews/") !== 0
+                        readonly property bool cropped: cur.crop !== "" && !root.modulesFullShot
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         radius: root.s(14)
@@ -10483,7 +10631,7 @@ Item {
                             id: gxShotBox
                             anchors.fill: parent
                             anchors.topMargin: root.s(48)
-                            anchors.bottomMargin: root.s(98)
+                            anchors.bottomMargin: gxStage.shots.length > 1 ? root.s(150) : root.s(98)
                             anchors.leftMargin: root.s(24)
                             anchors.rightMargin: root.s(24)
                             opacity: gxStage.swap
@@ -10500,9 +10648,11 @@ Item {
                             }
                             Image {
                                 id: gxShot
-                                anchors.fill: parent
+                                anchors.centerIn: parent
+                                width: implicitWidth > 0 ? Math.min(parent.width, implicitWidth * 1.4) : parent.width
+                                height: implicitHeight > 0 ? Math.min(parent.height, implicitHeight * 1.4) : parent.height
                                 source: gxStage.src
-                                sourceClipRect: gxStage.cropped ? root.moduleCrop(gxStage.mod.crop) : Qt.rect(0, 0, 0, 0)
+                                sourceClipRect: gxStage.cropped ? root.moduleCrop(gxStage.cur.crop) : Qt.rect(0, 0, 0, 0)
                                 fillMode: Image.PreserveAspectFit
                                 asynchronous: true
                                 smooth: true
@@ -10516,11 +10666,13 @@ Item {
                             spacing: root.s(8)
                             GxTag { label: gxStage.fresh ? "Oct 2026 shot" : "Archive shot"; tone: gxStage.fresh ? gxStage.t : root.subtext0; strong: gxStage.fresh }
                             GxTag { label: ("0" + (root.selectedModuleIndex + 1)).slice(-2) + " / " + modulesDataModel.count; tone: gxStage.t }
+                            GxTag { visible: gxStage.mod ? gxStage.mod.group !== "" : false; label: gxStage.mod ? gxStage.mod.group : ""; tone: root.subtext0 }
+                            GxTag { visible: gxStage.shots.length > 1; label: "shot " + (root.moduleShotIndex + 1) + " / " + gxStage.shots.length; tone: gxStage.t }
                         }
                         Rectangle {
                             anchors.right: parent.right; anchors.rightMargin: root.s(14)
                             anchors.top: parent.top; anchors.topMargin: root.s(12)
-                            visible: gxStage.mod ? gxStage.mod.crop !== "" : false
+                            visible: gxStage.cur.crop !== ""
                             height: root.s(26)
                             width: gxZoomRow.implicitWidth + root.s(18)
                             radius: root.s(8)
@@ -10550,6 +10702,81 @@ Item {
                                 hoverEnabled: true
                                 cursorShape: Qt.PointingHandCursor
                                 onClicked: root.modulesFullShot = !root.modulesFullShot
+                            }
+                        }
+
+                        HoverHandler { id: gxStageHover }
+                        property real reel: 0
+                        readonly property bool reelOn: shots.length > 1 && root.currentTab === root.tabModules
+                        onReelOnChanged: reelOn ? gxReel.restart() : gxReel.stop()
+                        onShotsChanged: if (reelOn) gxReel.restart()
+                        Component.onCompleted: if (reelOn) gxReel.restart()
+                        NumberAnimation {
+                            id: gxReel
+                            target: gxStage; property: "reel"
+                            from: 0; to: 1
+                            duration: 4200
+                            paused: running && gxStageHover.hovered
+                            onFinished: Qt.callLater(() => {
+                                if (!gxStage.reelOn) return
+                                root.moduleShotIndex = (root.moduleShotIndex + 1) % gxStage.shots.length
+                                gxReel.restart()
+                            })
+                        }
+
+                        Row {
+                            id: gxReelStrip
+                            visible: gxStage.shots.length > 1
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            anchors.bottom: parent.bottom; anchors.bottomMargin: root.s(94)
+                            spacing: root.s(8)
+                            Repeater {
+                                model: gxStage.shots
+                                delegate: Rectangle {
+                                    id: gxThumb
+                                    required property var modelData
+                                    required property int index
+                                    readonly property bool on: index === root.moduleShotIndex
+                                    readonly property bool hot: gxThumbMa.containsMouse
+                                    width: root.s(76); height: root.s(44)
+                                    radius: root.s(8)
+                                    color: Qt.alpha(root.crust, 0.8)
+                                    border.width: on ? 2 : 1
+                                    border.color: Qt.alpha(gxStage.t, on ? 0.95 : (hot ? 0.6 : 0.22))
+                                    scale: on ? 1.08 : (hot ? 1.04 : 1)
+                                    property real lift: on ? -root.s(3) : 0
+                                    transform: Translate { y: gxThumb.lift }
+                                    Behavior on scale { NumberAnimation { duration: 260; easing.type: Easing.OutBack } }
+                                    Behavior on lift { NumberAnimation { duration: 260; easing.type: Easing.OutBack } }
+                                    Behavior on border.color { ColorAnimation { duration: 160 } }
+                                    Image {
+                                        anchors.fill: parent
+                                        anchors.margins: root.s(3)
+                                        source: root.moduleShot(gxThumb.modelData.src)
+                                        sourceClipRect: gxThumb.modelData.crop !== "" ? root.moduleCrop(gxThumb.modelData.crop) : Qt.rect(0, 0, 0, 0)
+                                        sourceSize.width: gxThumb.modelData.crop !== "" ? 1920 : root.s(220)
+                                        fillMode: Image.PreserveAspectCrop
+                                        asynchronous: true
+                                        opacity: gxThumb.on || gxThumb.hot ? 1 : 0.55
+                                        Behavior on opacity { NumberAnimation { duration: 160 } }
+                                    }
+                                    Rectangle {
+                                        visible: gxThumb.on
+                                        anchors.left: parent.left; anchors.bottom: parent.bottom
+                                        anchors.margins: root.s(3)
+                                        height: root.s(2)
+                                        radius: height / 2
+                                        width: (parent.width - root.s(6)) * gxStage.reel
+                                        color: gxStage.t
+                                    }
+                                    MouseArea {
+                                        id: gxThumbMa
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: { root.moduleShotIndex = gxThumb.index; gxReel.restart() }
+                                    }
+                                }
                             }
                         }
 
@@ -10625,9 +10852,11 @@ Item {
                                 id: gxOpenBtn
                                 anchors.right: parent.right
                                 anchors.verticalCenter: parent.verticalCenter
+                                readonly property bool live: gxStage.mod ? gxStage.mod.target !== "" : false
                                 height: root.s(42)
                                 width: gxOpenRow.implicitWidth + root.s(32)
                                 radius: root.s(12)
+                                opacity: live ? 1 : 0.45
                                 color: launchMa.containsMouse ? gxStage.t : Qt.alpha(gxStage.t, 0.85)
                                 scale: launchMa.pressed ? 0.95 : (launchMa.containsMouse ? 1.05 : 1.0)
                                 Behavior on scale { NumberAnimation { duration: 220; easing.type: Easing.OutBack } }
@@ -10639,7 +10868,7 @@ Item {
                                     Text {
                                         id: gxOpenGlyph
                                         anchors.verticalCenter: parent.verticalCenter
-                                        text: String.fromCodePoint(0xF040A)
+                                        text: String.fromCodePoint(gxOpenBtn.live ? 0xF040A : 0xF0954)
                                         font.family: "Iosevka Nerd Font"; font.pixelSize: root.s(18)
                                         color: root.crust
                                         property real nudge: launchMa.containsMouse ? root.s(2) : 0
@@ -10648,7 +10877,7 @@ Item {
                                     }
                                     Text {
                                         anchors.verticalCenter: parent.verticalCenter
-                                        text: gxStage.mod && gxStage.mod.target === "lock" ? "PREVIEW" : "OPEN"
+                                        text: !gxStage.mod ? "" : ({ "lock": "PREVIEW", "rcdemo": "DEMO", "": "ALWAYS ON" })[gxStage.mod.target] || "OPEN"
                                         font.family: "JetBrains Mono"; font.weight: Font.Black; font.pixelSize: root.s(13); font.letterSpacing: root.s(1)
                                         color: root.crust
                                     }
@@ -10656,6 +10885,7 @@ Item {
                                 MouseArea {
                                     id: launchMa
                                     anchors.fill: parent
+                                    enabled: gxOpenBtn.live
                                     hoverEnabled: true
                                     cursorShape: Qt.PointingHandCursor
                                     onClicked: root.launchModule(root.selectedModuleIndex)
@@ -10695,6 +10925,24 @@ Item {
                             model: modulesDataModel
                             currentIndex: root.selectedModuleIndex
                             boundsBehavior: Flickable.StopAtBounds
+                            section.property: "group"
+                            section.delegate: Item {
+                                id: gxModSec
+                                required property string section
+                                width: ListView.view.width
+                                height: root.s(26)
+                                Row {
+                                    anchors.left: parent.left; anchors.leftMargin: root.s(4)
+                                    anchors.bottom: parent.bottom; anchors.bottomMargin: root.s(6)
+                                    spacing: root.s(8)
+                                    Rectangle {
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        width: root.s(10); height: root.s(2); radius: height / 2
+                                        color: Qt.alpha(root.tabTint(root.tabModules), 0.7)
+                                    }
+                                    GxCaps { text: gxModSec.section; font.pixelSize: root.s(9); color: Qt.alpha(root.subtext0, 0.7) }
+                                }
+                            }
 
                             delegate: Rectangle {
                                 id: gxMod
@@ -10705,6 +10953,8 @@ Item {
                                 required property string hueName
                                 required property string keys
                                 required property string shot
+                                required property string extra
+                                readonly property int shotCount: 1 + (extra !== "" ? extra.split("|").length : 0)
                                 readonly property bool sel: index === root.selectedModuleIndex
                                 readonly property bool hot: modMa.containsMouse
                                 readonly property color t: root.hue(hueName)
@@ -10745,7 +10995,7 @@ Item {
                                 }
                                 Column {
                                     anchors.left: gxModIcon.right; anchors.leftMargin: root.s(11)
-                                    anchors.right: parent.right; anchors.rightMargin: root.s(12)
+                                    anchors.right: gxModDots.left; anchors.rightMargin: root.s(8)
                                     anchors.verticalCenter: parent.verticalCenter
                                     spacing: root.s(1)
                                     Text {
@@ -10757,20 +11007,29 @@ Item {
                                     }
                                     Text {
                                         width: parent.width
-                                        text: gxMod.keys !== "" ? gxMod.keys : "disabled"
+                                        text: gxMod.keys !== "" ? gxMod.keys : (gxMod.target === "" ? "always on" : (gxMod.target === "rcdemo" ? "demo card" : "disabled"))
                                         font.family: "JetBrains Mono"; font.pixelSize: root.s(10)
                                         color: Qt.alpha(gxMod.sel ? gxMod.t : root.subtext0, 0.85)
                                         elide: Text.ElideRight
                                     }
                                 }
-                                Rectangle {
+                                Row {
+                                    id: gxModDots
                                     anchors.right: parent.right; anchors.rightMargin: root.s(12)
                                     anchors.verticalCenter: parent.verticalCenter
-                                    visible: gxMod.shot.indexOf("docs:") === 0
-                                    width: root.s(6); height: width
-                                    radius: width / 2
-                                    color: gxMod.t
-                                    opacity: gxMod.sel ? 1 : 0.45
+                                    spacing: root.s(3)
+                                    Repeater {
+                                        model: gxMod.shotCount
+                                        delegate: Rectangle {
+                                            required property int index
+                                            width: gxMod.sel && index === root.moduleShotIndex ? root.s(12) : root.s(5)
+                                            height: root.s(5)
+                                            radius: height / 2
+                                            color: gxMod.t
+                                            opacity: gxMod.sel ? (index === root.moduleShotIndex ? 1 : 0.4) : 0.3
+                                            Behavior on width { NumberAnimation { duration: 260; easing.type: Easing.OutBack } }
+                                        }
+                                    }
                                 }
                                 MouseArea {
                                     id: modMa

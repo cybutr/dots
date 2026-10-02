@@ -134,5 +134,6 @@
   "qsRemoteEnabled": true,
   "qsRemoteInputEnabled": true,
   "qsRemoteRequireIdentity": true,
-  "qsRemoteAllowedLogins": []
+  "qsRemoteAllowedLogins": [],
+  "qsRemoteStreamEnabled": false
 }

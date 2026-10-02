@@ -1,116 +1,193 @@
 #!/usr/bin/env bash
-# Discord background profiler — updates person profiles for known contacts when they message
+# Discord background profiler — reactive per-message profile updates + periodic full sweep of real contacts
 
 PID_FILE="/tmp/qs_discord_profiler.pid"
+SWEEP_PID_FILE="/tmp/qs_discord_profiler_sweep.pid"
 LOG_FILE="/tmp/qs_discord_profiler.log"
+STATE_DIR="$HOME/.local/state/discord-profiler"
+LAST_SWEEP_FILE="$STATE_DIR/last_sweep"
+SWEEP_STARTED_FILE="$STATE_DIR/sweep_started"
+SETTINGS_FILE="$HOME/.config/hypr/settings.json"
 
-PROFILER_PROMPT='You are a background Discord contact profiler. Run this loop continuously:
+SWEEP_GUILDS="1183762487456305192 1019523857717133315"
+SWEEP_INTERVAL_DAYS=7
+SWEEP_RETRY_HOURS=6
+SWEEP_MAX_PASSES=12
+SWEEP_BATCH=8
 
-LOOP (run for at least 25 event cycles, then stop so I can restart you fresh):
-1. Call mcp__discord-mcp__discord_wait_events — pass {"since": <last_seq>} after the first call (omit on first call)
-2. Store the returned seq value for next call
-3. For each event of type "message" or "MESSAGE_CREATE":
-   - Extract the author user_id and their message content
-   - Skip bots (is_bot: true), skip yourself
-   - Call mcp__discord-mcp__person_get with {user_id}
-   - If the result is non-empty (person has an existing profile), call mcp__discord-mcp__person_note with a brief 1-2 sentence insight: what topic did they bring up, any writing style notes, relationship context, mood. Keep it tight.
-   - If person_get is empty, do nothing — skip this person.
-4. Go back to step 1
+DISALLOWED=(
+    Bash Write Edit NotebookEdit
+    mcp__discord-mcp__send_message mcp__discord-mcp__send_dm mcp__discord-mcp__edit_message
+    mcp__discord-mcp__delete_message mcp__discord-mcp__add_reaction mcp__discord-mcp__remove_reaction
+    mcp__discord-mcp__set_status mcp__discord-mcp__join_voice mcp__discord-mcp__leave_voice
+    mcp__discord-mcp__create_channel mcp__discord-mcp__delete_channel mcp__discord-mcp__create_thread
+    mcp__discord-mcp__start_typing mcp__discord-mcp__pin_message mcp__discord-mcp__unpin_message
+    mcp__discord-mcp__set_nickname mcp__discord-mcp__discord_send_gif mcp__discord-mcp__discord_send_file
+    mcp__discord-mcp__discord_queue mcp__discord-mcp__discord_style
+)
 
-Rules:
-- Never send any messages
-- Never start new conversations
-- Only update people who already have profiles (person_get non-empty)
-- Keep person_note updates short and informative
-- After ~25 event cycles output exactly "LOOP_DONE" and stop
+log() { echo "[$(date '+%F %T')] $*" >> "$LOG_FILE"; }
 
-Start immediately.'
+alive() { [ -f "$1" ] && kill -0 "$(cat "$1")" 2>/dev/null; }
+
+run_claude() {
+    claude --no-continue --disallowedTools "${DISALLOWED[@]}" -p "$1"
+}
+
+profiler_prompt() {
+    cat <<EOF
+You are a background Discord contact profiler. Your only job is to build and maintain short, accurate person profiles. You never act on Discord.
+
+Setup:
+- Call mcp__discord-mcp__get_current_user once and remember your own user id (this is the account owner).
+
+Event loop (repeat for about 25 event cycles, then stop):
+1. Call mcp__discord-mcp__discord_wait_events, passing {"since": <seq>} from the previous call (omit since on the very first call). Keep the returned seq.
+2. Ignore every event whose type is not "message". Ignore bots and the account owner.
+3. For each remaining message, call mcp__discord-mcp__person_get with the author id.
+   - Profile exists: only if the message reveals something durable and new (a fact, plan, preference, relationship signal, recurring topic, notable mood shift, language habit), call mcp__discord-mcp__person_note with one tight sentence. Skip small talk, logistics, single words, and anything already in the profile. At most one note per person per session unless something significant happens.
+   - No profile, and the message is a DM or group DM (is_dm true), or its guild_id is one of: ${SWEEP_GUILDS}: create a thin first-contact profile. Read the last 20 messages of that channel with mcp__discord-mcp__read_messages for context, then call mcp__discord-mcp__person_note with their username and 2-4 lines: first seen ${1} and where, apparent relationship to the owner, language, tone. Leave anything unclear out.
+   - No profile and none of the above (a stranger in some other server): do nothing.
+4. Go back to step 1.
+
+Hard rules:
+- Never send, edit, react to, or delete messages. Never start conversations. Never change status.
+- Do not record secrets, passwords, codes, addresses, or health details.
+- Facts only from what was actually said. No guessing, no padding.
+- Quality over volume; most messages deserve no note.
+- After about 25 event cycles output exactly LOOP_DONE and stop.
+
+Build profiles quietly. Start now.
+EOF
+}
+
+sweep_prompt() {
+    cat <<EOF
+You are doing a full review pass to build and refresh Discord person profiles. Today is ${1}. This review started on ${2}. Never act on Discord, only read and write profiles.
+
+1. Call mcp__discord-mcp__get_current_user (the account owner; never profile them) and mcp__discord-mcp__person_list.
+2. Candidates, in this order:
+   a. Every conversation from mcp__discord-mcp__list_dms: the recipient of each direct DM, and every participant of each group DM.
+   b. Servers in scope, and only these: ${SWEEP_GUILDS}. For each, call mcp__discord-mcp__list_channels, pick at most 4 text channels with recent activity, read up to 50 messages each. Candidates are only people who actually interact with the owner there (replies, mentions, back-and-forth in the same thread). Never profile bystanders who never talked with the owner. Never touch any other server.
+3. Skip any candidate whose profile already starts with "Last full review:" dated ${2} or later. Process at most ${SWEEP_BATCH} remaining candidates in this pass.
+4. For each processed person:
+   - mcp__discord-mcp__person_get for the existing profile.
+   - mcp__discord-mcp__read_messages on their DM or group DM (limit 50), plus what you read in the scoped servers.
+   - Write a consolidated profile with mcp__discord-mcp__person_note using replace true and their username. Merge the old notes with what you just read: keep every fact that still holds, drop duplicates and stale noise, correct anything contradicted. Format:
+     Last full review: ${1}
+     ## Relationship
+     ## How they talk (language, tone, length, slang, emoji)
+     ## Topics and interests
+     ## Shared history and in-jokes
+     ## Notes for conversations (do / avoid)
+     Keep it tight, bullet points, only what was actually observed. Leave sections out rather than guess.
+   - If there is no readable conversation with them, leave the profile untouched.
+5. Do not record secrets, passwords, codes, addresses, or health details. Never send, edit, react to, or delete messages.
+
+Finish with exactly one final line:
+- SWEEP_COMPLETE if no unreviewed candidates remain after this pass
+- SWEEP_PARTIAL if some remain
+EOF
+}
+
+sweep_due() {
+    [ -f "$LAST_SWEEP_FILE" ] || return 0
+    [ $(( $(date +%s) - $(cat "$LAST_SWEEP_FILE") )) -ge $(( SWEEP_INTERVAL_DAYS * 86400 )) ]
+}
+
+run_sweep() {
+    if alive "$SWEEP_PID_FILE" && [ "$(cat "$SWEEP_PID_FILE")" != "$$" ]; then
+        log "sweep already running (PID $(cat "$SWEEP_PID_FILE"))"
+        return 0
+    fi
+    echo $$ > "$SWEEP_PID_FILE"
+    mkdir -p "$STATE_DIR"
+    local last started pass out
+    last=$(cat "$LAST_SWEEP_FILE" 2>/dev/null || echo 0)
+    started=$(cat "$SWEEP_STARTED_FILE" 2>/dev/null || echo 0)
+    if [ "$started" -le "$last" ]; then
+        started=$(date +%s)
+        echo "$started" > "$SWEEP_STARTED_FILE"
+    fi
+    log "sweep started (review since $(date -d "@$started" +%F))"
+    for (( pass = 1; pass <= SWEEP_MAX_PASSES; pass++ )); do
+        out=$(run_claude "$(sweep_prompt "$(date +%F)" "$(date -d "@$started" +%F)")" 2>&1)
+        echo "$out" >> "$LOG_FILE"
+        if grep -q "SWEEP_COMPLETE" <<< "$out"; then
+            date +%s > "$LAST_SWEEP_FILE"
+            log "sweep complete after $pass pass(es)"
+            rm -f "$SWEEP_PID_FILE"
+            return 0
+        fi
+        grep -q "SWEEP_PARTIAL" <<< "$out" || break
+        sleep 5
+    done
+    echo $(( $(date +%s) - SWEEP_INTERVAL_DAYS * 86400 + SWEEP_RETRY_HOURS * 3600 )) > "$LAST_SWEEP_FILE"
+    log "sweep incomplete, retrying in ${SWEEP_RETRY_HOURS}h"
+    rm -f "$SWEEP_PID_FILE"
+}
 
 run_session() {
-    claude --no-continue -p "$PROFILER_PROMPT" >> "$LOG_FILE" 2>&1
+    local t0=$SECONDS
+    log "session start"
+    run_claude "$(profiler_prompt "$(date +%F)")" >> "$LOG_FILE" 2>&1
+    [ $(( SECONDS - t0 )) -lt 60 ] && { log "session ended early, backing off"; sleep 300; }
 }
 
 case "${1:-status}" in
-    start)
-        if [ -f "$PID_FILE" ] && kill -0 "$(cat "$PID_FILE")" 2>/dev/null; then
+    start|autostart)
+        if alive "$PID_FILE"; then
             echo "already running (PID $(cat "$PID_FILE"))"
             exit 0
         fi
-        (
-            touch "$PID_FILE"
-            echo $$ > "$PID_FILE"
-            echo "[$(date)] profiler started" >> "$LOG_FILE"
-            while kill -0 "$(cat "$PID_FILE")" 2>/dev/null && [ "$(cat "$PID_FILE")" = "$$" ]; do
-                run_session
-                sleep 3
-            done
-            echo "[$(date)] profiler loop exited" >> "$LOG_FILE"
-        ) &
-        disown $!
-        sleep 0.3
-        echo $! > "$PID_FILE"
-        notify-send "Discord Profiler" "Contact profiling started" -i dialog-information -t 3000
+        if [ "$1" = autostart ] && [ "$(jq -r '.discordProfiler' "$SETTINGS_FILE" 2>/dev/null)" = "false" ]; then
+            exit 0
+        fi
+        setsid -f bash "$0" _loop >/dev/null 2>&1
+        [ "$1" = start ] && notify-send "Discord Profiler" "Contact profiling started" -i dialog-information -t 3000
+        ;;
+    _loop)
+        echo $$ > "$PID_FILE"
+        log "profiler started"
+        while [ "$(cat "$PID_FILE" 2>/dev/null)" = "$$" ]; do
+            sweep_due && run_sweep
+            [ "$(cat "$PID_FILE" 2>/dev/null)" = "$$" ] || break
+            run_session
+            sleep 3
+        done
+        log "profiler loop exited"
         ;;
     stop)
-        if [ -f "$PID_FILE" ]; then
-            local_pid=$(cat "$PID_FILE")
-            kill "$local_pid" 2>/dev/null
-            pkill -f "discord_profiler" 2>/dev/null
-            rm -f "$PID_FILE"
-            echo "[$(date)] profiler stopped" >> "$LOG_FILE"
-        fi
+        for f in "$PID_FILE" "$SWEEP_PID_FILE"; do
+            alive "$f" && kill -- -"$(cat "$f")" 2>/dev/null
+            rm -f "$f"
+        done
+        log "profiler stopped"
         notify-send "Discord Profiler" "Contact profiling stopped" -i dialog-information -t 3000
         ;;
     toggle)
-        if [ -f "$PID_FILE" ] && kill -0 "$(cat "$PID_FILE")" 2>/dev/null; then
+        if alive "$PID_FILE"; then
             bash "$0" stop
         else
             bash "$0" start
         fi
         ;;
     status)
-        if [ -f "$PID_FILE" ] && kill -0 "$(cat "$PID_FILE")" 2>/dev/null; then
+        if alive "$PID_FILE"; then
             echo "running"
         else
             echo "stopped"
         fi
         ;;
-    sync)
-        # One-shot massive initial sync — profiles a list of known contacts from DMs
-        bash "$0" _run_sync
+    sweep|sync)
+        if alive "$SWEEP_PID_FILE"; then
+            echo "sweep already running (PID $(cat "$SWEEP_PID_FILE"))"
+            exit 0
+        fi
+        setsid -f bash "$0" _sweep >/dev/null 2>&1
+        echo "sweep started, log: $LOG_FILE"
         ;;
-    _run_sync)
-        SYNC_PROMPT='You are doing a one-time Discord contact profile sync. Go through each DM conversation listed below, read recent messages, and build/update person profiles using person_note.
-
-DMs to profile (channel_id → person):
-- 1185254809645895771 → fortrens (𝓕𝓸𝓻𝓽𝓻𝓮𝓷𝓼)
-- 931471380053131274 → titanmarek (Titanmarek)
-- 1343966202564841535 → real_matejj (matej)
-- 1510387493667606618 → kate_125_xx (Kate)
-- 1178034353863925953 → spralfie1109 (Spralfey)
-- 1185590978975907990 → nauticfox (Nautic)
-- 1333558544359886848 → thebluestickman (BlueStickman)
-- 1280884062659149826 → michal_strnad (Majkl)
-- 1283667536424079386 → petrkrotky_20 (Petr_Krotky20)
-- 1336617105843290142 → just.me.bored0 (JaMB0)
-- 1291438592475791391 → wrong_way.
-- 1460952013557862453 → _epsln (Epsilon)
-- 1189645147479224461 (group: Game Pass Together) → nauticfox, berdlydr, spralfie1109, __peepo
-- 1338121595406913643 (group: BrassBound Owners) → berdlydr (GielDBL), spralfie1109 (Spralfey)
-- 1186751282275430440 (group: bedwars/smp) → __peepo, berdlydr, nauticfox, spralfie1109
-
-For each channel:
-1. Call mcp__discord-mcp__read_messages with {channel_id, limit: 50}
-2. Identify the other participants (not Adam)
-3. For each participant, call person_get to see existing notes
-4. Call person_note with a rich profile update: relationship to Adam, communication style, topics, vibe, any in-jokes or recurring themes you notice, language they use, how close they seem
-
-After DMs, check these servers for relevant members:
-- Server 1183762487456305192 (yeahmonke'"'"'s server): list channels, read active ones, profile active posters
-- Server 1019523857717133315 (SSPŠ 🎓): list channels, read active ones, profile students
-
-Focus on quality over speed. Build real profiles. Person notes should be useful for future conversation context.
-Output a summary when done: how many people profiled.'
-        claude --no-continue -p "$SYNC_PROMPT" >> "$LOG_FILE" 2>&1
+    _sweep)
+        run_sweep
         ;;
 esac

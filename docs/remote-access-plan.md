@@ -2,7 +2,7 @@
 
 Status as of 2026-10-01 (evening): Phases 1 (mesh), 3 (hub) and 6 (qs-remote Tier A) are live. qs-remote now has a v1 API with Tailscale-identity checks, a kill switch and cookie-based `/m`. The hub has the §8.2 file relay, and the native Android app (§8) is built in [cybutr/fleet-app](https://github.com/cybutr/fleet-app): Dashboard, Controls, Send. Kahoot (§8.3) is deferred. Laptop side: [fleet.md](fleet.md). §7's questions are still mostly open.
 
-See §8 below for the native Android app, file relay, and Kahoot-photo-answer plan added 2026-10-01 — not started, scoped only.
+§8 below (native Android app, file relay, Kahoot-photo-answer) is now **superseded by reality** — all of it was built in a separate cloud session as [cybutr/fleet-app](https://github.com/cybutr/fleet-app) (`~/apps/fleet-app` locally): Compose app, CI-built debug APKs, pairing flow, touchpad/keyboard control (beyond what §8 even scoped), bidirectional file relay, and a working Kahoot `/api/v1/answer` endpoint (fast/Haiku + accurate/Sonnet modes). See `docs/fleet.md` for the real current state. §8 is kept below only as a historical record of the original plan, not as a live TODO.
 
 ---
 
