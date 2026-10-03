@@ -1971,6 +1971,38 @@ def tick_fleet_containers(state, force=False):
     )
 
 
+def tick_claude_rc_waiting(state):
+    """Fires once per waiting-transition, not every tick — mirrored to the
+    Fleet app as a push notification via the normal resident-card bridge, so
+    the phone pings the moment a session needs you, not on a 3s poll."""
+    if not _nudge_on("residentClaudeRcNudges"):
+        state.pop("claude_rc_waiting", None)
+        return None
+    try:
+        import qs_claude_sessions
+        data = qs_claude_sessions.sessions(titles=True)
+    except Exception:
+        return None
+    seen = state.setdefault("claude_rc_waiting", {})
+    active = set()
+    card = None
+    for s in data.get("sessions", []):
+        sid = s.get("id") or str(s.get("pid"))
+        if s.get("status") != "waiting":
+            continue
+        active.add(sid)
+        if sid in seen:
+            continue
+        seen[sid] = time.time()
+        title = (s.get("name") or s.get("project") or "Claude") + " needs you"
+        body = s.get("waiting_for") or "waiting for a reply"
+        card = resident_card.emit(title, body, "assistant", "normal", 25, [], "claude_rc", f"claude-rc-{sid}")
+    for sid in list(seen):
+        if sid not in active:
+            seen.pop(sid, None)
+    return card
+
+
 def tick(ctx, state):
     try:
         tick_catchup(ctx, state)
@@ -2022,6 +2054,10 @@ def tick(ctx, state):
             fn(state)
         except Exception:
             pass
+    try:
+        tick_claude_rc_waiting(state)
+    except Exception:
+        pass
 
 
 def main():

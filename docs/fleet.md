@@ -50,6 +50,7 @@ The touchpad needs ydotoold running. On Arch it is a user service: `systemctl --
   - switch workspace, screen on/off, screenshot to the phone, next keyboard layout
   - open a widget, lock, notify, show a card
   - scratchpad (the `magic` special workspace), eco mode, Claude quiet, the "yo kandor" wake word
+  - presenter mode: `presenter_mode` action, `{"on", "mode"}` where mode is `border`/`spotlight`/`both` — toggles a click-through overlay (glow border and/or cursor-following spotlight) for screen shares, state in `/tmp/qs_presenter_mode`, drawn by `scripts/quickshell/PresenterFx.qml`
 - **Palette:** the search bar at the top of Controls. `/api/v1/palette` takes `{"q", "ask"}` and returns matching rows from the laptop's own palette index (`palette_index.py`), plus a Claude route when `ask` is true. `/api/v1/palette/run` takes `{"id", "arg", "confirm"}` and runs a row by id; dangerous rows need `confirm`. Free text only goes to rows built for it (ask Claude, Spotify search, open a site, open an app on a workspace, rename a workspace, mail search), and the remote's own switches and `fleet.*` rows can't be run from the phone. It is part of the touchpad and keyboard switch.
 - **Quick settings tiles** in the phone's own shade: laptop music (play/pause), laptop sound (mute) and lock laptop. They only talk to the laptop when the shade is open or a tile is tapped.
 - **Touchpad and keyboard** (the Pad tab):
@@ -58,6 +59,10 @@ The touchpad needs ydotoold running. On Arch it is a user service: `systemctl --
   - Typing, special keys and modifiers.
   - Any of the laptop's own keybinds. The phone picks a keybind by its id, and the laptop checks it against its own list, so the phone never chooses what runs.
 - **Screen** (the Screen tab, next to Pad): the laptop's screen live, see below.
+- **Claude Code sessions** (home screen): live status via `/api/v1/claude/sessions` (read-only, polled every 3s — status/titles only, never message contents), plus two actions:
+  - `claude_focus` `{"pid"}` — focuses that session's window.
+  - `claude_send` `{"pid", "text", "submit"}` — focuses the session then types `text` via the laptop's input injector (same path as the Pad keyboard) and presses Enter unless `submit` is `false`. This really switches the laptop's focused window; there's no headless/invisible path.
+  - The laptop pushes a resident-card notification (source `claude_rc`) the moment any session flips to `waiting`, gated by `residentClaudeRcNudges` (default on).
 - **Kahoot:** send a photo of a quiz question to `/api/v1/answer` and get the answer back. Fast mode uses Haiku and accurate mode uses Sonnet, with the key in `~/.config/anthropic/accounts/`.
   - **Auto-play** (the "Auto-play on <laptop>" toggle, off every time the app starts): the phone adds `X-Answer-Click: 1`, and the laptop clicks the answer in the Kahoot tab in Vivaldi over CDP (`:9222`). The response gains `"click": {"ok", "tile", "name", "label", "selector"}` or `"click": {"ok": false, "error"}`, and a "Kahoot: clicked '…'" or "Kahoot: didn't click" card shows either way.
   - It only looks at tabs on `kahoot.it`, finds the player's `button[data-functional-selector="answer-N"]` (N is the 0-based tile on the host's screen, so it stays right when the phone's answers are shuffled), prefers a tile whose text matches the answer exactly, and checks the button is enabled and not covered. One click, no retries. Multi-select questions, closed questions and two open Kahoot questions are refused.
