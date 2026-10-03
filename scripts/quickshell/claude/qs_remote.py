@@ -1920,11 +1920,64 @@ def a_claude_focus(args):
 
 ACTIONS.setdefault("claude_focus", a_claude_focus)
 
+
+def a_claude_send(args):
+    if not _claude_on():
+        return {"ok": False, "error": "Claude sessions are hidden on the laptop"}
+    pid = _int(args.get("pid"))
+    text = str(args.get("text") or "")
+    submit = args.get("submit", True) is not False
+    if pid is None or pid <= 1:
+        return {"ok": False, "error": "pid expected"}
+    if not text.strip():
+        return {"ok": False, "error": "nothing to send"}
+    if not remote_input.INJECTOR.available():
+        return {"ok": False, "error": "ydotoold isn't running on the laptop"}
+    ok, why = qs_claude_sessions.focus(pid)
+    if not ok:
+        return {"ok": False, "error": why}
+
+    def go():
+        time.sleep(0.15)
+        remote_input.INJECTOR.type_text(text[:2000])
+        if submit:
+            time.sleep(0.08)
+            remote_input.INJECTOR.key("enter")
+
+    remote_input.INJECTOR.later(go)
+    return {"ok": True}
+
+
+ACTIONS.setdefault("claude_send", a_claude_send)
+
+PRESENTER_FILE = "/tmp/qs_presenter_mode"
+
+
+def a_presenter_mode(args):
+    on = bool(args.get("on"))
+    mode = str(args.get("mode") or "border")
+    if mode not in ("border", "spotlight", "both"):
+        return {"ok": False, "error": "mode must be border, spotlight or both"}
+    tmp = PRESENTER_FILE + ".tmp"
+    with open(tmp, "w") as f:
+        f.write(json.dumps({"on": on, "mode": mode}) + "\n")
+    os.replace(tmp, PRESENTER_FILE)
+    return {"ok": True, "on": on, "mode": mode}
+
+
+ACTIONS.setdefault("presenter_mode", a_presenter_mode)
+
 _describe_claude = describe
 
 
 def describe(name, args):
-    return "focused a Claude session" if name == "claude_focus" else _describe_claude(name, args)
+    if name == "claude_focus":
+        return "focused a Claude session"
+    if name == "claude_send":
+        return "sent text to a Claude session"
+    if name == "presenter_mode":
+        return ("turned on presenter mode" if args.get("on") else "turned off presenter mode")
+    return _describe_claude(name, args)
 
 
 if __name__ == "__main__":
