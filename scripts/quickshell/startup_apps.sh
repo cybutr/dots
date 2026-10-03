@@ -33,10 +33,19 @@ if [ -f "$LOCK" ] && kill -0 "$(cat "$LOCK" 2>/dev/null)" 2>/dev/null; then
 fi
 echo $$ > "$LOCK"
 trap 'rm -f "$LOCK"' EXIT
+rm -f /tmp/qs_startup_mover_pids
 
 has_windowrule_for_class() {
     grep -qE "match:class[[:space:]]*=[[:space:]]*\^\($1\)\\\$" "$HYPRCONF" 2>/dev/null
 }
+
+# PIDs of backgrounded open_on_workspace.sh movers we must wait on before
+# declaring startup done — otherwise the trailing `workspace 1` focus switch
+# below can fire before a slow-to-map window (kitty under cold-boot CPU
+# contention) has even appeared, and it lands wherever's focused instead of
+# being moved to its special workspace. This was the actual bug behind
+# "kitty opens next to Vivaldi instead of special:magic". Collected via a
+# temp file since the while loop below runs in a pipeline subshell.
 
 python3 -c '
 import json, sys
@@ -60,7 +69,7 @@ for a in apps:
         else
             setsid -f bash "$SCRIPT_DIR/open_on_workspace.sh" "$ws" "$cls" "$cmd" >/dev/null 2>&1 &
         fi
-        sleep 1.5
+        echo $! >> /tmp/qs_startup_mover_pids
         continue
     fi
 
@@ -75,6 +84,15 @@ for a in apps:
     sleep 0.3
 done
 
-# Backgrounded silent launches race on final focus — land predictably on ws1.
-sleep 1
+# The while loop above runs in a pipeline subshell, so MOVER_PIDS set there
+# doesn't survive into this shell — it wrote PIDs to a temp file instead.
+# Wait on each (bounded: open_on_workspace.sh itself times out at 15s, so
+# this can't hang startup indefinitely) before switching focus to ws1.
+if [ -f /tmp/qs_startup_mover_pids ]; then
+    while read -r pid; do
+        [ -n "$pid" ] && timeout 16 tail --pid="$pid" -f /dev/null 2>/dev/null
+    done < /tmp/qs_startup_mover_pids
+    rm -f /tmp/qs_startup_mover_pids
+fi
+
 hyprctl dispatch workspace 1
