@@ -590,6 +590,73 @@ def tick_catchup(ctx, state, force_finalize=False, dry=False):
             mailbox_post("user", brief["headline"] + ": " + "; ".join(brief["items"]))
 
 
+# ---------------------------------------------------------------- geofence automations
+# Proxy for GPS geofencing: the phone decides "left"/"returned" however it
+# likes (today: home Wi-Fi SSID disconnect/reconnect) and POSTs it once to
+# qs_remote.py's /api/v1/phone/push, which calls handle_geo_event() below.
+# No polling here — the phone fires the event, we react immediately.
+
+GEO_STATE_FILE = "/tmp/qs_geo_state.json"
+PALETTE_PY = os.path.join(QS, "palette", "palette_index.py")
+LOCK_SH = os.path.join(HOME, ".config/hypr/scripts/lock.sh")
+
+
+def _geo_settings():
+    g = settings().get("geoAutomations") or {}
+    return g if isinstance(g, dict) else {}
+
+
+def _geo_lock():
+    subprocess.Popen(["bash", LOCK_SH], start_new_session=True,
+                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, stdin=subprocess.DEVNULL)
+
+
+def _geo_eco(on):
+    subprocess.run([sys.executable, PALETTE_PY, "set", "ecoModeEnabled", "true" if on else "false"], timeout=5)
+
+
+def _geo_dnd(on):
+    subprocess.run(["swaync-client", "-dn" if on else "-df"], timeout=5)
+
+
+def _geo_catchup_card():
+    state = _load(GEO_STATE_FILE, {})
+    left_ts = state.get("left_ts") or time.time()
+    dur = _dur(time.time() - left_ts)
+    notes = _load(NOTIFICATIONS, [])
+    new = [x for x in notes if isinstance(x, dict) and x.get("uid", 0) > (state.get("uid") or 0)
+           and (x.get("appName") or "").lower() != "claude"]
+    body = f"Away {dur}"
+    if new:
+        body += f" — {len(new)} new notification{'s' if len(new) != 1 else ''}"
+    resident_card.emit("Welcome back", body, "home", "low", None, [], "geo", "geo-return-" + str(int(left_ts)))
+
+
+GEO_ON_LEAVE = {"lock": _geo_lock, "eco": lambda: _geo_eco(True), "dnd": lambda: _geo_dnd(True)}
+GEO_ON_RETURN = {"catchup_card": _geo_catchup_card}
+
+
+def handle_geo_event(state):
+    g = _geo_settings()
+    if not g.get("enabled", False):
+        return
+    if state not in ("left", "returned"):
+        return
+    if state == "left":
+        for name in g.get("onLeave") or []:
+            fn = GEO_ON_LEAVE.get(name)
+            if fn:
+                fn()
+        _save(GEO_STATE_FILE, {"left_ts": time.time(), "uid": _max_uid()})
+        return
+    # returned
+    for name in g.get("onReturn") or []:
+        fn = GEO_ON_RETURN.get(name)
+        if fn:
+            fn()
+    _save(GEO_STATE_FILE, {})
+
+
 # ---------------------------------------------------------------- proactive fixes
 
 def _cooldown_ok(state, key, urgency="normal"):

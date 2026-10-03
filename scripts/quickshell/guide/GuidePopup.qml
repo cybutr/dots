@@ -249,6 +249,11 @@ Item {
     property int  setResidentPassiveExpireSecs: 30
     property bool setResidentPillTakeoverEnabled: true
     property bool setResidentLayoutSuggestions: true
+    property bool setGeoAutomationsEnabled: false
+    property bool setGeoOnLeaveLock: true
+    property bool setGeoOnLeaveEco: false
+    property bool setGeoOnLeaveDnd: false
+    property bool setGeoOnReturnCatchup: true
     property string setBatteryAlertStyle: "integrated"
     property string setNightLightStart: "18:00"
     property string setNightLightEnd: "07:00"
@@ -445,6 +450,11 @@ Item {
             "residentPassiveExpireSecs": root.setResidentPassiveExpireSecs,
             "residentPillTakeoverEnabled": root.setResidentPillTakeoverEnabled,
             "residentLayoutSuggestions": root.setResidentLayoutSuggestions,
+            "geoAutomations": {
+                "enabled": root.setGeoAutomationsEnabled,
+                "onLeave": (root.setGeoOnLeaveLock ? ["lock"] : []).concat(root.setGeoOnLeaveEco ? ["eco"] : []).concat(root.setGeoOnLeaveDnd ? ["dnd"] : []),
+                "onReturn": root.setGeoOnReturnCatchup ? ["catchup_card"] : []
+            },
             "batteryAlertStyle": root.setBatteryAlertStyle,
             "nightLightStart": root.setNightLightStart,
             "nightLightEnd": root.setNightLightEnd,
@@ -635,6 +645,16 @@ Item {
                         if (parsed.residentPassiveExpireSecs !== undefined) root.setResidentPassiveExpireSecs = parsed.residentPassiveExpireSecs;
                         if (parsed.residentPillTakeoverEnabled !== undefined) root.setResidentPillTakeoverEnabled = parsed.residentPillTakeoverEnabled;
                         if (parsed.residentLayoutSuggestions !== undefined) root.setResidentLayoutSuggestions = parsed.residentLayoutSuggestions;
+                        if (parsed.geoAutomations !== undefined) {
+                            let ga = parsed.geoAutomations;
+                            if (ga.enabled !== undefined) root.setGeoAutomationsEnabled = ga.enabled;
+                            let onLeave = Array.isArray(ga.onLeave) ? ga.onLeave : [];
+                            root.setGeoOnLeaveLock = onLeave.indexOf("lock") >= 0;
+                            root.setGeoOnLeaveEco = onLeave.indexOf("eco") >= 0;
+                            root.setGeoOnLeaveDnd = onLeave.indexOf("dnd") >= 0;
+                            let onReturn = Array.isArray(ga.onReturn) ? ga.onReturn : [];
+                            root.setGeoOnReturnCatchup = onReturn.indexOf("catchup_card") >= 0;
+                        }
                         if (parsed.batteryAlertStyle !== undefined) root.setBatteryAlertStyle = parsed.batteryAlertStyle;
                         if (parsed.nightLightStart !== undefined) root.setNightLightStart = parsed.nightLightStart;
                         if (parsed.nightLightEnd !== undefined) root.setNightLightEnd = parsed.nightLightEnd;
@@ -1016,6 +1036,7 @@ Item {
     property bool secNudgesExpanded: false
     property bool secHyprPolishExpanded: false
     property bool secLockExpanded: false
+    property bool secGeoExpanded: false
 
     property bool secGeneralHasMatch: true
     property bool secAmbientHasMatch: true
@@ -1032,6 +1053,7 @@ Item {
     property bool secNudgesHasMatch: true
     property bool secHyprPolishHasMatch: true
     property bool secLockHasMatch: true
+    property bool secGeoHasMatch: true
 
     function normalizeSearch(str) { return (str || "").toString().toLowerCase(); }
 
@@ -1080,6 +1102,7 @@ Item {
         root.applySectionFilter(t1.x_secNudgesContent, "secNudgesExpanded", "secNudgesHasMatch");
         root.applySectionFilter(t1.x_secHyprPolishContent, "secHyprPolishExpanded", "secHyprPolishHasMatch");
         root.applySectionFilter(t1.x_secLockContent, "secLockExpanded", "secLockHasMatch");
+        root.applySectionFilter(t1.x_secGeoContent, "secGeoExpanded", "secGeoHasMatch");
         root.applySectionFilter(t1.x_secCalendarContent, "secCalendarExpanded", "secCalendarHasMatch");
         root.applySectionFilter(t1.x_secClaudeContent, "secClaudeExpanded", "secClaudeHasMatch");
         root.applySectionFilter(t1.x_secPinnedContent, "secPinnedExpanded", "secPinnedHasMatch");
@@ -1088,7 +1111,7 @@ Item {
         root.applySectionFilter(t1.x_secAccountsContent, "secAccountsExpanded", "secAccountsHasMatch");
     }
 
-    readonly property var settingsSectionKeys: ["General", "Ambient", "Media", "Calendar", "Claude", "Pinned", "Widget", "Display", "Accounts", "PillBg", "SmartWs", "Resident", "Nudges", "HyprPolish", "Lock"]
+    readonly property var settingsSectionKeys: ["General", "Ambient", "Media", "Calendar", "Claude", "Pinned", "Widget", "Display", "Accounts", "PillBg", "SmartWs", "Resident", "Nudges", "HyprPolish", "Lock", "Geo"]
 
     function setAllSectionsExpanded(expanded) {
         for (let i = 0; i < root.settingsSectionKeys.length; i++) root["sec" + root.settingsSectionKeys[i] + "Expanded"] = expanded;
@@ -2683,6 +2706,7 @@ Item {
                 readonly property var x_secWidgetContent: secWidgetContent
                 readonly property var x_secDisplayContent: secDisplayContent
                 readonly property var x_secAccountsContent: secAccountsContent
+                readonly property var x_secGeoContent: secGeoContent
                 anchors.fill: parent
                 visible: root.currentTab === root.tabSettings
                 opacity: visible ? 1.0 : 0.0
@@ -2830,13 +2854,14 @@ Item {
                         { k: "Pinned", n: "Pinned & chat", g: "󰮯" },
                         { k: "Widget", n: "Widget style", g: "󰉦" },
                         { k: "Display", n: "Display", g: "󰍹" },
-                        { k: "Accounts", n: "Accounts & model", g: "󰌋" }
+                        { k: "Accounts", n: "Accounts & model", g: "󰌋" },
+                        { k: "Geo", n: "Geofence", g: "󰍍" }
                     ]
                     readonly property var targets: ({
                         General: secGeneral, Ambient: secAmbient, Resident: secResident, Nudges: secNudges,
                         PillBg: secPillBg, SmartWs: secSmartWs, HyprPolish: secHyprPolish, Lock: secLock,
                         Media: secMedia, Calendar: secCalendar, Claude: secClaude, Pinned: secPinned,
-                        Widget: secWidget, Display: secDisplay, Accounts: secAccounts
+                        Widget: secWidget, Display: secDisplay, Accounts: secAccounts, Geo: secGeo
                     })
                     readonly property int liveCount: secs.filter(x => root["sec" + x.k + "HasMatch"] === true).length
                     property string pending: ""
@@ -10155,6 +10180,162 @@ Item {
                         }
                     } // end section: accounts
 
+                    // --- section: geofence ---
+                    Item {
+                        id: secGeo
+                        Layout.fillWidth: true
+                        implicitHeight: secGeoHeader.height + secGeoBody.height
+                        visible: root.secGeoHasMatch
+
+                        ColumnLayout {
+                            width: parent.width
+                            spacing: 0
+
+                            Item {
+                                id: secGeoHeader
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: root.s(30)
+
+                                GxSecHeader {
+                                    anchors.fill: parent
+                                    num: 16
+                                    glyph: "󰍍"
+                                    label: "GEOFENCE"
+                                    tone: root.secTint("Geo")
+                                    expanded: root.secGeoExpanded
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: root.secGeoExpanded = !root.secGeoExpanded
+                                }
+                            }
+
+                            Item {
+                                id: secGeoBody
+                                Layout.fillWidth: true
+                                clip: true
+                                Layout.preferredHeight: root.secGeoExpanded ? (secGeoContent.implicitHeight + root.s(15)) : 0
+                                Behavior on Layout.preferredHeight { NumberAnimation { duration: 220; easing.type: Easing.OutQuart } }
+
+                                ColumnLayout {
+                                    id: secGeoContent
+                                    y: root.s(15)
+                                    width: parent.width
+                                    spacing: root.s(15)
+
+                                    component GeoChoiceRow: Rectangle {
+                                        id: gcr
+                                        property string glyph: ""
+                                        property string title: ""
+                                        property string sub: ""
+                                        property string mode: ""
+                                        property var options: []
+                                        signal picked(string v)
+                                        Layout.fillWidth: true
+                                        Layout.preferredHeight: root.s(60)
+                                        radius: root.s(8)
+                                        color: Qt.alpha(root.surface0, 0.4)
+                                        border.color: Qt.alpha(root.secTint("Geo"), 0.16)
+                                        border.width: 1
+                                        GxTick { tone: root.secTint("Geo") }
+
+                                        RowLayout {
+                                            anchors.fill: parent
+                                            anchors.margins: root.s(15)
+                                            spacing: root.s(20)
+
+                                            Item {
+                                                Layout.preferredWidth: root.s(30)
+                                                Layout.alignment: Qt.AlignVCenter
+                                                Text { anchors.centerIn: parent; text: gcr.glyph; font.family: "Iosevka Nerd Font"; font.pixelSize: root.s(20); color: root.blue }
+                                            }
+
+                                            ColumnLayout {
+                                                Layout.fillWidth: true
+                                                spacing: root.s(4)
+                                                Text { text: gcr.title; font.family: "JetBrains Mono"; font.weight: Font.Bold; font.pixelSize: root.s(13); color: root.text }
+                                                Text { text: gcr.sub; font.family: "JetBrains Mono"; font.pixelSize: root.s(11); color: root.subtext0; elide: Text.ElideRight; Layout.fillWidth: true }
+                                            }
+
+                                            Item {
+                                                Layout.preferredWidth: root.s(70) * Math.max(2, gcr.options.length)
+                                                Layout.fillHeight: true
+
+                                                Rectangle {
+                                                    id: gcrSeg
+                                                    anchors.right: parent.right
+                                                    anchors.verticalCenter: parent.verticalCenter
+                                                    width: parent.width; height: root.s(26); radius: root.s(13)
+                                                    color: root.surface2
+                                                    border.color: root.surface1
+                                                    border.width: 1
+
+                                                    Rectangle {
+                                                        readonly property int idx: { for (let i = 0; i < gcr.options.length; i++) if (gcr.options[i].v === gcr.mode) return i; return 0 }
+                                                        width: parent.width / Math.max(1, gcr.options.length); height: parent.height; radius: root.s(13)
+                                                        color: root.mauve
+                                                        x: idx * width
+                                                        Behavior on x { NumberAnimation { duration: 200; easing.type: Easing.OutBack } }
+                                                    }
+
+                                                    RowLayout {
+                                                        anchors.fill: parent
+                                                        spacing: 0
+                                                        Repeater {
+                                                            model: gcr.options
+                                                            delegate: Item {
+                                                                Layout.preferredWidth: gcrSeg.width / Math.max(1, gcr.options.length)
+                                                                Layout.fillHeight: true
+                                                                Text { anchors.centerIn: parent; text: modelData.l; font.family: "JetBrains Mono"; font.weight: Font.Bold; font.pixelSize: root.s(9); color: gcr.mode === modelData.v ? root.base : root.subtext0 }
+                                                                MouseArea { anchors.fill: parent; onClicked: gcr.picked(modelData.v); cursorShape: Qt.PointingHandCursor }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    GeoChoiceRow {
+                                        glyph: "󰍍"; title: "Geofence automations"; sub: "React to the phone leaving/returning to home Wi-Fi — no GPS, no background location."
+                                        options: [ { v: "on", l: "On" }, { v: "off", l: "Off" } ]
+                                        mode: root.setGeoAutomationsEnabled ? "on" : "off"
+                                        onPicked: (v) => root.setGeoAutomationsEnabled = (v === "on")
+                                    }
+
+                                    GeoChoiceRow {
+                                        glyph: "󰍁"; title: "On leave: lock"; sub: "Lock the laptop the moment the phone leaves home Wi-Fi."
+                                        options: [ { v: "on", l: "On" }, { v: "off", l: "Off" } ]
+                                        mode: root.setGeoOnLeaveLock ? "on" : "off"
+                                        onPicked: (v) => root.setGeoOnLeaveLock = (v === "on")
+                                    }
+
+                                    GeoChoiceRow {
+                                        glyph: "󰌪"; title: "On leave: eco mode"; sub: "Turn eco mode on so background apps throttle while you're away."
+                                        options: [ { v: "on", l: "On" }, { v: "off", l: "Off" } ]
+                                        mode: root.setGeoOnLeaveEco ? "on" : "off"
+                                        onPicked: (v) => root.setGeoOnLeaveEco = (v === "on")
+                                    }
+
+                                    GeoChoiceRow {
+                                        glyph: "󰂛"; title: "On leave: do not disturb"; sub: "Mute notifications while the phone is away from home Wi-Fi."
+                                        options: [ { v: "on", l: "On" }, { v: "off", l: "Off" } ]
+                                        mode: root.setGeoOnLeaveDnd ? "on" : "off"
+                                        onPicked: (v) => root.setGeoOnLeaveDnd = (v === "on")
+                                    }
+
+                                    GeoChoiceRow {
+                                        glyph: "󰑐"; title: "On return: catch-up card"; sub: "A \"Welcome back\" card summarising what happened while you were gone."
+                                        options: [ { v: "on", l: "On" }, { v: "off", l: "Off" } ]
+                                        mode: root.setGeoOnReturnCatchup ? "on" : "off"
+                                        onPicked: (v) => root.setGeoOnReturnCatchup = (v === "on")
+                                    }
+                                }
+                            }
+                        }
+                    } // end section: geofence
 
                 }
                 }

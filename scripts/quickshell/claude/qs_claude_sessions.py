@@ -11,6 +11,7 @@ Never returns prompts, replies, tool arguments or file paths inside the work.
 
   python3 qs_claude_sessions.py      print what the phone would see
 """
+import datetime
 import glob
 import json
 import os
@@ -24,6 +25,8 @@ CLAUDE = os.path.join(HOME, ".claude")
 SESSIONS = os.path.join(CLAUDE, "sessions")
 PROJECTS = os.path.join(CLAUDE, "projects")
 TAIL = (65536, 524288, 2097152)
+HISTORY_TAIL = (131072, 1048576, 4194304, 16777216)
+HISTORY_MSG_MAX = 4000
 AGENT_LIVE = 150
 AGENT_DONE_GRACE = 8
 TOOLS = {
@@ -335,6 +338,108 @@ def focus(pid):
             r = subprocess.run(["hyprctl", "dispatch", "focuswindow", f"pid:{win[0]}"], capture_output=True, text=True, timeout=3)
             return r.returncode == 0 and "ok" in (r.stdout or "").lower(), "hyprctl refused"
     return False, "that session isn't running anymore"
+
+
+def _session_for_pid(pid):
+    for path in glob.glob(os.path.join(SESSIONS, "*.json")):
+        s = _read_json(path)
+        if isinstance(s, dict) and s.get("pid") == pid and _alive(pid, s.get("procStart")):
+            return s
+    return None
+
+
+def _iso_to_epoch(ts):
+    try:
+        return int(datetime.datetime.strptime(ts, "%Y-%m-%dT%H:%M:%S.%fZ")
+                   .replace(tzinfo=datetime.timezone.utc).timestamp())
+    except (TypeError, ValueError):
+        return None
+
+
+def _turn_text(content):
+    if isinstance(content, str):
+        return content.strip()
+    if isinstance(content, list):
+        parts = [b.get("text", "") for b in content if isinstance(b, dict) and b.get("type") == "text"]
+        return "\n".join(p for p in parts if p).strip()
+    return ""
+
+
+def history(sid, limit=40):
+    """The user-visible turns of a transcript: no tool calls, no thinking,
+    no tool results — just what the user typed and what Claude said back."""
+    path = _transcript(sid)
+    if not path:
+        return []
+    limit = max(1, min(int(limit or 40), 200))
+    turns = []
+    for n in HISTORY_TAIL:
+        try:
+            st = os.stat(path)
+        except OSError:
+            return []
+        try:
+            with open(path, "rb") as f:
+                f.seek(max(0, st.st_size - n))
+                chunk = f.read(n)
+        except OSError:
+            return []
+        lines = chunk.split(b"\n")
+        if st.st_size > n:
+            lines = lines[1:]
+        turns = []
+        for raw in lines:
+            if not raw.strip():
+                continue
+            try:
+                d = json.loads(raw)
+            except ValueError:
+                continue
+            if not isinstance(d, dict) or d.get("type") not in ("user", "assistant") or d.get("isSidechain"):
+                continue
+            msg = d.get("message") if isinstance(d.get("message"), dict) else {}
+            text = _turn_text(msg.get("content"))
+            if not text:
+                continue
+            turns.append({"role": d["type"], "text": text[:HISTORY_MSG_MAX], "ts": _iso_to_epoch(d.get("timestamp"))})
+        if len(turns) >= limit or st.st_size <= n:
+            break
+    return turns[-limit:]
+
+
+def history_for_pid(pid, limit=40):
+    s = _session_for_pid(pid)
+    if not s:
+        return None, "that session isn't running anymore"
+    sid = str(s.get("sessionId") or "")
+    if not sid:
+        return [], None
+    return history(sid, limit), None
+
+
+DIFF_STAT_MAX = 4000
+DIFF_BODY_MAX = 20000
+DIFF_LINES_MAX = 400
+
+
+def diff(pid):
+    s = _session_for_pid(pid)
+    if not s:
+        return {"ok": False, "error": "that session isn't running anymore"}
+    cwd = str(s.get("cwd") or "")
+    if not cwd or not os.path.isdir(cwd):
+        return {"ok": False, "error": "that session has no working directory to check"}
+    top = subprocess.run(["git", "-C", cwd, "rev-parse", "--show-toplevel"],
+                         capture_output=True, text=True, timeout=3)
+    if top.returncode != 0:
+        return {"ok": False, "error": "not a git repo"}
+    stat = subprocess.run(["git", "-C", cwd, "diff", "--stat"], capture_output=True, text=True, timeout=5).stdout
+    status = subprocess.run(["git", "-C", cwd, "status", "--porcelain"], capture_output=True, text=True, timeout=5).stdout
+    if not stat.strip() and not status.strip():
+        return {"ok": True, "clean": True}
+    full = subprocess.run(["git", "-C", cwd, "diff"], capture_output=True, text=True, timeout=8).stdout
+    capped = "\n".join(full.splitlines()[:DIFF_LINES_MAX])
+    return {"ok": True, "clean": False, "stat": stat.strip()[:DIFF_STAT_MAX], "diff": capped[:DIFF_BODY_MAX]}
 
 
 if __name__ == "__main__":

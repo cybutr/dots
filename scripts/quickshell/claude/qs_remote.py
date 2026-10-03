@@ -1768,7 +1768,8 @@ def phone_cards(since):
             continue
         out.append({"id": str(c.get("id") or ""), "ts": c["ts"], "title": str(c.get("title") or "")[:120],
                     "body": str(c.get("body") or "")[:600], "urgency": str(c.get("urgency") or "normal"),
-                    "source": str(c.get("source") or ""), "kind": str(c.get("kind") or "")})
+                    "source": str(c.get("source") or ""), "kind": str(c.get("kind") or ""),
+                    "data": c.get("data") if isinstance(c.get("data"), dict) else {}})
     return out[-CARDS_MAX:]
 
 
@@ -1953,16 +1954,24 @@ ACTIONS.setdefault("claude_send", a_claude_send)
 PRESENTER_FILE = "/tmp/qs_presenter_mode"
 
 
+PRESENTER_COLORS = {"cyan", "peach", "pink", "green", "lavender", "yellow"}
+
+
 def a_presenter_mode(args):
     on = bool(args.get("on"))
     mode = str(args.get("mode") or "border")
     if mode not in ("border", "spotlight", "both"):
         return {"ok": False, "error": "mode must be border, spotlight or both"}
+    color = str(args.get("color") or "cyan")
+    if color not in PRESENTER_COLORS:
+        color = "cyan"
+    size = _int(args.get("size")) or 180
+    size = max(80, min(360, size))
     tmp = PRESENTER_FILE + ".tmp"
     with open(tmp, "w") as f:
-        f.write(json.dumps({"on": on, "mode": mode}) + "\n")
+        f.write(json.dumps({"on": on, "mode": mode, "color": color, "size": size}) + "\n")
     os.replace(tmp, PRESENTER_FILE)
-    return {"ok": True, "on": on, "mode": mode}
+    return {"ok": True, "on": on, "mode": mode, "color": color, "size": size}
 
 
 ACTIONS.setdefault("presenter_mode", a_presenter_mode)
@@ -1978,6 +1987,132 @@ def describe(name, args):
     if name == "presenter_mode":
         return ("turned on presenter mode" if args.get("on") else "turned off presenter mode")
     return _describe_claude(name, args)
+
+
+# ---------------------------------------------------------------- claude code: chat history + diff
+
+_get_claude2_core = Handler.do_GET
+
+
+def _do_get_claude2(self):
+    path = urlsplit(self.path).path
+    if path not in ("/api/v1/claude/history", "/api/v1/claude/diff"):
+        return _get_claude2_core(self)
+    err = self._gate()
+    if err:
+        return self._json(err[0], {"ok": False, "error": err[1]})
+    who = self._who()
+    if not self._bearer_ok():
+        audit({"path": path, "denied": "auth", "user": who[0], "ip": who[1]})
+        return self._json(401, {"ok": False, "error": "unauthorized"})
+    if not self._limit("read"):
+        return self._json(429, {"ok": False, "error": "rate limited"})
+    if not _claude_on():
+        return self._json(503, {"ok": False, "error": "Claude sessions are hidden on the laptop"})
+    q = parse_qs(urlsplit(self.path).query)
+    pid = _int((q.get("pid") or [""])[0])
+    if pid is None or pid <= 1:
+        return self._json(400, {"ok": False, "error": "pid expected"})
+    if path == "/api/v1/claude/history":
+        limit = _int((q.get("limit") or ["40"])[0]) or 40
+        try:
+            turns, error = qs_claude_sessions.history_for_pid(pid, limit)
+        except Exception as e:
+            log(f"claude history failed: {type(e).__name__}: {e}")
+            return self._json(500, {"ok": False, "error": "couldn't read that session's history on the laptop"})
+        if error:
+            return self._json(404, {"ok": False, "error": error})
+        return self._json(200, {"ok": True, "turns": turns})
+    try:
+        return self._json(200, qs_claude_sessions.diff(pid))
+    except Exception as e:
+        log(f"claude diff failed: {type(e).__name__}: {e}")
+        return self._json(500, {"ok": False, "error": "couldn't diff that session's working directory"})
+
+
+Handler.do_GET = _do_get_claude2
+
+
+# ---------------------------------------------------------------- phone-initiated push: clipboard, geo, sms, call
+
+import resident_extras  # noqa: E402
+
+PHONE_PUSH_KINDS = ("clipboard", "geo", "sms", "call")
+_post_push_core = Handler.do_POST
+
+
+def _push_clipboard(body):
+    text = str(body.get("text") or "")[:CLIP_MAX]
+    if not text:
+        return {"ok": False, "error": "nothing to paste"}
+    subprocess.run(["wl-copy"], input=text, text=True, timeout=5)
+    return {"ok": True}
+
+
+def _push_geo(body):
+    state = str(body.get("state") or "")
+    if state not in ("left", "returned"):
+        return {"ok": False, "error": "state must be left or returned"}
+    resident_extras.handle_geo_event(state)
+    return {"ok": True}
+
+
+def _push_sms(body):
+    frm = str(body.get("from") or "unknown")[:80]
+    preview = str(body.get("preview") or "")[:300]
+    resident_card.emit(f"SMS from {frm}", preview, icon="󰍫", urgency="normal", source="phone_sms")
+    return {"ok": True}
+
+
+def _push_call(body):
+    frm = str(body.get("from") or "unknown")[:80]
+    kind = str(body.get("type") or "incoming")
+    kind = kind if kind in ("missed", "incoming") else "incoming"
+    title = f"Missed call: {frm}" if kind == "missed" else f"Incoming call: {frm}"
+    resident_card.emit(title, "", icon="󰞋", urgency="normal", source="phone_call")
+    return {"ok": True}
+
+
+PHONE_PUSH = {"clipboard": _push_clipboard, "geo": _push_geo, "sms": _push_sms, "call": _push_call}
+
+
+def _do_post_push(self):
+    path = urlsplit(self.path).path
+    if path != "/api/v1/phone/push":
+        return _post_push_core(self)
+    err = self._gate()
+    if err:
+        return self._json(err[0], {"ok": False, "error": err[1]})
+    who = self._who()
+    if not self._bearer_ok():
+        audit({"path": path, "denied": "auth", "user": who[0], "ip": who[1]})
+        return self._json(401, {"ok": False, "error": "unauthorized"})
+    if not self._limit("act"):
+        return self._json(429, {"ok": False, "error": "rate limited"})
+    raw, berr = self._body()
+    if berr:
+        return self._json(*berr)
+    try:
+        body = json.loads(raw or b"{}")
+    except ValueError:
+        return self._json(400, {"ok": False, "error": "invalid json"})
+    if not isinstance(body, dict):
+        return self._json(400, {"ok": False, "error": "object expected"})
+    kind = str(body.get("kind") or "")
+    fn = PHONE_PUSH.get(kind)
+    if not fn:
+        return self._json(400, {"ok": False, "error": "kind must be " + ", ".join(PHONE_PUSH_KINDS)})
+    try:
+        result = fn(body)
+    except Exception as e:
+        log(f"phone push ({kind}) failed: {type(e).__name__}: {e}")
+        result = {"ok": False, "error": "the laptop failed to handle that"}
+    audit({"action": "phone_push", "args": {"kind": kind}, "ok": bool(result.get("ok")), "user": who[0], "ip": who[1]},
+          None if result.get("ok") else {"error": result.get("error", "")})
+    return self._json(200 if result.get("ok") else 422, result)
+
+
+Handler.do_POST = _do_post_push
 
 
 if __name__ == "__main__":

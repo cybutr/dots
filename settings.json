@@ -135,5 +135,14 @@
   "qsRemoteInputEnabled": true,
   "qsRemoteRequireIdentity": true,
   "qsRemoteAllowedLogins": [],
-  "qsRemoteStreamEnabled": true
+  "qsRemoteStreamEnabled": true,
+  "geoAutomations": {
+    "enabled": false,
+    "onLeave": [
+      "lock"
+    ],
+    "onReturn": [
+      "catchup_card"
+    ]
+  }
 }
