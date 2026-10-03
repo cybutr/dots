@@ -29,10 +29,16 @@ PanelWindow {
         height: 0
     }
 
-    readonly property color accent: "#89dceb"
+    readonly property var palette: ({
+        cyan: "#89dceb", peach: "#fab387", pink: "#f38ba8",
+        green: "#a6e3a1", lavender: "#b4befe", yellow: "#f9e2af",
+    })
+    readonly property color accent: palette[presenterColor] || palette.cyan
 
     property bool presenterOn: false
     property string presenterMode: "border"
+    property string presenterColor: "cyan"
+    property real presenterSize: 180
     readonly property bool showBorder: presenterOn && (presenterMode === "border" || presenterMode === "both")
     readonly property bool showSpotlight: presenterOn && (presenterMode === "spotlight" || presenterMode === "both")
 
@@ -101,8 +107,8 @@ PanelWindow {
 
         Rectangle {
             id: glowCircle
-            width: 180
-            height: 180
+            width: root.presenterSize
+            height: root.presenterSize
             radius: width / 2
             color: "transparent"
             border.width: 10
@@ -150,6 +156,8 @@ PanelWindow {
         presenterOn = !!obj.on;
         let m = obj.mode || "border";
         if (m === "border" || m === "spotlight" || m === "both") presenterMode = m;
+        if (obj.color && root.palette[obj.color]) presenterColor = obj.color;
+        if (typeof obj.size === "number" && obj.size > 0) presenterSize = obj.size;
     }
 
     Process {
