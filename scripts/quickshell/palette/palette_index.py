@@ -612,7 +612,9 @@ ROUTE_SYSTEM = (
     "Text params get the user's words. want only for actions that show a current on/off state: the state the "
     "user wants after the step. Prefer specific actions over opening widgets. To open an app on a workspace use ws.openapp with arg "
     '"<app> on <number>" or "<app> on new" (new means a fresh empty workspace). '
-    "To play music use spotify.search with the user's words as arg. To visit a site use web.open. "
+    "To play a specific song, artist, album or playlist use spotify.search with the user's words as arg; to play music "
+    "described by a mood, vibe, feeling, genre or activity (something sad, chill, upbeat, to study to) use spotify.mood "
+    "with the user's description as arg. To visit a site use web.open. "
     "Code projects are project.<type>.<name> rows (opening one opens it in the editor); to start a new one use "
     "project.new.<type> with the user's name or idea as arg. "
     "If nothing fits, steps is []. "
@@ -765,10 +767,24 @@ def parse_reply(text):
 
 
 WS_INTENT = re.compile(r"^(open|launch|start|run|spawn|put|fire up)\b|\b(workspace|ws|desktop)\b|@")
+MOOD_INTENT = re.compile(r"^(please\s+)?(play|put on|throw on|queue( up)?|blast|give me)\s+(me\s+)?"
+                         r"(something|anything|(some\s+)?(\S+\s+){1,3}(music|songs|tunes|vibes|beats|stuff))\b")
+MOOD_VERB = re.compile(r"^(please\s+)?(play|put on|throw on|queue( up)?|blast|give me)\s+(me\s+)?")
+
+
+def mood_route(query, by_id):
+    q = norm_query(query)
+    if "spotify.mood" not in by_id or re.search(r",| and | then ", q) or not MOOD_INTENT.search(q):
+        return None
+    what = MOOD_VERB.sub("", query.strip(), count=1).strip() if MOOD_VERB.match(q) else query.strip()
+    return {"label": "Play " + what[:50], "steps": [{"id": "spotify.mood", "arg": query.strip()}], "show": what, "direct": True}
 
 
 def direct_route(query, by_id):
     q = norm_query(query)
+    mood = mood_route(query, by_id)
+    if mood:
+        return mood
     if "ws.openapp" not in by_id or re.search(r",| and | then ", q) or not WS_INTENT.search(q):
         return None
     d = sources().describe_ws_spec(q, [a for a in by_id.values() if a.get("cat") == "app"], strict=True)

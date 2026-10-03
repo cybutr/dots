@@ -5,3 +5,5 @@
 2026-09-29 08:31:48 skip vesktop — already running (cmd: flatpak run dev.vencord.Vesktop)
 2026-10-01 07:58:17 timeout waiting for kitty window (cmd: kitty)
 2026-10-01 22:08:04 timeout waiting for kitty window (cmd: kitty)
+2026-10-03 00:53:14 timeout waiting for kitty window (cmd: kitty)
+2026-10-03 11:06:32 timeout waiting for kitty window (cmd: kitty)

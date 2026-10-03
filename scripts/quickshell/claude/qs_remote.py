@@ -1251,7 +1251,7 @@ def describe(name, args):
     return extra.get(name) or _describe_core(name, args)
 
 
-PHONE_TEXT_OK = {"claude.ask", "spotify.search", "web.open", "ws.openapp", "ws.rename", "mail.search"}
+PHONE_TEXT_OK = {"claude.ask", "spotify.search", "spotify.mood", "web.open", "ws.openapp", "ws.rename", "mail.search"}
 PHONE_BLOCKED = ("setting.qsRemote", "fleet.")
 PAL_BIAS = {"power": 3, "system": 2, "audio": 2, "media": 2, "widget": 2, "mail": 2, "timer": 2, "claude": 1,
             "capture": 1, "wallpaper": 1, "layout": 1, "window": 2, "workspace": 1, "device": 2, "project": 2,
@@ -1742,6 +1742,189 @@ def describe(name, args):
         "maintenance": task.get(str(args.get("task", "")), "maintenance"),
     }
     return extra.get(name) or _describe_controls(name, args)
+
+
+# ---------------------------------------------------------------- phone feed: resident cards, app updates
+
+CARDS_MAX = 30
+UPDATE_REPO = "cybutr/fleet-app"
+UPDATE_DIR = os.path.join(HOME, ".cache/qs-remote/updates")
+UPDATE_TTL = 600
+SHA_RE = re.compile(r"SHA-256:\s*`?([0-9a-f]{64})")
+_update_cache = {"ts": 0.0, "data": None}
+_update_mu = threading.Lock()
+_get_feed_core = Handler.do_GET
+
+
+def _cards_on():
+    s = settings()
+    return s.get("qsRemoteEnabled", True) is not False and s.get("qsRemoteCardsEnabled", True) is not False
+
+
+def phone_cards(since):
+    out = []
+    for _, c in resident_card._queue_cards():
+        if not isinstance(c, dict) or not isinstance(c.get("ts"), (int, float)) or c["ts"] < since:
+            continue
+        out.append({"id": str(c.get("id") or ""), "ts": c["ts"], "title": str(c.get("title") or "")[:120],
+                    "body": str(c.get("body") or "")[:600], "urgency": str(c.get("urgency") or "normal"),
+                    "source": str(c.get("source") or ""), "kind": str(c.get("kind") or "")})
+    return out[-CARDS_MAX:]
+
+
+def _gh(args, timeout=30):
+    r = subprocess.run(["gh"] + args, capture_output=True, timeout=timeout)
+    if r.returncode != 0:
+        raise RuntimeError(r.stderr.decode("utf-8", "replace").strip()[:200] or "gh failed")
+    return r.stdout
+
+
+def _update_repo():
+    return str(settings().get("qsRemoteUpdateRepo") or UPDATE_REPO)
+
+
+def latest_release():
+    with _update_mu:
+        if _update_cache["data"] and time.time() - _update_cache["ts"] < UPDATE_TTL:
+            return _update_cache["data"]
+        rel = json.loads(_gh(["api", f"repos/{_update_repo()}/releases/latest"]))
+        apk = next((a for a in rel.get("assets") or [] if str(a.get("name", "")).endswith(".apk")), {})
+        notes = str(rel.get("body") or "")
+        sha = SHA_RE.search(notes)
+        tag = str(rel.get("tag_name") or "")
+        data = {"tag": tag, "version": tag.lstrip("v"), "name": str(rel.get("name") or tag),
+                "notes": notes[:4000], "published": str(rel.get("published_at") or ""),
+                "asset": os.path.basename(str(apk.get("name") or "")), "size": int(apk.get("size") or 0),
+                "sha256": sha.group(1) if sha else ""}
+        _update_cache.update(ts=time.time(), data=data)
+        return data
+
+
+def release_apk():
+    rel = latest_release()
+    if not rel["asset"]:
+        raise RuntimeError("no apk in the latest release")
+    path = os.path.join(UPDATE_DIR, rel["asset"])
+    with _update_mu:
+        if not (os.path.exists(path) and os.path.getsize(path) == rel["size"]):
+            os.makedirs(UPDATE_DIR, exist_ok=True)
+            for f in os.listdir(UPDATE_DIR):
+                try:
+                    os.unlink(os.path.join(UPDATE_DIR, f))
+                except OSError:
+                    pass
+            _gh(["release", "download", rel["tag"], "-R", _update_repo(), "-p", rel["asset"], "-D", UPDATE_DIR, "--clobber"],
+                timeout=300)
+    return path, rel
+
+
+def _do_get_feed(self):
+    split = urlsplit(self.path)
+    if split.path not in ("/api/v1/cards", "/api/v1/update", "/api/v1/update/apk"):
+        return _get_feed_core(self)
+    err = self._gate()
+    if err:
+        return self._json(err[0], {"ok": False, "error": err[1]})
+    who = self._who()
+    if not self._bearer_ok():
+        audit({"path": split.path, "denied": "auth", "user": who[0], "ip": who[1]})
+        return self._json(401, {"ok": False, "error": "unauthorized"})
+    if split.path == "/api/v1/cards":
+        if not self._limit("read"):
+            return self._json(429, {"ok": False, "error": "rate limited"})
+        if not _cards_on():
+            return self._json(503, {"ok": False, "error": "the card feed is turned off on the laptop"})
+        try:
+            since = float((parse_qs(split.query).get("since") or ["0"])[0])
+        except ValueError:
+            since = 0.0
+        return self._json(200, {"ok": True, "now": time.time(), "cards": phone_cards(since)})
+    if not self._limit("answer"):
+        return self._json(429, {"ok": False, "error": "rate limited"})
+    try:
+        if split.path == "/api/v1/update":
+            return self._json(200, {"ok": True, **latest_release()})
+        apk, rel = release_apk()
+    except Exception as e:
+        log(f"update lookup failed: {type(e).__name__}: {e}")
+        return self._json(502, {"ok": False, "error": "the laptop couldn't reach the release on GitHub"})
+    self.send_response(200)
+    self.send_header("Content-Type", "application/vnd.android.package-archive")
+    self.send_header("Content-Length", str(os.path.getsize(apk)))
+    self.send_header("X-Release-Version", rel["version"])
+    self.end_headers()
+    if self.command == "HEAD":
+        return
+    with open(apk, "rb") as f:
+        while True:
+            chunk = f.read(65536)
+            if not chunk:
+                break
+            self.wfile.write(chunk)
+    audit({"action": "app_update", "args": {"version": rel["version"]}, "ok": True, "user": who[0], "ip": who[1]})
+
+
+Handler.do_GET = _do_get_feed
+
+
+# ---------------------------------------------------------------- claude code sessions
+
+import qs_claude_sessions  # noqa: E402
+
+_get_claude_core = Handler.do_GET
+
+
+def _claude_on():
+    s = settings()
+    return s.get("qsRemoteEnabled", True) is not False and s.get("qsRemoteClaudeSessions", True) is not False
+
+
+def _claude_titles():
+    return settings().get("qsRemoteClaudeTitles", True) is not False
+
+
+def _do_get_claude(self):
+    path = urlsplit(self.path).path
+    if path != "/api/v1/claude/sessions":
+        return _get_claude_core(self)
+    err = self._gate()
+    if err:
+        return self._json(err[0], {"ok": False, "error": err[1]})
+    who = self._who()
+    if not self._bearer_ok():
+        audit({"path": path, "denied": "auth", "user": who[0], "ip": who[1]})
+        return self._json(401, {"ok": False, "error": "unauthorized"})
+    if not self._limit("read"):
+        return self._json(429, {"ok": False, "error": "rate limited"})
+    if not _claude_on():
+        return self._json(503, {"ok": False, "error": "Claude sessions are hidden on the laptop"})
+    try:
+        return self._json(200, {"ok": True, **qs_claude_sessions.sessions(_claude_titles())})
+    except Exception as e:
+        log(f"claude sessions failed: {type(e).__name__}: {e}")
+        return self._json(500, {"ok": False, "error": "couldn't read Claude sessions on the laptop"})
+
+
+Handler.do_GET = _do_get_claude
+
+
+def a_claude_focus(args):
+    if not _claude_on():
+        return {"ok": False, "error": "Claude sessions are hidden on the laptop"}
+    pid = _int(args.get("pid"))
+    if pid is None or pid <= 1:
+        return {"ok": False, "error": "pid expected"}
+    ok, why = qs_claude_sessions.focus(pid)
+    return {"ok": True} if ok else {"ok": False, "error": why}
+
+
+ACTIONS.setdefault("claude_focus", a_claude_focus)
+
+_describe_claude = describe
+
+
+def describe(name, args):
+    return "focused a Claude session" if name == "claude_focus" else _describe_claude(name, args)
 
 
 if __name__ == "__main__":

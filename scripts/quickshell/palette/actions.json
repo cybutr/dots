@@ -738,6 +738,21 @@
       "verb": "Play top hit"
     },
     {
+      "id": "spotify.mood",
+      "label": "Play a mood",
+      "hint": "Claude picks real tracks that fit a vibe",
+      "cat": "spotify",
+      "icon": "󰓇",
+      "keywords": "spotify music mood vibe feel sad chill upbeat depressive happy calm focus mix",
+      "cmd": "python3 \"$HOME/.config/hypr/scripts/quickshell/palette/sources.py\" mood \"$1\" >/dev/null",
+      "param": {
+        "kind": "text",
+        "required": true,
+        "hint": "a mood, vibe or activity"
+      },
+      "verb": "Play"
+    },
+    {
       "id": "web.open",
       "label": "Open a web page",
       "hint": "A URL, or anything else to search the web",

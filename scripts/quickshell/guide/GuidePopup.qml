@@ -12064,7 +12064,7 @@ Item {
                         { label: "Fire", cmd: ckExtras + "--test-focusdone 25" }] },
                     { kind: "gitpush", desc: "git push in any repo (global pre-push hook)", fires: [
                         { label: "Fire", cmd: "cd \"$HOME/.config/hypr\" || exit 1; log=\"" + ckDir + "/git_push_log.jsonl\"; n=$(wc -l < \"$log\" 2>/dev/null || echo 0); " +
-                            "echo 'refs/heads/main abc123 refs/heads/main def456' | bash \"$HOME/.config/git-hooks/pre-push\" origin url; " +
+                            "echo \"refs/heads/main $(git rev-parse HEAD) refs/heads/main $(git rev-parse HEAD~6)\" | bash \"$HOME/.config/git-hooks/pre-push\" origin url; " +
                             "head -n \"$n\" \"$log\" > \"$log.tmp\" && mv -f \"$log.tmp\" \"$log\"; echo 'fired via pre-push hook'" }] },
                     { kind: "tailscale", desc: "Tailscale auth-key expiry enters the warn window", fires: [
                         { label: "Fire", cmd: "cd \"" + ckDir + "\" && python3 -c 'import resident_extras as r; r.tick_tailscale_key({}, force=True); print(\"emitted tailscale-key-expiry\")'" }] }

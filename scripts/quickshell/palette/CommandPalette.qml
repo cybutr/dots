@@ -292,6 +292,11 @@ FocusScope {
         return /^(open|launch|start|run|spawn|put|fire up)\s+\S.*\s(on|in|to|onto|into)\s+(a |an |the )?(new|empty|fresh|free|blank|next|another|clean|workspace|ws|desktop|\d+)\b/.test(t)
             || /\S\s+(on|in|to)\s+(workspace|ws|desktop)\s*\d+$/.test(t)
     }
+    function moodIntent(q) {
+        let t = q.toLowerCase().replace(/\s+/g, " ")
+        if (/,| and | then /.test(t)) return false
+        return /^(please )?(play|put on|throw on|queue( up)?|blast|give me) (me )?(something|anything|(some )?(\S+ ){1,3}(music|songs|tunes|vibes|beats|stuff))\b/.test(t)
+    }
     function urlish(q) {
         if (/^[a-z][a-z0-9+.-]*:\/\/\S+$/i.test(q)) return true
         if (/\s/.test(q) || /\.(json|py|qml|js|md|txt|sh|conf|log|png|jpe?g|webp|gif|mp4|pdf)$/i.test(q)) return false
@@ -299,13 +304,13 @@ FocusScope {
     }
     function leadRow(q) {
         if (root.routeRes && root.routeRes.query === q) return { a: root.routeRes.action, score: 99, hits: [], param: "" }
-        let id = root.wsIntent(q) ? "ws.openapp" : root.urlish(q) ? "web.open" : ""
+        let id = root.moodIntent(q) ? "spotify.mood" : root.wsIntent(q) ? "ws.openapp" : root.urlish(q) ? "web.open" : ""
         let a = id !== "" ? root.byId(id) : null
         return a ? { a: a, score: 99, hits: [], param: q } : null
     }
     function maybeRoute(q, r) {
         if (root.routeRes && root.routeRes.query === q) return
-        let ws = root.wsIntent(q)
+        let ws = root.wsIntent(q) || root.moodIntent(q)
         let multi = / and |,| then /.test(q)
         let top = r.length > 0 ? r[0] : null
         let weak = !top || top.score < 12 || top.a.id === "claude.ask"
@@ -744,7 +749,7 @@ FocusScope {
         id: routeDebounce
         property string q: ""
         onTriggered: {
-            root.routeBusy = !root.wsIntent(q)
+            root.routeBusy = !root.wsIntent(q) && !root.moodIntent(q)
             routeProc.command = ["python3", root.dir + "/palette_index.py", "route", q]
             routeProc.running = false
             routeProc.running = true
