@@ -2037,7 +2037,7 @@ Handler.do_GET = _do_get_claude2
 
 import resident_extras  # noqa: E402
 
-PHONE_PUSH_KINDS = ("clipboard", "geo", "sms", "call")
+PHONE_PUSH_KINDS = ("clipboard", "geo", "sms", "call", "notif")
 _post_push_core = Handler.do_POST
 
 
@@ -2073,7 +2073,23 @@ def _push_call(body):
     return {"ok": True}
 
 
-PHONE_PUSH = {"clipboard": _push_clipboard, "geo": _push_geo, "sms": _push_sms, "call": _push_call}
+def _push_notif(body):
+    nid = str(body.get("id") or "")[:120]
+    if not nid:
+        return {"ok": False, "error": "id required"}
+    card_id = "phone-notif-" + hashlib.sha1(nid.encode()).hexdigest()[:12]
+    if body.get("removed"):
+        resident_card.dismiss(card_id)
+        return {"ok": True}
+    app = str(body.get("app") or "Phone")[:60]
+    title = str(body.get("title") or "")[:140]
+    text = str(body.get("text") or "")[:400]
+    resident_card.emit(f"{app}: {title}" if title else app, text, icon="phone", urgency="low",
+                        source="phone_notif", card_id=card_id)
+    return {"ok": True}
+
+
+PHONE_PUSH = {"clipboard": _push_clipboard, "geo": _push_geo, "sms": _push_sms, "call": _push_call, "notif": _push_notif}
 
 
 def _do_post_push(self):
@@ -2113,6 +2129,49 @@ def _do_post_push(self):
 
 
 Handler.do_POST = _do_post_push
+
+
+# ---------------------------------------------------------------- live theme sync
+
+COLORS_FILE = os.path.join(os.path.dirname(BASE), "qs_colors.json")
+_get_theme_core = Handler.do_GET
+
+
+def _theme_rev():
+    try:
+        return int(os.stat(COLORS_FILE).st_mtime)
+    except OSError:
+        return 0
+
+
+def _do_get_theme(self):
+    path = urlsplit(self.path).path
+    if path != "/api/v1/theme":
+        return _get_theme_core(self)
+    err = self._gate()
+    if err:
+        return self._json(err[0], {"ok": False, "error": err[1]})
+    if not self._bearer_ok():
+        return self._json(401, {"ok": False, "error": "unauthorized"})
+    if not self._limit("read"):
+        return self._json(429, {"ok": False, "error": "rate limited"})
+    try:
+        with open(COLORS_FILE) as f:
+            colors = json.load(f)
+    except (OSError, ValueError):
+        return self._json(503, {"ok": False, "error": "no matugen colors on the laptop yet"})
+    return self._json(200, {"ok": True, "rev": _theme_rev(), "colors": colors})
+
+
+Handler.do_GET = _do_get_theme
+
+_snapshot_before_theme = snapshot
+
+
+def snapshot():
+    s = _snapshot_before_theme()
+    s["themeRev"] = _theme_rev()
+    return s
 
 
 if __name__ == "__main__":

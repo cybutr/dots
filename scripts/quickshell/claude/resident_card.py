@@ -131,6 +131,26 @@ def emit(title, body="", icon="", urgency="normal", hold_secs=None, actions=None
     return card
 
 
+def dismiss(card_id):
+    """Removes a card by id if present — e.g. a phone notification that got
+    swiped away should pull its mirrored card too, not leave it stale."""
+    try:
+        with open(QUEUE) as f:
+            lines = f.read().splitlines()
+    except OSError:
+        return
+    kept = [ln for ln in lines if not _has_id(ln, card_id)]
+    if len(kept) == len(lines):
+        return
+    try:
+        tmp = QUEUE + ".tmp"
+        with open(tmp, "w") as f:
+            f.write("\n".join(kept) + ("\n" if kept else ""))
+        os.replace(tmp, QUEUE)
+    except OSError:
+        pass
+
+
 OSD_FILE = "/tmp/qs_resident_osd"
 
 

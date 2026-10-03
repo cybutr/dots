@@ -306,6 +306,24 @@ class Injector:
         self._emit([(EV_KEY, code, 0)] + [(EV_KEY, c, 0) for c in reversed(mod_codes)])
         return True
 
+    def key_down(self, name):
+        """Real hold, not a tap — e.g. holding Alt on the phone while
+        tapping Tab repeatedly drives the desktop's ALT+TAB switcher."""
+        code = KEYS.get(name)
+        if code is None:
+            return False
+        self._emit([(EV_KEY, code, 1)])
+        self.held.add(code)
+        return True
+
+    def key_up(self, name):
+        code = KEYS.get(name)
+        if code is None:
+            return False
+        self._emit([(EV_KEY, code, 0)])
+        self.held.discard(code)
+        return True
+
     def type_text(self, text):
         spaces = self.available()
         for run in re.split(r"( +)", text[:500]):
@@ -402,7 +420,16 @@ def serve(handler, allowed):
     sock.settimeout(IDLE_TIMEOUT)
     f = handler.rfile
     hello = {"t": "hello", "inject": INJECTOR.available(), "absolute": True,
-             "wtype": bool(shutil.which("wtype")), "keys": sorted(KEYS)}
+             "wtype": bool(shutil.which("wtype")), "keys": sorted(KEYS),
+             # "holds": real key-down/up (kd/ku), not just atomic taps — lets
+             # a phone hold Alt while tapping Tab for ALT+TAB. "hscroll": the
+             # existing "s" message already takes dx, just advertising it.
+             # "ime" (focused-text-field push) is NOT implemented — there's
+             # no reliable generic cross-app way to detect a focused text
+             # field on Wayland without per-app accessibility hooks, so the
+             # capability is omitted rather than faked; clients should keep
+             # any auto-keyboard feature disabled until this exists for real.
+             "holds": True, "hscroll": True}
     write_frame(sock, 0x1, json.dumps(hello).encode())
     counts = {}
     try:
@@ -457,6 +484,12 @@ def handle(m):
         mods = [str(x) for x in (m.get("mods") or [])][:4]
         INJECTOR.later(INJECTOR.key, str(m.get("k", "")).lower(), mods)
         return "key"
+    if t == "kd":
+        INJECTOR.later(INJECTOR.key_down, str(m.get("k", "")).lower())
+        return "keydown"
+    if t == "ku":
+        INJECTOR.later(INJECTOR.key_up, str(m.get("k", "")).lower())
+        return "keyup"
     if t == "txt":
         INJECTOR.later(INJECTOR.type_text, str(m.get("s", "")))
         return "text"
