@@ -3,10 +3,12 @@ import hashlib
 import json
 import os
 import re
+import shlex
 import subprocess
 import sys
 import tempfile
 import time
+import urllib.error
 
 HOME = os.path.expanduser("~")
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -19,6 +21,11 @@ HISTORY = os.path.join(CACHE_DIR, "history.json")
 ROUTES = os.path.join(CACHE_DIR, "routes.json")
 SELF = os.path.abspath(__file__)
 CLAUDE_DIR = os.path.join(QS, "claude")
+
+STUDY_BASES = ["http://basecamp.tail97084f.ts.net:8780", "http://100.85.46.76:8780"]
+STUDY_CACHE = os.path.join(CACHE_DIR, "study_remote.json")
+STUDY_CACHE_TTL = 6
+STUDY_MISS_TTL = 25
 
 CONTEXT_FILE = "/tmp/qs_context.json"
 MUSIC_FILE = "/tmp/music_info.json"
@@ -506,7 +513,8 @@ def build():
     actions = (static + window_actions() + widget_actions() + setting_actions(settings) + layout_actions()
                + sink_actions() + bluetooth_actions() + app_actions()
                + dynamic(lambda: sources().tab_actions(), "tab", cats) + dynamic(lambda: sources().vscode_actions(), "code", cats)
-               + dynamic(lambda: sources().project_actions(), "project", cats))
+               + dynamic(lambda: sources().project_actions(), "project", cats)
+               + dynamic(study_subject_actions, "study", cats) + dynamic(study_page_actions, "study", cats))
     owned = {a["project"]["path"] for a in actions if a.get("cat") == "project" and (a.get("project") or {}).get("path")}
     actions = [a for a in actions if not hidden(a) and not (a.get("cat") == "code" and a["id"][5:] in owned)]
     return {"actions": actions, "history": load_json(HISTORY, {}), **context_payload(actions, states)}
@@ -785,6 +793,187 @@ STUDY_INTENT = re.compile(r"^study\s*:|\bstudy\s+(page|guide|material)s?\b|\b(fl
                           r"\bstudy\b.*\bfor\b|\bquiz(zes)?\b.*\bnotes?\b", re.I)
 
 
+# Study hub (VPS "basecamp") client. The actual generator moved off this
+# laptop — study_page.py is historical reference only. Every call here is a
+# short, cached GET or a single POST through fleet_watch's existing hub HTTP
+# helper + laptop token, same credential source as fleet_watch.py/fleet_send.py.
+def _study_fleet():
+    sys.path.insert(0, CLAUDE_DIR)
+    import fleet_watch  # noqa
+    return fleet_watch
+
+
+def _study_notify(title, body=""):
+    try:
+        subprocess.Popen(["notify-send", "-a", "study", "-u", "critical", "-i", "dialog-error", title, body],
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+    except OSError:
+        pass
+
+
+def _study_slug(s):
+    return re.sub(r"[^a-zA-Z0-9]+", "-", s or "").strip("-").lower() or "study"
+
+
+def study_cached(key, path, timeout=1.2):
+    """GET path from the study hub, cached a few seconds on disk — this module
+    runs as a fresh subprocess per call, so an in-process cache wouldn't survive
+    between keystrokes; disk+ts mirrors fleet_send.py's fetch_max() cache. A
+    failed lookup is cached too (shorter TTL) so a dead tailnet doesn't stall
+    every single palette open on the full connect timeout."""
+    now = time.time()
+    cache = load_json(STUDY_CACHE, {})
+    hit = cache.get(key)
+    if hit and hit.get("ok") and now - hit.get("t", 0) < STUDY_CACHE_TTL:
+        return hit.get("data"), None
+    if hit and not hit.get("ok") and now - hit.get("t", 0) < STUDY_MISS_TTL:
+        return None, hit.get("err")
+    fw = _study_fleet()
+    token = fw.env().get("FLEET_READ_TOKEN", "")
+    err, unreachable = "no response", True
+    for base in STUDY_BASES:
+        try:
+            d = fw._http("GET", base + path, token, timeout=timeout)
+            cache[key] = {"t": now, "ok": True, "data": d}
+            write_atomic(STUDY_CACHE, cache)
+            return d, None
+        except urllib.error.HTTPError as e:
+            try:
+                detail = json.loads(e.read()).get("detail")
+            except Exception:
+                detail = None
+            err, unreachable = detail or ("study hub said " + str(e.code)), False
+            break  # reachable, retrying the other base won't help
+        except Exception as e:
+            err = str(e)[:150] or err
+    msg = ("can't reach the study service right now (" + err + ")") if unreachable else err
+    cache[key] = {"t": now, "ok": False, "err": msg}
+    write_atomic(STUDY_CACHE, cache)
+    return None, msg
+
+
+def study_subjects():
+    d, err = study_cached("subjects", "/study/subjects")
+    return (d or {}).get("subjects") or [], err
+
+
+def study_pages():
+    d, err = study_cached("pages", "/study/pages")
+    return (d or {}).get("pages") or [], err
+
+
+def study_resolve_subject(query, subjects):
+    q = (query or "").strip().strip("/").lower()
+    if not q or not subjects:
+        return None
+    for s in subjects:
+        f = (s.get("folder") or "").lower()
+        if f == q or f.endswith("/" + q):
+            return s
+    qtoks = re.findall(r"[a-z0-9]+", q)
+    if not qtoks:
+        return None
+    best, best_score = None, 0
+    for s in subjects:
+        folder = s.get("folder") or ""
+        ftoks = re.findall(r"[a-z0-9]+", folder.lower())
+        score = sum(1 for t in qtoks if any(ft == t or ft.startswith(t) for ft in ftoks))
+        if q in folder.lower():
+            score += len(qtoks)
+        if score > best_score:
+            best_score, best = score, s
+    return best
+
+
+def study_generate(notes, timeout=90):
+    fw = _study_fleet()
+    token = fw.env().get("FLEET_READ_TOKEN", "")
+    if not token:
+        return None, "no " + os.path.basename(fw.TOKENS_ENV) + " token configured for this laptop"
+    err = "no response"
+    for base in STUDY_BASES:
+        try:
+            return fw._http("POST", base + "/study/generate", token, {"notes": notes}, timeout=timeout), None
+        except urllib.error.HTTPError as e:
+            try:
+                detail = json.loads(e.read()).get("detail")
+            except Exception:
+                detail = None
+            return None, detail or ("study hub said " + str(e.code))
+        except Exception as e:
+            err = str(e)[:150] or err
+    return None, "can't reach the study service right now (" + err + ")"
+
+
+def study_generate_cli(query, source="palette"):
+    sys.path.insert(0, CLAUDE_DIR)
+    import resident_card
+    query = (query or "").strip()
+    if not query:
+        _study_notify("Study page", "No subject or note given")
+        return {"ok": False, "error": "no subject or note given"}
+    subjects, serr = study_subjects()
+    subj = study_resolve_subject(query, subjects)
+    if subj:
+        notes = [subj["folder"].rstrip("/") + "/" + n for n in (subj.get("notes") or [])]
+        label = subj["folder"]
+    else:
+        notes, label = [query], query
+    if not notes:
+        _study_notify("Study page", label + " has no notes to build from")
+        return {"ok": False, "error": "no notes found under " + label}
+    d, err = study_generate(notes)
+    if err or not d or not d.get("ok"):
+        msg = err or (d or {}).get("error") or "the study service couldn't build that page"
+        _study_notify("Study page failed", label + ": " + msg)
+        return {"ok": False, "error": msg}
+    title, url = d.get("title") or label, d.get("url") or ""
+    resident_card.emit(
+        "Study page: " + title, label, "accessories-dictionary", "low", 16,
+        [{"label": "Open", "cmd": "xdg-open " + shlex.quote(url)}] if url else [],
+        source, card_id="study-page-" + (d.get("slug") or _study_slug(title)),
+        kind="note", data={"slug": d.get("slug"), "title": title, "url": url, "notes": notes},
+    )
+    return {"ok": True, "title": title, "url": url, "slug": d.get("slug"), "notes": notes}
+
+
+def study_subject_actions():
+    subjects, err = study_subjects()
+    out = []
+    for s in subjects[:40]:
+        folder = (s.get("folder") or "").strip()
+        if not folder:
+            continue
+        n = len(s.get("notes") or [])
+        out.append({
+            "id": "study.subject." + _study_slug(folder), "label": "Study: " + folder,
+            "hint": "Build a study page from %d note%s" % (n, "" if n == 1 else "s"),
+            "cat": "claude", "icon": "󰙅", "keywords": "study flashcards quiz build page " + re.sub(r"[^a-z0-9]+", " ", folder.lower()),
+            "cmd": "python3 " + json.dumps(SELF) + " studygen " + json.dumps(folder) + " >/dev/null",
+            "verb": "Build",
+        })
+    return out
+
+
+def study_page_actions():
+    pages, err = study_pages()
+    out = []
+    for p in pages[:30]:
+        slug = (p.get("slug") or "").strip()
+        if not slug:
+            continue
+        title, subject = p.get("title") or slug, p.get("subject") or ""
+        url = STUDY_BASES[0] + "/study?p=" + slug
+        out.append({
+            "id": "study.page." + slug, "label": title,
+            "hint": "Study page" + (" · " + subject if subject else ""),
+            "cat": "claude", "icon": "󰈙",
+            "keywords": "study page open existing flashcards quiz " + subject.lower(),
+            "cmd": "xdg-open " + shlex.quote(url), "verb": "Open",
+        })
+    return out
+
+
 def mood_route(query, by_id):
     q = norm_query(query)
     if "spotify.mood" not in by_id or re.search(r",| and | then ", q) or not MOOD_INTENT.search(q):
@@ -803,8 +992,13 @@ def note_route(query, by_id):
 def study_route(query, by_id):
     if "claude.study" not in by_id or not STUDY_INTENT.search(query.strip()):
         return None
-    return {"label": "Build study page", "steps": [{"id": "claude.study", "arg": query.strip()}],
-            "show": query.strip()[:60], "direct": True}
+    text = query.strip()
+    m = re.match(r"^study\s*:\s*(.+)$", text, re.I)
+    subject_text = m.group(1).strip() if m else text
+    subj = study_resolve_subject(subject_text, study_subjects()[0])
+    show = subj["folder"] if subj else subject_text
+    return {"label": "Build study page: " + show[:50], "steps": [{"id": "claude.study", "arg": subject_text}],
+            "show": show[:60], "direct": True}
 
 
 def direct_route(query, by_id):
@@ -979,6 +1173,10 @@ def main(argv):
         return 0
     if len(argv) >= 3 and argv[1] == "run":
         return run_route(argv[2], "--dry" in argv[3:])
+    if len(argv) >= 3 and argv[1] == "studygen":
+        r = study_generate_cli(" ".join(argv[2:]), source="palette")
+        print(json.dumps(r, ensure_ascii=False))
+        return 0 if r.get("ok") else 1
     if len(argv) >= 2 and argv[1] == "context":
         print(json.dumps(context_payload(index_actions()), ensure_ascii=False))
         return 0
