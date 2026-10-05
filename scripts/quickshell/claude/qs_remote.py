@@ -2175,28 +2175,22 @@ def snapshot():
 
 
 # ---------------------------------------------------------------- study pages
-# A student's generated study page (study_page.py) needs to open in a plain
-# phone browser tab, same as /m — no bearer header available there, so this
-# gets the exact same no-bearer/Tailscale-identity-only gating as /m, not the
-# stricter bearer-required pattern the /api/v1/* routes use.
+# The study-page system (generation + serving) moved to the VPS hub (see
+# fleet-app's hub/app/app/study.py and README.md "Study pages" section) —
+# it now reads a Syncthing-synced copy of the vault instead of needing this
+# laptop at all. These routes just 302 any existing /study* link (bookmarks,
+# resident-card "Open" actions, mailbox entries) over to the real thing, so
+# nothing that already points here breaks. study_page.py and study/*.html
+# are kept in this repo as historical reference/fallback, not deleted, but
+# are no longer served from.
 
-STUDY_DIR = os.path.expanduser("~/.local/share/qs_study")
-STUDY_TEMPLATE_DIR = os.path.join(BASE, "study")
-STUDY_SLUG_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]{0,80}$")
+STUDY_VPS_BASE = "http://basecamp.tail97084f.ts.net:8780"
 _get_study_core = Handler.do_GET
 
 
-def _study_asset(path, ctype):
-    try:
-        with open(os.path.join(STUDY_TEMPLATE_DIR, path), "rb") as f:
-            return f.read(), ctype
-    except OSError:
-        return None, None
-
-
 def _do_get_study(self):
-    path = urlsplit(self.path).path
-    if not path.startswith("/study"):
+    split = urlsplit(self.path)
+    if not split.path.startswith("/study"):
         return _get_study_core(self)
     err = self._gate()
     if err:
@@ -2204,34 +2198,8 @@ def _do_get_study(self):
     if not self._limit("read"):
         return self._send(429, b"rate limited", "text/plain; charset=utf-8")
 
-    if path == "/study/study.css":
-        data, ctype = _study_asset("study.css", "text/css; charset=utf-8")
-        return self._send(200, data, ctype) if data else self._json(404, {"ok": False, "error": "not found"})
-    if path == "/study/study.js":
-        data, ctype = _study_asset("study.js", "application/javascript; charset=utf-8")
-        return self._send(200, data, ctype) if data else self._json(404, {"ok": False, "error": "not found"})
-
-    m = re.match(r"^/study/data/([^/]+)\.json$", path)
-    if m:
-        slug = m.group(1)
-        if not STUDY_SLUG_RE.match(slug):
-            return self._json(404, {"ok": False, "error": "not found"})
-        try:
-            with open(os.path.join(STUDY_DIR, slug + ".json"), "rb") as f:
-                data = f.read()
-        except OSError:
-            return self._json(404, {"ok": False, "error": "no study page with that id"})
-        return self._send(200, data, "application/json")
-
-    if path == "/study" or path == "/study/":
-        data, ctype = _study_asset("study.html", "text/html; charset=utf-8")
-        return self._send(200, data, ctype) if data else self._json(404, {"ok": False, "error": "not found"})
-
-    m = re.match(r"^/study/([^/]+)$", path)
-    if m and STUDY_SLUG_RE.match(m.group(1)):
-        return self._redirect("/study?p=" + quote(m.group(1)))
-
-    return self._json(404, {"ok": False, "error": "not found"})
+    target = STUDY_VPS_BASE + split.path + (("?" + split.query) if split.query else "")
+    return self._send(302, b"", "text/plain", {"Location": target})
 
 
 Handler.do_GET = _do_get_study
