@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Study</title>
+<link rel="stylesheet" href="/study/study.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-title">
+      <h1 id="pageTitle">Study</h1>
+      <p id="pageSubject" class="subject"></p>
+    </div>
+    <nav id="tabs" class="tabs"></nav>
+  </header>
+
+  <main id="app">
+    <p id="loadMsg" class="load-msg">Loading…</p>
+
+    <section id="sec-flashcards" class="view" hidden>
+      <div class="deck-toolbar">
+        <span id="cardCounter" class="counter"></span>
+        <div class="spacer"></div>
+        <button id="cardShuffle" class="btn-ghost">Shuffle</button>
+      </div>
+      <div class="deck">
+        <button id="cardPrev" class="nav-arrow" aria-label="Previous card">‹</button>
+        <div id="flipCard" class="flip-card" tabindex="0">
+          <div class="flip-card-inner">
+            <div class="flip-face front"><p id="cardFront"></p></div>
+            <div class="flip-face back"><p id="cardBack"></p></div>
+          </div>
+        </div>
+        <button id="cardNext" class="nav-arrow" aria-label="Next card">›</button>
+      </div>
+      <p class="hint">Click / tap / Space to flip · ← → to move · swipe on touch</p>
+    </section>
+
+    <section id="sec-quiz" class="view" hidden>
+      <div class="deck-toolbar">
+        <span id="quizCounter" class="counter"></span>
+        <div class="spacer"></div>
+        <span id="quizScore" class="score"></span>
+      </div>
+      <div class="quiz-card">
+        <p id="quizQ" class="quiz-q"></p>
+        <div id="quizChoices" class="quiz-choices"></div>
+        <div id="quizFeedback" class="quiz-feedback" hidden></div>
+        <div class="quiz-actions">
+          <button id="quizNext" class="btn-primary" hidden>Next question →</button>
+        </div>
+      </div>
+      <div id="quizDone" class="quiz-done" hidden>
+        <p id="quizDoneText"></p>
+        <button id="quizRestart" class="btn-primary">Try again</button>
+      </div>
+    </section>
+
+    <section id="sec-walk" class="view" hidden>
+      <div id="walkList" class="walk-list"></div>
+      <div id="walkDetail" class="walk-detail" hidden>
+        <button id="walkBack" class="btn-ghost">← All problems</button>
+        <h2 id="walkTitle"></h2>
+        <ol id="walkSteps" class="walk-steps"></ol>
+      </div>
+    </section>
+
+    <section id="sec-diagram" class="view" hidden>
+      <div id="diagramRoot" class="diagram-root"></div>
+    </section>
+  </main>
+
+  <script src="/study/study.js"></script>
+</body>
+</html>

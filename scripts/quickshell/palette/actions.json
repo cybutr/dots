@@ -651,6 +651,21 @@
       "verb": "Save"
     },
     {
+      "id": "claude.study",
+      "label": "Make study page",
+      "hint": "Flashcards, quiz and walkthroughs from a note",
+      "cat": "claude",
+      "icon": "󰙅",
+      "keywords": "study flashcards quiz practice exam school note learn test prep",
+      "cmd": "python3 \"$HOME/.config/hypr/scripts/quickshell/claude/study_page.py\" --source palette \"$1\" >/dev/null",
+      "param": {
+        "kind": "text",
+        "required": true,
+        "hint": "which note(s), e.g. School/Physics"
+      },
+      "verb": "Build"
+    },
+    {
       "id": "claude.brief",
       "label": "Brief me now",
       "hint": "Weather, agenda, battery and nudges as a card",

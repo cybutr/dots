@@ -776,6 +776,13 @@ MOOD_VERB = re.compile(r"^(please\s+)?(play|put on|throw on|queue( up)?|blast|gi
 # one for Y, save them" is exactly the multi-note case notes_assistant.py
 # is meant to handle in one call.
 NOTE_INTENT = re.compile(r"^(note|notes|save)\s*:|\bnotes?\b.*\bsave(d|s)?\b|\bsave(d|s)?\b.*\bnotes?\b", re.I)
+# "study: ..." prefix, or natural language asking for a study page/flashcards/
+# quiz for one or more notes ("make a study page for School/Physics and
+# School/Algebra", "flashcards for my law notes") — deliberately allows
+# commas/"and" like NOTE_INTENT, since combining several notes into one
+# study page is the explicit multi-note use case study_page.py handles.
+STUDY_INTENT = re.compile(r"^study\s*:|\bstudy\s+(page|guide|material)s?\b|\b(flashcards?|quiz)\b.*\bfor\b|"
+                          r"\bstudy\b.*\bfor\b|\bquiz(zes)?\b.*\bnotes?\b", re.I)
 
 
 def mood_route(query, by_id):
@@ -793,11 +800,21 @@ def note_route(query, by_id):
             "show": query.strip()[:60], "direct": True}
 
 
+def study_route(query, by_id):
+    if "claude.study" not in by_id or not STUDY_INTENT.search(query.strip()):
+        return None
+    return {"label": "Build study page", "steps": [{"id": "claude.study", "arg": query.strip()}],
+            "show": query.strip()[:60], "direct": True}
+
+
 def direct_route(query, by_id):
     q = norm_query(query)
     mood = mood_route(query, by_id)
     if mood:
         return mood
+    study = study_route(query, by_id)
+    if study:
+        return study
     note = note_route(query, by_id)
     if note:
         return note
