@@ -636,6 +636,21 @@
       "verb": "Open"
     },
     {
+      "id": "claude.note",
+      "label": "Save as note",
+      "hint": "Claude titles, folders and writes it to Obsidian",
+      "cat": "claude",
+      "icon": "󰎞",
+      "keywords": "note notes save obsidian write jot vault",
+      "cmd": "python3 \"$HOME/.config/hypr/scripts/quickshell/claude/notes_assistant.py\" --source palette \"$1\" >/dev/null",
+      "param": {
+        "kind": "text",
+        "required": true,
+        "hint": "what to write and save"
+      },
+      "verb": "Save"
+    },
+    {
       "id": "claude.brief",
       "label": "Brief me now",
       "hint": "Weather, agenda, battery and nudges as a card",

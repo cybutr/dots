@@ -209,6 +209,7 @@ FloatingWindow {
     }
 
     readonly property string aiScript: "/home/czeddaru/.config/hypr/scripts/quickshell/claude/scratchpad_ai.py"
+    readonly property string notesScript: "/home/czeddaru/.config/hypr/scripts/quickshell/claude/notes_assistant.py"
     readonly property string acFlagPath: win.homeDir + "/.local/share/qs_scratchpad_autocomplete"
     property bool showAi: false
     property bool aiBusy: false
@@ -245,8 +246,25 @@ FloatingWindow {
         noteArea.forceActiveFocus()
     }
 
+    // "note: ..." / "save: ..." prefixes, or natural language that mentions
+    // both saving and a note ("make me a note about X, save it"), route to
+    // the notes assistant instead of an in-place edit — same ask box, no
+    // separate button, per the user's ask for this to feel native to the
+    // existing flow rather than a bolted-on extra.
+    readonly property var noteIntentRe: /^(note|notes|save)\s*:/i
+
+    function looksLikeNoteRequest(instruction) {
+        var t = instruction.trim()
+        if (win.noteIntentRe.test(t)) return true
+        return /\bnotes?\b/i.test(t) && /\bsave(d|s)?\b/i.test(t)
+    }
+
     function runAi(instruction) {
         if (win.aiBusy || instruction.trim().length === 0) return
+        if (win.looksLikeNoteRequest(instruction)) {
+            win.runNotes(instruction)
+            return
+        }
         win.clearGhost()
         win.aiSnapshot = noteArea.text
         win.aiHadSel = noteArea.selectionEnd > noteArea.selectionStart
@@ -258,9 +276,33 @@ FloatingWindow {
         aiEditProc.running = true
     }
 
+    function runNotes(instruction) {
+        win.clearGhost()
+        win.aiBusy = true
+        win.aiStatus = "saving note" + (/\band\b|,/.test(instruction) ? "s" : "") + "…"
+        aiStatusTimer.stop()
+        notesProc.command = ["python3", win.notesScript, "--source", "scratchpad", instruction]
+        notesProc.running = true
+    }
+
+    function applyNotes(raw) {
+        if (!win.aiBusy) return
+        win.aiBusy = false
+        let r = null
+        try { r = JSON.parse(raw.trim()) } catch (e) { r = { ok: false, error: "failed" } }
+        if (!r.ok) {
+            win.aiStatus = r.error || "failed"
+        } else {
+            win.aiStatus = "saved " + r.saved + (r.saved === 1 ? " note" : " notes")
+            aiInput.text = ""
+        }
+        aiStatusTimer.restart()
+    }
+
     function cancelAi() {
         win.aiBusy = false
         aiEditProc.running = false
+        notesProc.running = false
         win.aiStatus = "cancelled"
         aiStatusTimer.restart()
     }
@@ -371,6 +413,11 @@ FloatingWindow {
     Process {
         id: aiEditProc
         stdout: StdioCollector { onStreamFinished: win.applyAi(this.text) }
+    }
+
+    Process {
+        id: notesProc
+        stdout: StdioCollector { onStreamFinished: win.applyNotes(this.text) }
     }
 
     Process {

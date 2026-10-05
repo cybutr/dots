@@ -1251,7 +1251,7 @@ def describe(name, args):
     return extra.get(name) or _describe_core(name, args)
 
 
-PHONE_TEXT_OK = {"claude.ask", "spotify.search", "spotify.mood", "web.open", "ws.openapp", "ws.rename", "mail.search"}
+PHONE_TEXT_OK = {"claude.ask", "claude.note", "spotify.search", "spotify.mood", "web.open", "ws.openapp", "ws.rename", "mail.search"}
 PHONE_BLOCKED = ("setting.qsRemote", "fleet.")
 PAL_BIAS = {"power": 3, "system": 2, "audio": 2, "media": 2, "widget": 2, "mail": 2, "timer": 2, "claude": 1,
             "capture": 1, "wallpaper": 1, "layout": 1, "window": 2, "workspace": 1, "device": 2, "project": 2,

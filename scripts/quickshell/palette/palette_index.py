@@ -770,6 +770,12 @@ WS_INTENT = re.compile(r"^(open|launch|start|run|spawn|put|fire up)\b|\b(workspa
 MOOD_INTENT = re.compile(r"^(please\s+)?(play|put on|throw on|queue( up)?|blast|give me)\s+(me\s+)?"
                          r"(something|anything|(some\s+)?(\S+\s+){1,3}(music|songs|tunes|vibes|beats|stuff))\b")
 MOOD_VERB = re.compile(r"^(please\s+)?(play|put on|throw on|queue( up)?|blast|give me)\s+(me\s+)?")
+# "note: ..." / "save: ..." prefixes, or natural language that mentions both
+# a note and saving it ("make me a note about X, save it") — deliberately
+# allows commas/"and" unlike WS_INTENT below, since "make a note for X and
+# one for Y, save them" is exactly the multi-note case notes_assistant.py
+# is meant to handle in one call.
+NOTE_INTENT = re.compile(r"^(note|notes|save)\s*:|\bnotes?\b.*\bsave(d|s)?\b|\bsave(d|s)?\b.*\bnotes?\b", re.I)
 
 
 def mood_route(query, by_id):
@@ -780,11 +786,21 @@ def mood_route(query, by_id):
     return {"label": "Play " + what[:50], "steps": [{"id": "spotify.mood", "arg": query.strip()}], "show": what, "direct": True}
 
 
+def note_route(query, by_id):
+    if "claude.note" not in by_id or not NOTE_INTENT.search(query.strip()):
+        return None
+    return {"label": "Save as note", "steps": [{"id": "claude.note", "arg": query.strip()}],
+            "show": query.strip()[:60], "direct": True}
+
+
 def direct_route(query, by_id):
     q = norm_query(query)
     mood = mood_route(query, by_id)
     if mood:
         return mood
+    note = note_route(query, by_id)
+    if note:
+        return note
     if "ws.openapp" not in by_id or re.search(r",| and | then ", q) or not WS_INTENT.search(q):
         return None
     d = sources().describe_ws_spec(q, [a for a in by_id.values() if a.get("cat") == "app"], strict=True)
